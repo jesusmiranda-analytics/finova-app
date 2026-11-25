@@ -1,0 +1,16 @@
+{
+  "name": "finova",
+  "version": "1.0.0",
+  "description": "Tu dinero. Tus decisiones. Tu futuro.",
+  "scripts": {
+    "build": "bash build.sh",
+    "test": "node test/t1.js && node test/t2.js && node test/t3.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "playwright": "1.65.0"
+  },
+  "private": true
+}
