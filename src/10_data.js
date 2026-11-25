@@ -29,9 +29,10 @@ const monthsBetween=(a,b)=>(b.getFullYear()-a.getFullYear())*12+b.getMonth()-a.g
 
 const EXP_CATS=[
   {n:'Alimentación',fixed:false,grp:'needs'},{n:'Transporte',fixed:false,grp:'needs'},{n:'Educación',fixed:true,grp:'needs'},
-  {n:'Entretenimiento',fixed:false,grp:'wants'},{n:'Servicios',fixed:true,grp:'needs'},{n:'Otros',fixed:false,grp:'wants'}];
+  {n:'Entretenimiento',fixed:false,grp:'wants'},{n:'Servicios',fixed:true,grp:'needs'},{n:'Otros',fixed:false,grp:'wants'},
+  {n:'Salud',fixed:false,grp:'needs'},{n:'Deudas',fixed:true,grp:'needs'}];
 const EXP_NAMES=EXP_CATS.map(c=>c.n);
-const INC_CATS=['Nómina','Freelance','Regalo','Otros ingresos'];
+const INC_CATS=['Nómina','Negocio propio','Freelance','Regalo','Otros ingresos'];
 const METHODS=['Efectivo','Débito','Crédito','Transferencia'];
 
 /* ================= INSTRUMENTOS ================= */
@@ -160,10 +161,11 @@ const BADGES=[
 
 const FAQ=[
  ['¿FINOVA usa mis datos bancarios?','No. Es un prototipo de demostración: no pide contraseñas ni datos de bancos, y no se conecta a ninguna cuenta real.'],
- ['¿Dónde se guardan mis datos?','Solo en este navegador (localStorage). No hay servidor. Si borras los datos del sitio, se pierden; puedes restaurar la demo en Perfil.'],
+ ['¿Dónde se guardan mis datos?','Solo en este dispositivo (localStorage), separados por cuenta. No hay servidor: tus datos nunca salen de tu navegador. Si borras los datos del sitio, se pierden; en Perfil puedes exportarlos o eliminar tu cuenta.'],
+ ['¿Para qué sirve el PIN?','Protege tu perfil en este dispositivo. Se guarda cifrado (SHA-256) y nunca se envía a ningún lado. FINOVA no pide contraseñas reales ni datos bancarios.'],
  ['¿Las cifras de México hoy son reales?','No. Todas son datos de demostración con etiqueta visible y no representan cifras actuales.'],
- ['¿El Asistente IA es una inteligencia artificial real?','No. Responde con una biblioteca de respuestas predefinidas y con los datos de Rodrigo Demo. No sustituye asesoría financiera.'],
+ ['¿El Asistente IA es una inteligencia artificial real?','No. Responde con una biblioteca de respuestas predefinidas y con los datos de la cuenta con la que entraste. No sustituye asesoría financiera.'],
  ['¿Los rendimientos del simulador están garantizados?','No. Son supuestos que puedes editar. Es una simulación educativa con rendimientos hipotéticos.'],
  ['¿Cómo funciona la racha de aprendizaje?','Suma un día cada vez que completas una lección, el reto diario o el semanal. Si pasas un día sin actividad, se reinicia.'],
- ['¿Cómo restauro los datos originales?','En Perfil, usa "Restaurar datos de demostración". Se borran tus cambios y vuelve el usuario Rodrigo Demo.'],
+ ['¿Cómo restauro los datos originales?','En Perfil, usa "Restaurar datos de demostración". Se borran tus cambios y la cuenta vuelve a sus datos iniciales.'],
  ['¿Qué diferencia hay entre avalancha y bola de nieve?','Avalancha paga primero la deuda con mayor tasa (ahorra más intereses). Bola de nieve empieza por el saldo menor (motiva al liquidar deudas pronto).']];

@@ -88,7 +88,7 @@ function Presupuestos(){
   const needs=sum(rows.filter(r=>EXP_CATS.find(x=>x.n===r.cat).grp==='needs'),r=>r.spent),wants=sum(rows.filter(r=>EXP_CATS.find(x=>x.n===r.cat).grp==='wants'),r=>r.spent),saved=Math.max(0,(T.inc||base)-T.exp);
   const groups=[['Necesidades',pn[0],needs,'needs'],['Gustos',pn[1],wants,'wants'],['Ahorro y deudas',pn[2],saved,'save']];
   const saveLim=cat=>{const v=num(val);if(!Number.isFinite(v)||v<0)return setVe('Escribe un monto de 0 o más.');if(v>1e7)return setVe('Monto demasiado grande.');upd(d=>{d.budgets.cats[cat]=v});setEdc(null);setVe('');toast(`Presupuesto de ${cat} actualizado`,'ok')};
-  const alerts=rows.filter(r=>r.pct>=80).sort((a,b)=>b.pct-a.pct);
+  const alerts=rows.filter(r=>r.pct>100||(r.pct>=80&&r.pct<100)).sort((a,b)=>b.pct-a.pct);
   return html`<div className="col" style=${{gap:16}}>
     ${alerts.map(r=>html`<${Banner} key=${r.cat} k=${r.pct>100?'r':'y'} ic="warn"><b>${r.cat}:</b> ${r.pct>100?`superaste tu presupuesto por ${fmt(r.spent-r.limit)} (${pc(r.pct,0)}).`:`llevas ${pc(r.pct,0)} de tu límite. Te quedan ${fmt(r.limit-r.spent)}.`}<//>`)}
     <div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Regla 50/30/20 editable</h2><span className="muted sm">Mes actual</span></div>
@@ -105,7 +105,7 @@ function Presupuestos(){
     <div className="card"><div className="ch"><h2>Presupuesto por categoría</h2><span className="muted sm">Aviso al 80% · alerta al superar 100%</span></div>
       <div className="col" style=${{gap:14}}>${rows.map(r=>html`<div key=${r.cat}>
         <div className="row sp"><b>${r.cat}</b><div className="row" style=${{gap:8}}><span className="num sm">${fmt(r.spent)} / ${fmt(r.limit)}</span>
-          <span className=${'pill '+(r.pct>100?'r':r.pct>=80?'y':'g')}>${r.pct>100?'Excedido':r.pct>=80?'Cerca del límite':'Bien'} · ${pc(r.pct,0)}</span>
+          <span className=${'pill '+(r.pct>100?'r':r.pct===100?'b':r.pct>=80?'y':'g')}>${r.pct>100?'Excedido':r.pct===100?'Justo en el límite':r.pct>=80?'Cerca del límite':'Bien'} · ${pc(r.pct,0)}</span>
           ${edc===r.cat?null:html`<button className="ib" style=${{width:32,height:32}} aria-label=${'Editar límite de '+r.cat} onClick=${()=>{setEdc(r.cat);setVal(String(r.limit));setVe('')}}><${Ic} n="edit" s=${15}/></button>`}</div></div>
         <${Bar} v=${r.pct} t=${tone(r.pct)}/>
         ${edc===r.cat?html`<div className="row" style=${{marginTop:8}}><input className="in" style=${{maxWidth:160}} aria-label=${'Límite de '+r.cat} type="number" min="0" value=${val} onChange=${e=>setVal(e.target.value)}/><button className="btn pri sm" onClick=${()=>saveLim(r.cat)}>Guardar</button><button className="btn sm" onClick=${()=>setEdc(null)}>Cancelar</button>${ve?html`<span className="err">${ve}</span>`:null}</div>`:null}</div>`)}</div></div></div>`;

@@ -18,7 +18,9 @@ const Ic=({n,s=20})=>html`<svg width=${s} height=${s} viewBox="0 0 24 24" fill="
 const Demo=({t='Demo'})=>html`<span className="demo">${t}</span>`;
 function col(){const g=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   return {green:g('--green'),blue:g('--blue'),yellow:g('--yellow'),red:g('--red'),purple:g('--purple'),teal:g('--teal'),fg:g('--fg'),muted:g('--muted'),line:g('--line'),card:g('--card')}}
-const catColors=c=>[c.blue,c.green,c.yellow,c.red,c.purple,c.teal];
+/* Hogares (cuenta con integrantes) se saludan con el nombre completo: "Familia Rivera". */
+const shortName=u=>u.members&&u.members.length?u.name:u.name.split(' ')[0];
+const catColors=c=>[c.blue,c.green,c.yellow,c.red,c.purple,c.teal,'#E8833A','#C2549D'];
 
 function Modal({title,onClose,children,wide}){
   useEffect(()=>{const h=e=>{if(e.key==='Escape')onClose()};window.addEventListener('keydown',h);return()=>window.removeEventListener('keydown',h)},[]);

@@ -181,6 +181,30 @@ textarea.code{width:100%;height:220px;font:12px/1.4 ui-monospace,Menlo,monospace
 @media (max-width:900px){.hide-m{display:none}}
 .sr{position:absolute;left:-9999px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* Botones claros sobre fondo marino (barra lateral y tarjeta de racha) */
+.side .btn,.card.navy .btn{color:var(--fg)}
+/* Entrada: perfiles y PIN */
+.login{min-height:100vh;display:grid;place-items:center;padding:32px 16px;background:radial-gradient(1200px 500px at 50% -10%,var(--green-soft),transparent 70%),var(--bg)}
+.login-in{width:100%;max-width:900px;display:flex;flex-direction:column;gap:26px;animation:fade .35s ease}
+.login-brand{display:flex;align-items:center;gap:14px}
+.login-name{font-size:24px;font-weight:800;letter-spacing:.05em}
+.acc-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr))}
+.acc{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:22px 14px;border-radius:var(--r);border:1px solid var(--line);background:var(--card);cursor:pointer;font:inherit;color:inherit;transition:transform .15s,border-color .15s,box-shadow .15s}
+.acc:hover,.acc:focus-visible{transform:translateY(-2px);border-color:var(--green);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.acc-av{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:22px;background:var(--navy);color:#fff;flex:none}
+.acc-new{border-style:dashed}.acc-new .acc-av{background:var(--green-soft);color:var(--green-ink)}
+.acc-n{font-weight:700;font-size:16px}
+.acc-pin{display:inline-flex;align-items:center;gap:4px}
+.pin-card{max-width:460px;width:100%;gap:16px}
+.pin-in{font-size:24px!important;letter-spacing:.5em;text-align:center}
+.login-trust{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+.login-trust svg{flex:none;color:var(--green-ink);margin-top:1px}
+/* Plan del caso */
+.plan-t td,.plan-t th{text-align:right}.plan-t td:first-child,.plan-t th:first-child{text-align:left}
+.plan-t td.best{color:var(--green-ink);font-weight:700}
+.hitos{display:flex;gap:8px;flex-wrap:wrap}
+.hito{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:12.5px;background:var(--card2)}
+.hito b.m{background:var(--green);color:var(--on-green);border-radius:8px;padding:2px 7px;font-size:11.5px;white-space:nowrap}
 </style>
 <div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
@@ -222,9 +246,10 @@ const monthsBetween=(a,b)=>(b.getFullYear()-a.getFullYear())*12+b.getMonth()-a.g
 
 const EXP_CATS=[
   {n:'Alimentación',fixed:false,grp:'needs'},{n:'Transporte',fixed:false,grp:'needs'},{n:'Educación',fixed:true,grp:'needs'},
-  {n:'Entretenimiento',fixed:false,grp:'wants'},{n:'Servicios',fixed:true,grp:'needs'},{n:'Otros',fixed:false,grp:'wants'}];
+  {n:'Entretenimiento',fixed:false,grp:'wants'},{n:'Servicios',fixed:true,grp:'needs'},{n:'Otros',fixed:false,grp:'wants'},
+  {n:'Salud',fixed:false,grp:'needs'},{n:'Deudas',fixed:true,grp:'needs'}];
 const EXP_NAMES=EXP_CATS.map(c=>c.n);
-const INC_CATS=['Nómina','Freelance','Regalo','Otros ingresos'];
+const INC_CATS=['Nómina','Negocio propio','Freelance','Regalo','Otros ingresos'];
 const METHODS=['Efectivo','Débito','Crédito','Transferencia'];
 
 /* ================= INSTRUMENTOS ================= */
@@ -353,13 +378,82 @@ const BADGES=[
 
 const FAQ=[
  ['¿FINOVA usa mis datos bancarios?','No. Es un prototipo de demostración: no pide contraseñas ni datos de bancos, y no se conecta a ninguna cuenta real.'],
- ['¿Dónde se guardan mis datos?','Solo en este navegador (localStorage). No hay servidor. Si borras los datos del sitio, se pierden; puedes restaurar la demo en Perfil.'],
+ ['¿Dónde se guardan mis datos?','Solo en este dispositivo (localStorage), separados por cuenta. No hay servidor: tus datos nunca salen de tu navegador. Si borras los datos del sitio, se pierden; en Perfil puedes exportarlos o eliminar tu cuenta.'],
+ ['¿Para qué sirve el PIN?','Protege tu perfil en este dispositivo. Se guarda cifrado (SHA-256) y nunca se envía a ningún lado. FINOVA no pide contraseñas reales ni datos bancarios.'],
  ['¿Las cifras de México hoy son reales?','No. Todas son datos de demostración con etiqueta visible y no representan cifras actuales.'],
- ['¿El Asistente IA es una inteligencia artificial real?','No. Responde con una biblioteca de respuestas predefinidas y con los datos de Rodrigo Demo. No sustituye asesoría financiera.'],
+ ['¿El Asistente IA es una inteligencia artificial real?','No. Responde con una biblioteca de respuestas predefinidas y con los datos de la cuenta con la que entraste. No sustituye asesoría financiera.'],
  ['¿Los rendimientos del simulador están garantizados?','No. Son supuestos que puedes editar. Es una simulación educativa con rendimientos hipotéticos.'],
  ['¿Cómo funciona la racha de aprendizaje?','Suma un día cada vez que completas una lección, el reto diario o el semanal. Si pasas un día sin actividad, se reinicia.'],
- ['¿Cómo restauro los datos originales?','En Perfil, usa "Restaurar datos de demostración". Se borran tus cambios y vuelve el usuario Rodrigo Demo.'],
+ ['¿Cómo restauro los datos originales?','En Perfil, usa "Restaurar datos de demostración". Se borran tus cambios y la cuenta vuelve a sus datos iniciales.'],
  ['¿Qué diferencia hay entre avalancha y bola de nieve?','Avalancha paga primero la deuda con mayor tasa (ahorra más intereses). Bola de nieve empieza por el saldo menor (motiva al liquidar deudas pronto).']];
+
+/* ================= CASO FAMILIA RIVERA =================
+   Caso ficticio de la consultora (Equipo 6). Fuente única de cifras:
+   "Equipo6_Rivera_final_Modelo_3.xlsx" (modelo financiero final, noviembre 2026).
+   No editar cifras aquí sin cambiarlas primero en el modelo. */
+const RIVERA={
+  fuente:'Modelo financiero final de la consultora, Equipo 6 (noviembre 2026)',
+  // Hoja Supuestos, secciones 1, 11 y 12
+  members:[
+    {rol:'Papá',edad:44,ingreso:20500,nota:'Empleo formal (IMSS, Afore, Infonavit)'},
+    {rol:'Mamá',edad:42,ingreso:5455,nota:'Repostería por su cuenta, sin prestaciones'},
+    {rol:'Hijo',edad:null,ingreso:0,nota:'Estudiante'}],
+  ingreso:25955,
+  // Hoja Presupuesto: gasto mensual actual (total egresos = 25,955; balance = 0).
+  // Cada fila: [categoría FINOVA, monto, día del mes, nota (rubro del modelo)]
+  gastos:[
+    ['Deudas',2150,2,'Préstamo de Nómina BBVA'],
+    ['Servicios',1449,3,'Vivienda y servicios'],
+    ['Otros',500,4,'Tanda'],
+    ['Alimentación',1500,5,'Súper y mercado'],
+    ['Educación',1031,6,'Escuela del hijo'],
+    ['Transporte',1800,7,'Gasolina'],
+    ['Otros',540,8,'Gastos hormiga'],
+    ['Deudas',1500,10,'Tarjeta Azul BBVA (pago)'],
+    ['Entretenimiento',900,11,'Comida fuera de casa'],
+    ['Alimentación',1500,12,'Súper y mercado'],
+    ['Salud',2000,13,'Salud y cuidado personal'],
+    ['Transporte',806,14,'Transporte público'],
+    ['Otros',540,15,'Gastos hormiga'],
+    ['Entretenimiento',850,16,'Suscripciones'],
+    ['Alimentación',1500,19,'Súper y mercado'],
+    ['Educación',500,20,'Esparcimiento familiar'],
+    ['Transporte',500,21,'Celular e internet'],
+    ['Otros',535,22,'Gastos hormiga'],
+    ['Salud',1811,23,'Calzado, ropa y otros'],
+    ['Entretenimiento',900,25,'Comida fuera de casa'],
+    ['Alimentación',1494,26,'Súper y mercado'],
+    ['Otros',1114,27,'Imprevistos'],
+    ['Otros',535,28,'Gastos hormiga']],
+  // Presupuesto del plan (hojas Supuestos sección 6 y Flujo de efectivo, meses 1-4):
+  // gasto corriente igual, + SGMM 2,330.52 en Salud, deuda = nómina 2,150 + 3,169.48 a la tarjeta,
+  // no planeados recortados 4,000 (5,914 → 1,914) + tanda 500.
+  // Supuesto: el reparto de los 1,914 no planeados entre Entretenimiento (900) y Otros (1,014 + tanda 500) no viene del modelo.
+  presupuesto:{'Alimentación':5994,'Transporte':3106,'Educación':1531,'Servicios':1449,'Salud':6142,'Deudas':5319,'Entretenimiento':900,'Otros':1514},
+  // Hoja Supuestos, sección 3 (tasa anual en %, pago mensual)
+  deudas:[
+    {id:'rv-tc',name:'Tarjeta Azul BBVA',balance:18000,rate:59.52,min:1500},
+    {id:'rv-pn',name:'Préstamo de Nómina BBVA',balance:36000,rate:24.1,min:2150}],
+  // Hoja Supuestos, sección 7
+  fondo:{meta:47673,meses:3,mesMeta:16},
+  // Hoja Resumen: indicadores principales (hoy, mes 12, mes 24)
+  resumen:[
+    {k:'Deuda total',v:[54000,16851.98,0],f:'mxn',bueno:'baja'},
+    {k:'Fondo de emergencia (CETES)',v:[0,33354.56,81429.80],f:'mxn',bueno:'sube'},
+    {k:'Meses de gasto que cubre el fondo',v:[0,2.1,4.94],f:'meses',bueno:'sube'},
+    {k:'PPR acumulado (papá + mamá)',v:[0,0,13571.49],f:'mxn',bueno:'sube'},
+    {k:'Posición neta (fondo + PPR − deuda)',v:[-54000,16502.59,95001.29],f:'mxn',bueno:'sube'},
+    {k:'Mamá e hijo con seguro médico',v:['No','Sí','Sí'],f:'txt',bueno:'sube'}],
+  // Hoja Resumen: hitos del plan
+  hitos:[
+    {mes:1,t:'Contratan la extensión del seguro de gastos médicos para mamá e hijo',dato:'$2,331 al mes'},
+    {mes:5,t:'Reciben la tanda y liquidan la Tarjeta Azul BBVA',dato:'$15,000 de tanda'},
+    {mes:16,t:'El fondo de emergencia llega a la meta de 3 meses',dato:'$47,673'},
+    {mes:21,t:'Liquidan el Préstamo de Nómina: cero deudas',dato:'$0 de deuda'},
+    {mes:22,t:'Inician los PPR de papá y mamá',dato:'$4,500 al mes'}],
+  // Hoja Resumen: retiro a los 65 años en pesos de hoy (para el módulo de retiro)
+  retiro:{conservador:{total:14593.57,pct:56.2},base:{total:15952.69,pct:61.5},pensionAfore:11675.40}
+};
 /* ================= DATOS SEMILLA ================= */
 function seed(){
   const now=new Date(),tx=[];let k=0;
@@ -395,6 +489,39 @@ function seed(){
       log:[{lesson:'1a',date:iso(addD(now,-4)),score:100},{lesson:'1b',date:iso(addD(now,-2)),score:100}],
       days:[5,4,3,2,1].map(n=>iso(addD(now,-n))),badges:['ahorro'],daily:{},weekly:{claimed:''}},
     notifRead:[]};
+}
+/* Cuenta del caso Familia Rivera: datos del modelo final (ver 12_rivera.js). */
+function seedRivera(){
+  const base=seed(),now=new Date(),tx=[];let k=0;
+  const MM=['Transferencia','Débito','Efectivo','Débito'];
+  for(let m=0;m<=5;m++){
+    const first=new Date(now.getFullYear(),now.getMonth()-m,1);
+    const last=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();
+    const cap=m===0?now.getDate():last;
+    const mk=d=>iso(new Date(first.getFullYear(),first.getMonth(),Math.min(d,cap)));
+    tx.push({id:'r'+(k++),type:'ingreso',amount:RIVERA.members[0].ingreso,cat:'Nómina',date:mk(1),method:'Transferencia',note:'Sueldo del papá',demo:true});
+    tx.push({id:'r'+(k++),type:'ingreso',amount:RIVERA.members[1].ingreso,cat:'Negocio propio',date:mk(15),method:'Efectivo',note:'Ventas de repostería (mamá)',demo:true});
+    RIVERA.gastos.forEach((g,i)=>tx.push({id:'r'+(k++),type:'gasto',amount:g[1],cat:g[0],date:mk(g[2]),method:g[0]==='Deudas'?'Transferencia':MM[(i+m)%4],note:g[3],demo:true}));
+  }
+  const inMonths=n=>iso(new Date(now.getFullYear(),now.getMonth()+n,Math.min(now.getDate(),28)));
+  return {...base,
+    user:{...base.user,name:'Familia Rivera',income:RIVERA.ingreso,members:RIVERA.members.map(x=>({...x})),tutorialDone:true},
+    tx,
+    budgets:{rule:{...base.budgets.rule},cats:{...RIVERA.presupuesto}},
+    goals:[{id:'rv-fe',name:'Fondo de emergencia (CETES)',target:RIVERA.fondo.meta,saved:0,deadline:inMonths(RIVERA.fondo.mesMeta),demo:true}],
+    debts:RIVERA.deudas.map(d=>({...d,demo:true})),
+    academy:{xp:0,correct:[],log:[],days:[],badges:[],daily:{},weekly:{claimed:''}},
+    plan:{fuente:RIVERA.fuente,resumen:RIVERA.resumen,hitos:RIVERA.hitos,retiro:RIVERA.retiro}};
+}
+/* Cuenta nueva: sin movimientos; presupuesto 50/30/20 sobre el ingreso declarado. */
+function seedEmpty(name,income){
+  const base=seed(),inc=Number.isFinite(income)&&income>0?income:0,b=x=>Math.round(inc*x/10)*10;
+  return {...base,
+    user:{...base.user,name,income:inc,tutorialDone:false},
+    tx:[],
+    budgets:{rule:{needs:50,wants:30,save:20},cats:{'Alimentación':b(.2),'Transporte':b(.1),'Servicios':b(.1),'Salud':b(.05),'Educación':b(.05),'Entretenimiento':b(.15),'Otros':b(.15),'Deudas':0}},
+    goals:[],debts:[],chats:[],activeChat:null,
+    academy:{xp:0,correct:[],log:[],days:[],badges:[],daily:{},weekly:{claimed:''}}};
 }
 function loadState(){
   try{const raw=localStorage.getItem(KEY);if(raw){const o=JSON.parse(raw);if(o&&o.v===1&&Array.isArray(o.tx))return {...seed(),...o}}}catch(e){}
@@ -432,7 +559,7 @@ const savedTotal=s=>sum(s.goals,g=>g.saved);
 /* ================= PRESUPUESTO ================= */
 function budgetRows(s){
   const sp=byCat(monthList(s));
-  return EXP_NAMES.map(c=>{const limit=s.budgets.cats[c]||0,spent=sp[c]||0;return {cat:c,limit,spent,pct:limit>0?spent/limit*100:(spent>0?999:0)}});
+  return EXP_NAMES.filter(c=>c in s.budgets.cats||sp[c]).map(c=>{const limit=s.budgets.cats[c]||0,spent=sp[c]||0;return {cat:c,limit,spent,pct:limit>0?spent/limit*100:(spent>0?999:0)}});
 }
 const tone=p=>p>100?'r':p>=80?'y':'';
 
@@ -549,7 +676,7 @@ function goalInfo(g){
   return {pct:clamp(g.saved/g.target*100,0,100),monthsLeft:left,remain,rec:remain/left,late:dl<new Date(now.getFullYear(),now.getMonth(),now.getDate())&&remain>0};
 }
 function nextSteps(s){
-  const out=[],rows=budgetRows(s),over=rows.filter(r=>r.pct>100).sort((a,b)=>b.pct-a.pct),near=rows.filter(r=>r.pct>=80&&r.pct<=100);
+  const out=[],rows=budgetRows(s),over=rows.filter(r=>r.pct>100).sort((a,b)=>b.pct-a.pct),near=rows.filter(r=>r.pct>=80&&r.pct<100);
   if(over[0])out.push({ic:'wallet',t:`Reduce ${over[0].cat}`,x:`Superaste tu presupuesto por ${fmt(over[0].spent-over[0].limit)}. Revisa los movimientos de esa categoría.`,a:{label:'Ver presupuestos',route:'finanzas',tab:'presupuestos'}});
   else if(near[0])out.push({ic:'wallet',t:`Cuida ${near[0].cat}`,x:`Llevas ${pc(near[0].pct,0)} de tu límite. Te quedan ${fmt(near[0].limit-near[0].spent)}.`,a:{label:'Ver presupuestos',route:'finanzas',tab:'presupuestos'}});
   if(!s.tx.some(t=>t.date===todayS()))out.push({ic:'plus',t:'Registra tus movimientos de hoy',x:'Mantener tu registro al día hace que tus gráficas y hábitos sean más exactos.',a:{label:'Registrar movimiento',tx:true}});
@@ -567,7 +694,7 @@ function notifications(s){
   const out=[],n=s.user.notifs,mk=monthKey();
   if(n.budget)budgetRows(s).forEach(r=>{
     if(r.pct>100)out.push({id:`b-${r.cat}-${mk}-r`,k:'r',ic:'wallet',t:`Superaste ${r.cat}`,x:`Gastaste ${fmt(r.spent)} de ${fmt(r.limit)} (${pc(r.pct,0)}).`,go:['finanzas','presupuestos']});
-    else if(r.pct>=80)out.push({id:`b-${r.cat}-${mk}-y`,k:'y',ic:'wallet',t:`${r.cat} cerca del límite`,x:`Llevas ${pc(r.pct,0)}: te quedan ${fmt(r.limit-r.spent)}.`,go:['finanzas','presupuestos']});
+    else if(r.pct>=80&&r.pct<100)out.push({id:`b-${r.cat}-${mk}-y`,k:'y',ic:'wallet',t:`${r.cat} cerca del límite`,x:`Llevas ${pc(r.pct,0)}: te quedan ${fmt(r.limit-r.spent)}.`,go:['finanzas','presupuestos']});
   });
   if(n.goals)s.goals.forEach(g=>{const i=goalInfo(g);
     if(g.saved>=g.target)out.push({id:`g-${g.id}-ok`,k:'g',ic:'flag',t:`Meta lograda: ${g.name}`,x:'Completaste tu objetivo de ahorro.',go:['finanzas','metas']});
@@ -579,6 +706,62 @@ function notifications(s){
   out.push({id:'demo',k:'b',ic:'help',t:'Estás en modo demostración',x:'Todo es simulado. Puedes restaurar los datos en Perfil.',go:['perfil']});
   return out;
 }
+
+/* ================= CUENTAS Y SESIÓN =================
+   Sin servidor: cada cuenta vive solo en el localStorage de este dispositivo.
+   El PIN (4 dígitos) se guarda como SHA-256 con sal; nunca se guarda ni se envía en claro. */
+const ACC_KEY='finova_cuentas_v1',SES_KEY='finova_sesion',UKEY=id=>'finova_u_'+id;
+const DEFAULT_ACCOUNTS=[
+  {id:'rivera',name:'Familia Rivera',kind:'caso',demoPin:'2026'},
+  {id:'rodrigo',name:'Rodrigo Demo',kind:'demo',demoPin:null}];
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
+
+function listAccounts(){try{const a=JSON.parse(lsGet(ACC_KEY));return Array.isArray(a)?a:[]}catch(e){return []}}
+function saveAccounts(a){lsSet(ACC_KEY,JSON.stringify(a))}
+function getSession(){try{return sessionStorage.getItem(SES_KEY)}catch(e){return null}}
+function setSession(id){try{id?sessionStorage.setItem(SES_KEY,id):sessionStorage.removeItem(SES_KEY)}catch(e){}}
+
+const toHex=buf=>[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+async function hashPin(pin,salt){
+  const txt=salt+':'+pin;
+  if(window.crypto&&crypto.subtle){return toHex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt)))}
+  // Respaldo solo para navegadores sin crypto.subtle (demo): hash no criptográfico.
+  let h=5381;for(const ch of txt)h=((h<<5)+h+ch.charCodeAt(0))>>>0;return 'djb2-'+h.toString(16);
+}
+const newSalt=()=>{const a=new Uint8Array(16);(window.crypto||{getRandomValues:x=>x.map(()=>Math.random()*256|0)}).getRandomValues(a);return toHex(a)};
+async function makePin(pin){if(!pin)return null;const salt=newSalt();return {salt,hash:await hashPin(pin,salt)}}
+async function verifyPin(acc,pin){if(!acc.pin)return true;return (await hashPin(pin,acc.pin.salt))===acc.pin.hash}
+const validPin=p=>/^\d{4}$/.test(p||'');
+
+function seedFor(acc){return acc.kind==='caso'?seedRivera():acc.kind==='demo'?seed():seedEmpty(acc.name,acc.income)}
+function loadUserState(acc){
+  try{const raw=lsGet(UKEY(acc.id));if(raw){const o=JSON.parse(raw);if(o&&o.v===1&&Array.isArray(o.tx))return {...seedFor(acc),...o}}}catch(e){}
+  return seedFor(acc);
+}
+function saveUserState(id,s){lsSet(UKEY(id),JSON.stringify(s))}
+
+/* Crea las cuentas de la demo y migra los datos de la versión anterior (una sola cuenta). */
+async function ensureDefaults(){
+  const a=listAccounts();let changed=false;
+  for(const d of DEFAULT_ACCOUNTS){
+    if(!a.some(x=>x.id===d.id)){a.push({id:d.id,name:d.name,kind:d.kind,pin:await makePin(d.demoPin),created:todayS()});changed=true}
+  }
+  const legacy=lsGet(KEY);
+  if(legacy&&!lsGet(UKEY('rodrigo'))){lsSet(UKEY('rodrigo'),legacy);lsDel(KEY)}
+  if(changed)saveAccounts(a);
+  return a;
+}
+async function createAccount({name,income,pin}){
+  const a=listAccounts(),id='u'+uid();
+  const acc={id,name,kind:'propia',income,pin:await makePin(pin),created:todayS()};
+  a.push(acc);saveAccounts(a);saveUserState(id,seedEmpty(name,income));return acc;
+}
+function deleteAccount(id){saveAccounts(listAccounts().filter(x=>x.id!==id));lsDel(UKEY(id));if(getSession()===id)setSession(null)}
+async function setAccountPin(id,pin){const a=listAccounts(),i=a.findIndex(x=>x.id===id);if(i<0)return;a[i]={...a[i],pin:await makePin(pin)};saveAccounts(a)}
+function renameAccount(id,name){const a=listAccounts(),i=a.findIndex(x=>x.id===id);if(i<0)return;a[i]={...a[i],name};saveAccounts(a)}
+const initials=n=>String(n||'?').split(' ').filter(Boolean).map(x=>x[0]).slice(0,2).join('').toUpperCase();
 /* ================= UI BASE ================= */
 const Ctx=createContext(null);
 const useApp=()=>useContext(Ctx);
@@ -599,7 +782,9 @@ const Ic=({n,s=20})=>html`<svg width=${s} height=${s} viewBox="0 0 24 24" fill="
 const Demo=({t='Demo'})=>html`<span className="demo">${t}</span>`;
 function col(){const g=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   return {green:g('--green'),blue:g('--blue'),yellow:g('--yellow'),red:g('--red'),purple:g('--purple'),teal:g('--teal'),fg:g('--fg'),muted:g('--muted'),line:g('--line'),card:g('--card')}}
-const catColors=c=>[c.blue,c.green,c.yellow,c.red,c.purple,c.teal];
+/* Hogares (cuenta con integrantes) se saludan con el nombre completo: "Familia Rivera". */
+const shortName=u=>u.members&&u.members.length?u.name:u.name.split(' ')[0];
+const catColors=c=>[c.blue,c.green,c.yellow,c.red,c.purple,c.teal,'#E8833A','#C2549D'];
 
 function Modal({title,onClose,children,wide}){
   useEffect(()=>{const h=e=>{if(e.key==='Escape')onClose()};window.addEventListener('keydown',h);return()=>window.removeEventListener('keydown',h)},[]);
@@ -662,6 +847,64 @@ function TxForm({edit,onClose,defType}){
 function Confirm({c,onClose}){
   return html`<${Modal} title=${c.title} onClose=${onClose}><p>${c.text}</p><div className="mf"><button className="btn" onClick=${onClose}>Cancelar</button><button className=${'btn '+(c.danger===false?'pri':'dng')} onClick=${()=>{c.onYes();onClose()}}>${c.yes||'Eliminar'}</button></div><//>`;
 }
+
+/* ================= ENTRADA: PERFILES Y PIN LOCAL ================= */
+const KIND_LABEL={caso:['Caso de la consultora','g'],demo:['Usuario de prueba','b'],propia:['Tu cuenta','']};
+function Login({onEnter}){
+  const [accs,setAccs]=useState(()=>listAccounts()),[sel,setSel]=useState(null),[mode,setMode]=useState('list');
+  const order={caso:0,demo:1,propia:2},list=[...accs].sort((a,b)=>order[a.kind]-order[b.kind]);
+  const pick=acc=>{if(!acc.pin){onEnter(acc);return}setSel(acc);setMode('pin')};
+  return html`<div className="login"><div className="login-in">
+    <div className="login-brand"><div className="logo" style=${{width:44,height:44,fontSize:22,borderRadius:13}}>F</div><div><div className="login-name">FINOVA</div><div className="muted sm">Tu dinero. Tus decisiones. Tu futuro.</div></div></div>
+    ${mode==='list'?html`<div className="col" style=${{gap:18}}>
+      <div><h1 style=${{fontSize:26}}>¿Quién va a usar FINOVA?</h1><p className="muted" style=${{marginTop:4}}>Elige tu perfil o crea una cuenta. Cada cuenta tiene sus propios datos y su propio plan.</p></div>
+      <div className="acc-grid">${list.map(a=>{const [lbl,k]=KIND_LABEL[a.kind]||KIND_LABEL.propia,dp=(DEFAULT_ACCOUNTS.find(d=>d.id===a.id)||{}).demoPin;
+        return html`<button key=${a.id} className="acc" onClick=${()=>pick(a)} aria-label=${'Entrar como '+a.name}>
+          <div className="acc-av">${initials(a.name)}</div>
+          <div className="acc-n">${a.name}</div>
+          <span className=${'pill '+k}>${lbl}</span>
+          <div className="muted xs acc-pin">${a.pin?html`<${Ic} n="lock" s=${13}/> Protegido con PIN${dp?` · PIN de demo: ${dp}`:''}`:'Sin PIN'}</div></button>`})}
+        <button className="acc acc-new" onClick=${()=>setMode('create')}><div className="acc-av"><${Ic} n="plus" s=${26}/></div><div className="acc-n">Crear cuenta</div><span className="muted xs">Gratis, en menos de un minuto</span></button>
+      </div></div>`:null}
+    ${mode==='pin'&&sel?html`<${PinEntry} acc=${sel} onOk=${()=>onEnter(sel)} onBack=${()=>{setSel(null);setMode('list')}}/>`:null}
+    ${mode==='create'?html`<${CreateAccount} onCancel=${()=>setMode('list')} onDone=${acc=>{setAccs(listAccounts());onEnter(acc)}}/>`:null}
+    <div className="login-trust"><${Ic} n="lock" s=${18}/><div><b>Tus datos se guardan solo en este dispositivo.</b> No hay servidor ni conexión a bancos. El PIN se guarda cifrado y FINOVA nunca pide contraseñas reales ni datos bancarios. <${Demo} t="Prototipo"/></div></div>
+  </div></div>`;
+}
+function PinEntry({acc,onOk,onBack}){
+  const [pin,setPin]=useState(''),[err,setErr]=useState(''),[busy,setBusy]=useState(false);
+  const submit=async e=>{if(e)e.preventDefault();if(!validPin(pin)){setErr('El PIN tiene 4 dígitos.');return}
+    setBusy(true);const ok=await verifyPin(acc,pin);setBusy(false);
+    if(ok)onOk();else{setErr('PIN incorrecto. Intenta de nuevo.');setPin('')}};
+  const dp=(DEFAULT_ACCOUNTS.find(d=>d.id===acc.id)||{}).demoPin;
+  return html`<form className="card col pin-card" onSubmit=${submit} noValidate>
+    <div className="row" style=${{gap:12,flexWrap:'nowrap'}}><div className="acc-av" style=${{width:48,height:48,fontSize:17}}>${initials(acc.name)}</div><div><div className="b" style=${{fontSize:18}}>${acc.name}</div><div className="muted sm">Escribe tu PIN de 4 dígitos</div></div></div>
+    <${Field} label="PIN" id="pin-in" err=${err} hint=${dp?`PIN de demostración: ${dp}`:null}><input id="pin-in" type="password" inputMode="numeric" autoComplete="off" maxLength="4" placeholder="••••" className=${'pin-in '+(err?'bad':'')} value=${pin} onChange=${e=>{setPin(e.target.value.replace(/\D/g,'').slice(0,4));setErr('')}} autoFocus/><//>
+    <div className="row sp"><button type="button" className="btn" onClick=${onBack}>Cambiar de perfil</button><button type="submit" className="btn pri" disabled=${busy}><${Ic} n="lock" s=${16}/>Entrar</button></div>
+  </form>`;
+}
+function CreateAccount({onCancel,onDone}){
+  const [f,setF]=useState({name:'',inc:'',pin:'',pin2:''}),[er,setEr]=useState({}),[busy,setBusy]=useState(false);
+  const set=(k,v)=>setF(p=>({...p,[k]:v}));
+  const submit=async e=>{e.preventDefault();const x={},i=num(f.inc);
+    if(!f.name.trim())x.name='Escribe tu nombre.';else if(f.name.trim().length>40)x.name='Máximo 40 caracteres.';
+    if(!Number.isFinite(i)||i<=0)x.inc='Escribe tu ingreso mensual (mayor que cero).';else if(i>10000000)x.inc='El monto es demasiado grande.';
+    if(f.pin&&!validPin(f.pin))x.pin='El PIN debe tener exactamente 4 dígitos.';
+    if(f.pin&&f.pin!==f.pin2)x.pin2='Los PIN no coinciden.';
+    setEr(x);if(Object.keys(x).length)return;
+    setBusy(true);const acc=await createAccount({name:f.name.trim(),income:i,pin:f.pin||null});setBusy(false);onDone(acc)};
+  const dig=k=>e=>set(k,e.target.value.replace(/\D/g,'').slice(0,4));
+  return html`<form className="card col pin-card" onSubmit=${submit} noValidate>
+    <div><h2>Crea tu cuenta</h2><p className="muted sm" style=${{marginTop:4}}>Solo pedimos lo necesario para armar tu presupuesto. Nada sale de este dispositivo.</p></div>
+    <div className="form">
+      <${Field} label="Nombre" id="ca-n" err=${er.name} cls="full"><input id="ca-n" maxLength="40" placeholder="Ej. Ana López" className=${er.name?'bad':''} value=${f.name} onChange=${e=>set('name',e.target.value)} autoFocus/><//>
+      <${Field} label="Ingreso mensual (MXN)" id="ca-i" err=${er.inc} cls="full"><input id="ca-i" type="number" inputMode="decimal" min="0" placeholder="Ej. 18000" className=${er.inc?'bad':''} value=${f.inc} onChange=${e=>set('inc',e.target.value)}/><//>
+      <${Field} label="PIN de 4 dígitos (opcional)" id="ca-p" err=${er.pin} hint="Protege tu perfil en este dispositivo."><input id="ca-p" type="password" inputMode="numeric" autoComplete="new-password" maxLength="4" placeholder="••••" className=${er.pin?'bad':''} value=${f.pin} onChange=${dig('pin')}/><//>
+      <${Field} label="Confirma tu PIN" id="ca-p2" err=${er.pin2}><input id="ca-p2" type="password" inputMode="numeric" autoComplete="new-password" maxLength="4" placeholder="••••" disabled=${!f.pin} className=${er.pin2?'bad':''} value=${f.pin2} onChange=${dig('pin2')}/><//>
+    </div>
+    <div className="row sp"><button type="button" className="btn" onClick=${onCancel}>Volver</button><button type="submit" className="btn pri" disabled=${busy}>Crear cuenta y entrar</button></div>
+  </form>`;
+}
 /* ================= INICIO ================= */
 function Inicio(){
   const {s,go,openTx}=useApp(),c=col();
@@ -672,13 +915,14 @@ function Inicio(){
   const last7=[6,5,4,3,2,1,0].map(n=>{const d=addD(new Date(),-n);return {d,on:s.academy.days.includes(iso(d))}});
   const quick=[['plus','Registrar movimiento',()=>openTx()],['flag','Abonar a una meta',()=>go('finanzas','metas')],['book','Hacer una lección',()=>go('academia')],['chart','Simular portafolio',()=>go('inversiones','simulador')],['calc','Calculadoras',()=>go('calculadoras')],['globe','México hoy',()=>go('mexico')]];
   return html`<div className="page">
-    <${Head} title=${html`${greet}, ${s.user.name.split(' ')[0]} <${Demo}/>`} sub="Tu dinero. Tus decisiones. Tu futuro." right=${html`<button className="btn pri" onClick=${()=>openTx()}><${Ic} n="plus" s=${18}/>Nuevo movimiento</button>`}/>
+    <${Head} title=${html`${greet}, ${shortName(s.user)} <${Demo}/>`} sub="Tu dinero. Tus decisiones. Tu futuro." right=${html`<button className="btn pri" onClick=${()=>openTx()}><${Ic} n="plus" s=${18}/>Nuevo movimiento</button>`}/>
     <div className="grid g4">
       <${Kpi} ic="wallet" l="Saldo disponible" v=${fmt(bal)} s=${`Después de apartar ${fmt(savedTotal(s))} en metas`}/>
       <${Kpi} ic="up" l="Ingresos del mes" v=${fmt(T.inc)} s=${`${ml.filter(t=>t.type==='ingreso').length} ${ml.filter(t=>t.type==='ingreso').length===1?'movimiento':'movimientos'}`} cls="up"/>
       <${Kpi} ic="down" l="Gastos del mes" v=${fmt(T.exp)} s=${`${ml.filter(t=>t.type==='gasto').length} movimientos`} cls="down"/>
       <${Kpi} ic="star" l="Ahorro del mes" v=${fmt(T.net)} s=${`${pc(rate,0)} de tus ingresos · meta 20%`} cls=${T.net>=0?'up':'down'}/>
     </div>
+    ${s.plan?html`<${PlanCard} plan=${s.plan}/>`:null}
     <div className="split">
       <div className="card"><div className="ch"><h2>Ingresos vs gastos</h2><span className="muted sm">Últimos 6 meses</span></div>
         <${Chart} h=${250}><${RC.BarChart} data=${six} barGap=${4}><${RC.CartesianGrid} stroke=${c.line} vertical=${false}/><${RC.XAxis} dataKey="label" ...${axis(c)}/><${RC.YAxis} width=${48} tickFormatter=${v=>v>=1000?(v/1000)+'k':v} ...${axis(c)}/><${RC.Tooltip} formatter=${v=>fmt(v)} ...${tipStyle(c)} cursor=${{fill:c.line,opacity:.3}}/>
@@ -700,6 +944,20 @@ function Inicio(){
       <div className="card"><div className="ch"><h2>Accesos rápidos</h2></div>
         <div className="grid" style=${{gridTemplateColumns:'1fr 1fr',gap:10}}>${quick.map(([ic,l,fn])=>html`<button key=${l} className="btn" style=${{flexDirection:'column',height:'auto',padding:'14px 8px',whiteSpace:'normal',textAlign:'center',gap:6}} onClick=${fn}><${Ic} n=${ic}/><span className="sm">${l}</span></button>`)}</div></div>
     </div></div>`;
+}
+
+/* Plan de 24 meses del caso de la consultora (hoja Resumen del modelo final). */
+function PlanCard({plan}){
+  const {go}=useApp();
+  const fv=(r,v)=>r.f==='mxn'?fmt(v):r.f==='meses'?`${nf(v,1)} meses`:v;
+  return html`<div className="card col" style=${{gap:14}}>
+    <div className="ch" style=${{marginBottom:0}}><div><h2>Tu plan en 24 meses</h2><div className="muted sm">De no sobrar nada a fin de mes, a cero deudas y un fondo para emergencias.</div></div><span className="pill g">Plan de la consultora</span></div>
+    <div className="tw"><table className="plan-t"><thead><tr><th>Indicador</th><th>Hoy</th><th>Mes 12</th><th>Mes 24</th></tr></thead><tbody>
+      ${plan.resumen.map(r=>html`<tr key=${r.k}><td>${r.k}</td>${r.v.map((v,i)=>html`<td key=${i} className=${'num '+(i===2?'best':'')}>${fv(r,v)}</td>`)}</tr>`)}
+    </tbody></table></div>
+    <div className="hitos">${plan.hitos.map(h=>html`<div key=${h.mes} className="hito"><b className="m">Mes ${h.mes}</b><span>${h.t}</span></div>`)}</div>
+    <div className="row sp"><span className="muted xs">Fuente: ${plan.fuente}. Proyección del plan, no es garantía.</span><button className="btn gh sm" onClick=${()=>go('finanzas','deudas')}>Ver deudas →</button></div>
+  </div>`;
 }
 
 /* ================= MÉXICO HOY ================= */
@@ -836,7 +1094,7 @@ function Presupuestos(){
   const needs=sum(rows.filter(r=>EXP_CATS.find(x=>x.n===r.cat).grp==='needs'),r=>r.spent),wants=sum(rows.filter(r=>EXP_CATS.find(x=>x.n===r.cat).grp==='wants'),r=>r.spent),saved=Math.max(0,(T.inc||base)-T.exp);
   const groups=[['Necesidades',pn[0],needs,'needs'],['Gustos',pn[1],wants,'wants'],['Ahorro y deudas',pn[2],saved,'save']];
   const saveLim=cat=>{const v=num(val);if(!Number.isFinite(v)||v<0)return setVe('Escribe un monto de 0 o más.');if(v>1e7)return setVe('Monto demasiado grande.');upd(d=>{d.budgets.cats[cat]=v});setEdc(null);setVe('');toast(`Presupuesto de ${cat} actualizado`,'ok')};
-  const alerts=rows.filter(r=>r.pct>=80).sort((a,b)=>b.pct-a.pct);
+  const alerts=rows.filter(r=>r.pct>100||(r.pct>=80&&r.pct<100)).sort((a,b)=>b.pct-a.pct);
   return html`<div className="col" style=${{gap:16}}>
     ${alerts.map(r=>html`<${Banner} key=${r.cat} k=${r.pct>100?'r':'y'} ic="warn"><b>${r.cat}:</b> ${r.pct>100?`superaste tu presupuesto por ${fmt(r.spent-r.limit)} (${pc(r.pct,0)}).`:`llevas ${pc(r.pct,0)} de tu límite. Te quedan ${fmt(r.limit-r.spent)}.`}<//>`)}
     <div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Regla 50/30/20 editable</h2><span className="muted sm">Mes actual</span></div>
@@ -853,7 +1111,7 @@ function Presupuestos(){
     <div className="card"><div className="ch"><h2>Presupuesto por categoría</h2><span className="muted sm">Aviso al 80% · alerta al superar 100%</span></div>
       <div className="col" style=${{gap:14}}>${rows.map(r=>html`<div key=${r.cat}>
         <div className="row sp"><b>${r.cat}</b><div className="row" style=${{gap:8}}><span className="num sm">${fmt(r.spent)} / ${fmt(r.limit)}</span>
-          <span className=${'pill '+(r.pct>100?'r':r.pct>=80?'y':'g')}>${r.pct>100?'Excedido':r.pct>=80?'Cerca del límite':'Bien'} · ${pc(r.pct,0)}</span>
+          <span className=${'pill '+(r.pct>100?'r':r.pct===100?'b':r.pct>=80?'y':'g')}>${r.pct>100?'Excedido':r.pct===100?'Justo en el límite':r.pct>=80?'Cerca del límite':'Bien'} · ${pc(r.pct,0)}</span>
           ${edc===r.cat?null:html`<button className="ib" style=${{width:32,height:32}} aria-label=${'Editar límite de '+r.cat} onClick=${()=>{setEdc(r.cat);setVal(String(r.limit));setVe('')}}><${Ic} n="edit" s=${15}/></button>`}</div></div>
         <${Bar} v=${r.pct} t=${tone(r.pct)}/>
         ${edc===r.cat?html`<div className="row" style=${{marginTop:8}}><input className="in" style=${{maxWidth:160}} aria-label=${'Límite de '+r.cat} type="number" min="0" value=${val} onChange=${e=>setVal(e.target.value)}/><button className="btn pri sm" onClick=${()=>saveLim(r.cat)}>Guardar</button><button className="btn sm" onClick=${()=>setEdc(null)}>Cancelar</button>${ve?html`<span className="err">${ve}</span>`:null}</div>`:null}</div>`)}</div></div></div>`;
@@ -968,7 +1226,7 @@ function aiCtx(s){
   const ml=monthList(s),T=tot(ml),bc=byCat(ml),top=Object.entries(bc).sort((a,b)=>b[1]-a[1])[0]||['—',0];
   const g=[...s.goals].sort((a,b)=>goalInfo(b).pct-goalInfo(a).pct)[0],hd=[...s.debts].sort((a,b)=>b.rate-a.rate)[0];
   const over=budgetRows(s).filter(r=>r.pct>100);
-  return {name:s.user.name.split(' ')[0],T,bc,top,ent:bc['Entretenimiento']||0,rate:T.inc>0?T.net/T.inc*100:0,g,hd,over,income:s.user.income,debtTotal:sum(s.debts,d=>d.balance)};
+  return {name:shortName(s.user),T,bc,top,ent:bc['Entretenimiento']||0,rate:T.inc>0?T.net/T.inc*100:0,g,hd,over,income:s.user.income,debtTotal:sum(s.debts,d=>d.balance)};
 }
 const TOPICS=[
  [/^(hola|buenas|buenos|hey|que tal)/,c=>`¡Hola, ${c.name}! Soy el asistente de demostración de FINOVA. Puedo explicarte ahorro, presupuesto, inflación, CETES, ETFs y deudas, y también revisar tus datos de ejemplo. ¿Por dónde empezamos?`],
@@ -1033,7 +1291,7 @@ function Asistente(){
     setQ('');setTyping(true);
     setTimeout(()=>{upd(d=>{const ch=d.chats.find(x=>x.id===(id||d.activeChat));if(ch)ch.msgs.push({r:'a',t:a})});setTyping(false)},650);
   };
-  return html`<div className="page"><${Head} title=${html`Asistente IA <${Demo} t="Demostración"/>`} sub="Responde con una biblioteca de respuestas predefinidas y con los datos de Rodrigo Demo."/>
+  return html`<div className="page"><${Head} title=${html`Asistente IA <${Demo} t="Demostración"/>`} sub=${`Responde con una biblioteca de respuestas predefinidas y con los datos de ${s.user.name}.`}/>
     <${Banner} k="y" ic="warn"><b>Modo demostración:</b> no hay inteligencia artificial real conectada. Las respuestas son predefinidas y no sustituyen la asesoría financiera profesional.<//>
     <div className="chat">
       <div className="card col" style=${{alignSelf:'start'}}><button className="btn pri" onClick=${newChat}><${Ic} n="plus" s=${18}/>Nuevo chat</button>
@@ -1294,14 +1552,14 @@ function Academia(){
 /* ================= PERFIL ================= */
 function Toggle({on,set,label}){return html`<button className=${'sw '+(on?'on':'')} role="switch" aria-checked=${on} aria-label=${label} onClick=${()=>set(!on)}></button>`}
 function Perfil(){
-  const {s,upd,toast,ask,reset,setTheme,replayTutorial}=useApp();
-  const [nm,setNm]=useState(s.user.name),[inc,setInc]=useState(String(s.user.income)),[er,setEr]=useState({}),[ex,setEx]=useState(null);
+  const {s,upd,toast,ask,reset,setTheme,replayTutorial,account,logout,deleteMe,onAccountChange}=useApp();
+  const [nm,setNm]=useState(s.user.name),[inc,setInc]=useState(String(s.user.income)),[er,setEr]=useState({}),[ex,setEx]=useState(null),[pinM,setPinM]=useState(false);
   const fl=finLevel(s.academy.xp);
   const save=e=>{e.preventDefault();const x={},i=num(inc);
     if(!nm.trim())x.nm='Escribe tu nombre.';else if(nm.trim().length>40)x.nm='Máximo 40 caracteres.';
     if(!Number.isFinite(i)||i<=0)x.inc='El ingreso mensual debe ser mayor que cero.';
     setEr(x);if(Object.keys(x).length)return;
-    upd(d=>{d.user.name=nm.trim();d.user.income=i});toast('Perfil actualizado','ok')};
+    upd(d=>{d.user.name=nm.trim();d.user.income=i});renameAccount(account.id,nm.trim());onAccountChange({...account,name:nm.trim()});toast('Perfil actualizado','ok')};
   const csv=()=>['fecha,tipo,categoria,monto,metodo,nota',...s.tx.map(t=>[t.date,t.type,t.cat,t.amount,t.method,`"${(t.note||'').replace(/"/g,'""')}"`].join(','))].join('\n');
   const N=s.user.notifs;
   return html`<div className="page"><${Head} title="Perfil y configuración" sub="Tus datos, apariencia, notificaciones y datos de la demostración."/>
@@ -1318,12 +1576,32 @@ function Perfil(){
       <div className="card col"><h2>Apariencia</h2><${Seg} opts=${[['auto','Automático'],['light','Claro'],['dark','Oscuro']]} val=${s.user.theme} on=${setTheme} label="Tema"/>
         <h2 style=${{marginTop:6}}>Notificaciones</h2>
         ${[['budget','Presupuestos cerca del límite'],['goals','Metas y aportaciones'],['streak','Rachas de aprendizaje']].map(([k,l])=>html`<div key=${k} className="row sp"><span>${l}</span><${Toggle} on=${N[k]} label=${l} set=${v=>upd(d=>{d.user.notifs[k]=v})}/></div>`)}</div>
-      <div className="card col"><h2>Datos de la demostración</h2><p className="muted sm">Se guardan solo en este navegador. No hay servidor ni conexión a bancos.</p>
+      ${s.user.members&&s.user.members.length?html`<div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Mi hogar</h2><${Demo} t="Caso"/></div>
+        ${s.user.members.map(m=>html`<div key=${m.rol} className="row" style=${{flexWrap:'nowrap',gap:12}}><div className="avatar">${m.rol[0]}</div><div style=${{flex:1}}><div className="b">${m.rol}${m.edad?` · ${m.edad} años`:''}</div><div className="muted sm">${m.nota}</div></div>${m.ingreso?html`<span className="num b">${fmt(m.ingreso)}</span>`:null}</div>`)}
+        <div className="row sp" style=${{borderTop:'1px solid var(--line)',paddingTop:10}}><span className="muted sm">Ingreso del hogar</span><span className="num b">${fmt(sum(s.user.members,m=>m.ingreso||0))} al mes</span></div></div>`:null}
+      <div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Tu cuenta y tus datos</h2><span className="pill g"><${Ic} n="lock" s=${13}/>Solo en este dispositivo</span></div>
+        <p className="muted sm">Sesión: <b>${account.name}</b> · ${account.pin?'protegida con PIN':'sin PIN'}. No hay servidor ni conexión a bancos: tus datos no salen de este navegador.</p>
         <div className="row"><button className="btn" onClick=${()=>setEx('json')}>Exportar datos (JSON)</button><button className="btn" onClick=${()=>setEx('csv')}>Exportar movimientos (CSV)</button></div>
-        <div className="row"><button className="btn" onClick=${replayTutorial}>Ver tutorial de nuevo</button><button className="btn dng" onClick=${()=>ask({title:'Restaurar datos de demostración',text:'Se borrarán tus movimientos, metas, deudas, portafolios, chats y avances, y volverá el usuario Rodrigo Demo con los datos originales.',yes:'Restaurar',onYes:reset})}><${Ic} n="refresh" s=${16}/>Restaurar datos de demostración</button></div></div>
+        <div className="row"><button className="btn" onClick=${()=>setPinM(true)}><${Ic} n="lock" s=${16}/>${account.pin?'Cambiar o quitar PIN':'Agregar PIN'}</button><button className="btn" onClick=${logout}>Cerrar sesión</button><button className="btn" onClick=${replayTutorial}>Ver tutorial de nuevo</button></div>
+        <div className="row"><button className="btn dng" onClick=${()=>ask({title:'Restaurar los datos de la cuenta',text:account.kind==='propia'?'Se borrarán tus movimientos, metas, deudas, portafolios, chats y avances, y la cuenta quedará como recién creada.':'Se borrarán tus cambios y la cuenta volverá a sus datos originales.',yes:'Restaurar',onYes:reset})}><${Ic} n="refresh" s=${16}/>Restaurar datos</button>
+          ${account.kind==='propia'?html`<button className="btn dng" onClick=${()=>ask({title:'Eliminar mi cuenta y mis datos',text:`Se borrarán para siempre la cuenta "${account.name}" y todos sus datos de este dispositivo. No se puede deshacer.`,yes:'Eliminar cuenta',onYes:deleteMe})}><${Ic} n="trash" s=${16}/>Eliminar mi cuenta y mis datos</button>`:null}</div></div>
     </div>
     <${Banner} k="y" ic="warn">FINOVA es un prototipo de demostración: no se conecta a bancos ni a IA real, no pide datos bancarios ni contraseñas y no sustituye asesoría financiera.<//>
+    ${pinM?html`<${PinModal} onClose=${()=>setPinM(false)}/>`:null}
     ${ex?html`<${Modal} title=${ex==='json'?'Exportar datos (JSON)':'Exportar movimientos (CSV)'} onClose=${()=>setEx(null)} wide><p className="muted sm">Copia el contenido y pégalo en un archivo. Las descargas directas no están disponibles dentro de esta vista.</p><textarea className="code" readOnly aria-label="Datos exportados" value=${ex==='json'?JSON.stringify(s,null,2):csv()} onFocus=${e=>e.target.select()}></textarea><div className="mf"><button className="btn" onClick=${()=>setEx(null)}>Cerrar</button><button className="btn pri" onClick=${()=>copyText(ex==='json'?JSON.stringify(s,null,2):csv(),toast)}><${Ic} n="copy" s=${16}/>Copiar</button></div><//>`:null}</div>`;
+}
+
+function PinModal({onClose}){
+  const {account,onAccountChange,toast}=useApp();
+  const [p1,setP1]=useState(''),[p2,setP2]=useState(''),[er,setEr]=useState('');
+  const dig=f=>e=>f(e.target.value.replace(/\D/g,'').slice(0,4));
+  const apply=async pin=>{await setAccountPin(account.id,pin);const a=listAccounts().find(x=>x.id===account.id);onAccountChange(a);toast(pin?'PIN guardado':'PIN eliminado','ok');onClose()};
+  const save=e=>{e.preventDefault();if(!validPin(p1))return setEr('El PIN debe tener exactamente 4 dígitos.');if(p1!==p2)return setEr('Los PIN no coinciden.');apply(p1)};
+  return html`<${Modal} title=${account.pin?'Cambiar o quitar PIN':'Agregar PIN'} onClose=${onClose}><form className="col" onSubmit=${save} noValidate>
+    <p className="muted sm">El PIN se guarda cifrado (SHA-256) solo en este dispositivo.</p>
+    <div className="form"><${Field} label="Nuevo PIN" id="np-1"><input id="np-1" type="password" inputMode="numeric" maxLength="4" value=${p1} onChange=${dig(setP1)} autoFocus/><//>
+    <${Field} label="Confirma el PIN" id="np-2" err=${er}><input id="np-2" type="password" inputMode="numeric" maxLength="4" value=${p2} onChange=${dig(setP2)}/><//></div>
+    <div className="mf">${account.pin?html`<button type="button" className="btn dng" onClick=${()=>apply(null)}>Quitar PIN</button>`:null}<button type="button" className="btn" onClick=${onClose}>Cancelar</button><button type="submit" className="btn pri">Guardar PIN</button></div></form><//>`;
 }
 
 /* ================= CALCULADORAS ================= */
@@ -1374,7 +1652,7 @@ const ROUTES={inicio:Inicio,mexico:Mexico,finanzas:Finanzas,asistente:Asistente,
 const ROUTE_NAMES={inicio:'Inicio',mexico:'México hoy',finanzas:'Mis finanzas',asistente:'Asistente IA',inversiones:'Inversiones',academia:'Academia',perfil:'Perfil',calculadoras:'Calculadoras',ayuda:'Centro de ayuda'};
 function applyTheme(t){const r=document.documentElement;if(t==='light'||t==='dark')r.setAttribute('data-theme',t);else r.removeAttribute('data-theme')}
 
-const TUT=[['wallet','Bienvenido a FINOVA','Tu dinero. Tus decisiones. Tu futuro. Este es un prototipo de demostración con el usuario Rodrigo Demo y datos de ejemplo.'],
+const TUT=[['wallet','Bienvenido a FINOVA','Tu dinero. Tus decisiones. Tu futuro. Este es un prototipo de demostración: tus datos se guardan solo en este dispositivo y puedes cerrar sesión o cambiar de perfil cuando quieras.'],
  ['plus','Registra y entiende tu dinero','En Mis finanzas registras ingresos y gastos, ves tus hábitos, defines presupuestos, metas y comparas formas de pagar deudas.'],
  ['globe','Conoce México hoy','Cada indicador trae una explicación sencilla y una gráfica histórica. Recuerda: son datos de demostración.'],
  ['chart','Simula inversiones','Arma un portafolio, cambia los rendimientos supuestos y mira el interés compuesto. Es una simulación educativa.'],
@@ -1386,24 +1664,25 @@ function Tutorial({onClose}){
     <div className="mf"><button className="btn gh" onClick=${onClose}>Saltar tutorial</button>${i>0?html`<button className="btn" onClick=${()=>setI(i-1)}>Atrás</button>`:null}<button className="btn pri" onClick=${()=>i<TUT.length-1?setI(i+1):onClose()}>${i<TUT.length-1?'Siguiente':'Empezar'}</button></div><//>`;
 }
 
-function App(){
-  const [s,setS]=useState(loadState),[route,setRoute]=useState(()=>{const h=(location.hash||'').slice(1);return ROUTES[h]?h:'inicio'});
+function App({account,logout,onAccountChange}){
+  const [s,setS]=useState(()=>loadUserState(account)),[route,setRoute]=useState(()=>{const h=(location.hash||'').slice(1);return ROUTES[h]?h:'inicio'});
   const [hint,setHint]=useState(null),[toasts,setToasts]=useState([]),[txm,setTxm]=useState(null),[conf,setConf]=useState(null),[tut,setTut]=useState(false),[nOpen,setNOpen]=useState(false),[q,setQ]=useState(''),[,setTick]=useState(0);
   const first=useRef(true);
   const upd=f=>setS(p=>{const n=JSON.parse(JSON.stringify(p));f(n);return n});
-  useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}},[s]);
+  useEffect(()=>{saveUserState(account.id,s)},[s]);
   useEffect(()=>{if(first.current){first.current=false;applyTheme(s.user.theme);if(!s.user.tutorialDone)setTut(true)}},[]);
   useEffect(()=>{const mq=window.matchMedia('(prefers-color-scheme: dark)');const h=()=>setTick(t=>t+1);mq.addEventListener?mq.addEventListener('change',h):mq.addListener(h);
     const hc=()=>{const r=location.hash.slice(1);if(ROUTES[r])setRoute(r)};window.addEventListener('hashchange',hc);return()=>{window.removeEventListener('hashchange',hc)}},[]);
   const toast=(msg,kind)=>{const id=uid();setToasts(t=>[...t,{id,msg,kind}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),2800)};
   const go=(r,tab)=>{if(!ROUTES[r])return;setRoute(r);setHint({route:r,tab,n:Date.now()});setNOpen(false);setQ('');try{history.replaceState(null,'','#'+r)}catch(e){}window.scrollTo(0,0)};
   const setTheme=t=>{applyTheme(t);upd(d=>{d.user.theme=t})};
-  const reset=()=>{try{localStorage.removeItem(KEY)}catch(e){}const n=seed();applyTheme('auto');setS({...n,user:{...n.user,tutorialDone:true}});toast('Datos de demostración restaurados','ok');go('inicio')};
+  const reset=()=>{const n=seedFor(account);applyTheme('auto');setS({...n,user:{...n.user,tutorialDone:true}});toast('Datos de la cuenta restaurados','ok');go('inicio')};
+  const deleteMe=()=>{deleteAccount(account.id);logout()};
   // insignias nuevas
   const eb=earnedBadges(s).join(',');
   useEffect(()=>{const have=s.academy.badges,neu=earnedBadges(s).filter(b=>!have.includes(b));
     if(neu.length){upd(d=>{neu.forEach(b=>{d.academy.badges.push(b);d.academy.xp+=25})});neu.forEach(b=>toast(`Insignia: ${BADGES.find(x=>x.id===b).name} (+25 XP)`,'ok'))}},[eb]);
-  const ctx={s,upd,toast,go,hint,openTx:(d)=>setTxm({defType:typeof d==='string'?d:undefined}),ask:setConf,reset,setTheme,replayTutorial:()=>setTut(true)};
+  const ctx={s,upd,toast,go,hint,openTx:(d)=>setTxm({defType:typeof d==='string'?d:undefined}),ask:setConf,reset,setTheme,replayTutorial:()=>setTut(true),account,logout,deleteMe,onAccountChange};
   const Page=ROUTES[route];
   const notifs=notifications(s),unread=notifs.filter(n=>!s.notifRead.includes(n.id));
   const results=useMemo(()=>{
@@ -1425,7 +1704,7 @@ function App(){
       <aside className="side"><div className="brand"><div className="logo">F</div>FINOVA</div><div className="slogan">Tu dinero. Tus decisiones. Tu futuro.</div>
         ${NAV.map(([r,l,,ic])=>html`<button key=${r} className=${'nav '+(route===r?'on':'')} aria-current=${route===r?'page':undefined} onClick=${()=>go(r)}><${Ic} n=${ic}/>${l}</button>`)}
         <hr/><button className=${'nav '+(route==='calculadoras'?'on':'')} onClick=${()=>go('calculadoras')}><${Ic} n="calc"/>Calculadoras</button><button className=${'nav '+(route==='ayuda'?'on':'')} onClick=${()=>go('ayuda')}><${Ic} n="help"/>Centro de ayuda</button>
-        <div className="demo-note"><b style=${{color:'#fff'}}>Modo demostración</b><br/>Usuario: ${s.user.name}. Todo es simulado y se guarda solo en este navegador.</div></aside>
+        <div className="demo-note"><b style=${{color:'#fff'}}>Sesión: ${s.user.name}</b><br/>Tus datos se guardan solo en este dispositivo. Prototipo de demostración.<button className="btn sm" style=${{marginTop:10,width:'100%'}} onClick=${logout}><${Ic} n="lock" s=${15}/>Cerrar sesión</button></div></aside>
       <div className="main">
         <header className="top"><div className="wrap">
           <div className="searchbox"><span className="ico"><${Ic} n="search" s=${18}/></span><input aria-label="Buscar en FINOVA" placeholder="Buscar movimientos, metas, lecciones…" value=${q} onChange=${e=>setQ(e.target.value)} onKeyDown=${e=>{if(e.key==='Escape')setQ('')}}/>
@@ -1447,8 +1726,17 @@ function App(){
     ${tut?html`<${Tutorial} onClose=${()=>{setTut(false);upd(d=>{d.user.tutorialDone=true})}}/>`:null}
   <//>`;
 }
+/* Raíz: sin sesión muestra la entrada; con sesión monta la app de esa cuenta. */
+function Root(){
+  const [acc,setAcc]=useState(null),[ready,setReady]=useState(false);
+  useEffect(()=>{ensureDefaults().then(a=>{const x=a.find(y=>y.id===getSession());if(x)setAcc(x);setReady(true)})},[]);
+  const enter=a=>{setSession(a.id);setAcc(a);try{history.replaceState(null,'','#inicio')}catch(e){}window.scrollTo(0,0)};
+  const logout=()=>{setSession(null);setAcc(null);applyTheme('auto');window.scrollTo(0,0)};
+  if(!ready)return null;
+  return acc?html`<${App} key=${acc.id} account=${acc} logout=${logout} onAccountChange=${setAcc}/>`:html`<${Login} onEnter=${enter}/>`;
+}
 if(!window.React||!window.ReactDOM||!window.Recharts||!window.htm){document.getElementById('root').textContent='No se pudieron cargar las bibliotecas de la demostración. Recarga la página.'}
-else ReactDOM.createRoot(document.getElementById('root')).render(html`<${App}/>`);
+else ReactDOM.createRoot(document.getElementById('root')).render(html`<${Root}/>`);
 })();
 </script>
 </body></html>

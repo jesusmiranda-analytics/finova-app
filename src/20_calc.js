@@ -34,6 +34,39 @@ function seed(){
       days:[5,4,3,2,1].map(n=>iso(addD(now,-n))),badges:['ahorro'],daily:{},weekly:{claimed:''}},
     notifRead:[]};
 }
+/* Cuenta del caso Familia Rivera: datos del modelo final (ver 12_rivera.js). */
+function seedRivera(){
+  const base=seed(),now=new Date(),tx=[];let k=0;
+  const MM=['Transferencia','Débito','Efectivo','Débito'];
+  for(let m=0;m<=5;m++){
+    const first=new Date(now.getFullYear(),now.getMonth()-m,1);
+    const last=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();
+    const cap=m===0?now.getDate():last;
+    const mk=d=>iso(new Date(first.getFullYear(),first.getMonth(),Math.min(d,cap)));
+    tx.push({id:'r'+(k++),type:'ingreso',amount:RIVERA.members[0].ingreso,cat:'Nómina',date:mk(1),method:'Transferencia',note:'Sueldo del papá',demo:true});
+    tx.push({id:'r'+(k++),type:'ingreso',amount:RIVERA.members[1].ingreso,cat:'Negocio propio',date:mk(15),method:'Efectivo',note:'Ventas de repostería (mamá)',demo:true});
+    RIVERA.gastos.forEach((g,i)=>tx.push({id:'r'+(k++),type:'gasto',amount:g[1],cat:g[0],date:mk(g[2]),method:g[0]==='Deudas'?'Transferencia':MM[(i+m)%4],note:g[3],demo:true}));
+  }
+  const inMonths=n=>iso(new Date(now.getFullYear(),now.getMonth()+n,Math.min(now.getDate(),28)));
+  return {...base,
+    user:{...base.user,name:'Familia Rivera',income:RIVERA.ingreso,members:RIVERA.members.map(x=>({...x})),tutorialDone:true},
+    tx,
+    budgets:{rule:{...base.budgets.rule},cats:{...RIVERA.presupuesto}},
+    goals:[{id:'rv-fe',name:'Fondo de emergencia (CETES)',target:RIVERA.fondo.meta,saved:0,deadline:inMonths(RIVERA.fondo.mesMeta),demo:true}],
+    debts:RIVERA.deudas.map(d=>({...d,demo:true})),
+    academy:{xp:0,correct:[],log:[],days:[],badges:[],daily:{},weekly:{claimed:''}},
+    plan:{fuente:RIVERA.fuente,resumen:RIVERA.resumen,hitos:RIVERA.hitos,retiro:RIVERA.retiro}};
+}
+/* Cuenta nueva: sin movimientos; presupuesto 50/30/20 sobre el ingreso declarado. */
+function seedEmpty(name,income){
+  const base=seed(),inc=Number.isFinite(income)&&income>0?income:0,b=x=>Math.round(inc*x/10)*10;
+  return {...base,
+    user:{...base.user,name,income:inc,tutorialDone:false},
+    tx:[],
+    budgets:{rule:{needs:50,wants:30,save:20},cats:{'Alimentación':b(.2),'Transporte':b(.1),'Servicios':b(.1),'Salud':b(.05),'Educación':b(.05),'Entretenimiento':b(.15),'Otros':b(.15),'Deudas':0}},
+    goals:[],debts:[],chats:[],activeChat:null,
+    academy:{xp:0,correct:[],log:[],days:[],badges:[],daily:{},weekly:{claimed:''}}};
+}
 function loadState(){
   try{const raw=localStorage.getItem(KEY);if(raw){const o=JSON.parse(raw);if(o&&o.v===1&&Array.isArray(o.tx))return {...seed(),...o}}}catch(e){}
   return seed();
@@ -70,7 +103,7 @@ const savedTotal=s=>sum(s.goals,g=>g.saved);
 /* ================= PRESUPUESTO ================= */
 function budgetRows(s){
   const sp=byCat(monthList(s));
-  return EXP_NAMES.map(c=>{const limit=s.budgets.cats[c]||0,spent=sp[c]||0;return {cat:c,limit,spent,pct:limit>0?spent/limit*100:(spent>0?999:0)}});
+  return EXP_NAMES.filter(c=>c in s.budgets.cats||sp[c]).map(c=>{const limit=s.budgets.cats[c]||0,spent=sp[c]||0;return {cat:c,limit,spent,pct:limit>0?spent/limit*100:(spent>0?999:0)}});
 }
 const tone=p=>p>100?'r':p>=80?'y':'';
 
@@ -187,7 +220,7 @@ function goalInfo(g){
   return {pct:clamp(g.saved/g.target*100,0,100),monthsLeft:left,remain,rec:remain/left,late:dl<new Date(now.getFullYear(),now.getMonth(),now.getDate())&&remain>0};
 }
 function nextSteps(s){
-  const out=[],rows=budgetRows(s),over=rows.filter(r=>r.pct>100).sort((a,b)=>b.pct-a.pct),near=rows.filter(r=>r.pct>=80&&r.pct<=100);
+  const out=[],rows=budgetRows(s),over=rows.filter(r=>r.pct>100).sort((a,b)=>b.pct-a.pct),near=rows.filter(r=>r.pct>=80&&r.pct<100);
   if(over[0])out.push({ic:'wallet',t:`Reduce ${over[0].cat}`,x:`Superaste tu presupuesto por ${fmt(over[0].spent-over[0].limit)}. Revisa los movimientos de esa categoría.`,a:{label:'Ver presupuestos',route:'finanzas',tab:'presupuestos'}});
   else if(near[0])out.push({ic:'wallet',t:`Cuida ${near[0].cat}`,x:`Llevas ${pc(near[0].pct,0)} de tu límite. Te quedan ${fmt(near[0].limit-near[0].spent)}.`,a:{label:'Ver presupuestos',route:'finanzas',tab:'presupuestos'}});
   if(!s.tx.some(t=>t.date===todayS()))out.push({ic:'plus',t:'Registra tus movimientos de hoy',x:'Mantener tu registro al día hace que tus gráficas y hábitos sean más exactos.',a:{label:'Registrar movimiento',tx:true}});
@@ -205,7 +238,7 @@ function notifications(s){
   const out=[],n=s.user.notifs,mk=monthKey();
   if(n.budget)budgetRows(s).forEach(r=>{
     if(r.pct>100)out.push({id:`b-${r.cat}-${mk}-r`,k:'r',ic:'wallet',t:`Superaste ${r.cat}`,x:`Gastaste ${fmt(r.spent)} de ${fmt(r.limit)} (${pc(r.pct,0)}).`,go:['finanzas','presupuestos']});
-    else if(r.pct>=80)out.push({id:`b-${r.cat}-${mk}-y`,k:'y',ic:'wallet',t:`${r.cat} cerca del límite`,x:`Llevas ${pc(r.pct,0)}: te quedan ${fmt(r.limit-r.spent)}.`,go:['finanzas','presupuestos']});
+    else if(r.pct>=80&&r.pct<100)out.push({id:`b-${r.cat}-${mk}-y`,k:'y',ic:'wallet',t:`${r.cat} cerca del límite`,x:`Llevas ${pc(r.pct,0)}: te quedan ${fmt(r.limit-r.spent)}.`,go:['finanzas','presupuestos']});
   });
   if(n.goals)s.goals.forEach(g=>{const i=goalInfo(g);
     if(g.saved>=g.target)out.push({id:`g-${g.id}-ok`,k:'g',ic:'flag',t:`Meta lograda: ${g.name}`,x:'Completaste tu objetivo de ahorro.',go:['finanzas','metas']});

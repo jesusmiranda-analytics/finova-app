@@ -4,7 +4,7 @@
   "description": "Tu dinero. Tus decisiones. Tu futuro.",
   "scripts": {
     "build": "bash build.sh",
-    "test": "node test/t1.js && node test/t2.js && node test/t3.js"
+    "test": "node test/t1.js && node test/t2.js && node test/t3.js && node test/t4.js"
   },
   "keywords": [],
   "author": "",

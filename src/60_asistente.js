@@ -3,7 +3,7 @@ function aiCtx(s){
   const ml=monthList(s),T=tot(ml),bc=byCat(ml),top=Object.entries(bc).sort((a,b)=>b[1]-a[1])[0]||['—',0];
   const g=[...s.goals].sort((a,b)=>goalInfo(b).pct-goalInfo(a).pct)[0],hd=[...s.debts].sort((a,b)=>b.rate-a.rate)[0];
   const over=budgetRows(s).filter(r=>r.pct>100);
-  return {name:s.user.name.split(' ')[0],T,bc,top,ent:bc['Entretenimiento']||0,rate:T.inc>0?T.net/T.inc*100:0,g,hd,over,income:s.user.income,debtTotal:sum(s.debts,d=>d.balance)};
+  return {name:shortName(s.user),T,bc,top,ent:bc['Entretenimiento']||0,rate:T.inc>0?T.net/T.inc*100:0,g,hd,over,income:s.user.income,debtTotal:sum(s.debts,d=>d.balance)};
 }
 const TOPICS=[
  [/^(hola|buenas|buenos|hey|que tal)/,c=>`¡Hola, ${c.name}! Soy el asistente de demostración de FINOVA. Puedo explicarte ahorro, presupuesto, inflación, CETES, ETFs y deudas, y también revisar tus datos de ejemplo. ¿Por dónde empezamos?`],
@@ -68,7 +68,7 @@ function Asistente(){
     setQ('');setTyping(true);
     setTimeout(()=>{upd(d=>{const ch=d.chats.find(x=>x.id===(id||d.activeChat));if(ch)ch.msgs.push({r:'a',t:a})});setTyping(false)},650);
   };
-  return html`<div className="page"><${Head} title=${html`Asistente IA <${Demo} t="Demostración"/>`} sub="Responde con una biblioteca de respuestas predefinidas y con los datos de Rodrigo Demo."/>
+  return html`<div className="page"><${Head} title=${html`Asistente IA <${Demo} t="Demostración"/>`} sub=${`Responde con una biblioteca de respuestas predefinidas y con los datos de ${s.user.name}.`}/>
     <${Banner} k="y" ic="warn"><b>Modo demostración:</b> no hay inteligencia artificial real conectada. Las respuestas son predefinidas y no sustituyen la asesoría financiera profesional.<//>
     <div className="chat">
       <div className="card col" style=${{alignSelf:'start'}}><button className="btn pri" onClick=${newChat}><${Ic} n="plus" s=${18}/>Nuevo chat</button>

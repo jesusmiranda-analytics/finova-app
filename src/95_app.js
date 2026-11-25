@@ -4,7 +4,7 @@ const ROUTES={inicio:Inicio,mexico:Mexico,finanzas:Finanzas,asistente:Asistente,
 const ROUTE_NAMES={inicio:'Inicio',mexico:'México hoy',finanzas:'Mis finanzas',asistente:'Asistente IA',inversiones:'Inversiones',academia:'Academia',perfil:'Perfil',calculadoras:'Calculadoras',ayuda:'Centro de ayuda'};
 function applyTheme(t){const r=document.documentElement;if(t==='light'||t==='dark')r.setAttribute('data-theme',t);else r.removeAttribute('data-theme')}
 
-const TUT=[['wallet','Bienvenido a FINOVA','Tu dinero. Tus decisiones. Tu futuro. Este es un prototipo de demostración con el usuario Rodrigo Demo y datos de ejemplo.'],
+const TUT=[['wallet','Bienvenido a FINOVA','Tu dinero. Tus decisiones. Tu futuro. Este es un prototipo de demostración: tus datos se guardan solo en este dispositivo y puedes cerrar sesión o cambiar de perfil cuando quieras.'],
  ['plus','Registra y entiende tu dinero','En Mis finanzas registras ingresos y gastos, ves tus hábitos, defines presupuestos, metas y comparas formas de pagar deudas.'],
  ['globe','Conoce México hoy','Cada indicador trae una explicación sencilla y una gráfica histórica. Recuerda: son datos de demostración.'],
  ['chart','Simula inversiones','Arma un portafolio, cambia los rendimientos supuestos y mira el interés compuesto. Es una simulación educativa.'],
@@ -16,24 +16,25 @@ function Tutorial({onClose}){
     <div className="mf"><button className="btn gh" onClick=${onClose}>Saltar tutorial</button>${i>0?html`<button className="btn" onClick=${()=>setI(i-1)}>Atrás</button>`:null}<button className="btn pri" onClick=${()=>i<TUT.length-1?setI(i+1):onClose()}>${i<TUT.length-1?'Siguiente':'Empezar'}</button></div><//>`;
 }
 
-function App(){
-  const [s,setS]=useState(loadState),[route,setRoute]=useState(()=>{const h=(location.hash||'').slice(1);return ROUTES[h]?h:'inicio'});
+function App({account,logout,onAccountChange}){
+  const [s,setS]=useState(()=>loadUserState(account)),[route,setRoute]=useState(()=>{const h=(location.hash||'').slice(1);return ROUTES[h]?h:'inicio'});
   const [hint,setHint]=useState(null),[toasts,setToasts]=useState([]),[txm,setTxm]=useState(null),[conf,setConf]=useState(null),[tut,setTut]=useState(false),[nOpen,setNOpen]=useState(false),[q,setQ]=useState(''),[,setTick]=useState(0);
   const first=useRef(true);
   const upd=f=>setS(p=>{const n=JSON.parse(JSON.stringify(p));f(n);return n});
-  useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}},[s]);
+  useEffect(()=>{saveUserState(account.id,s)},[s]);
   useEffect(()=>{if(first.current){first.current=false;applyTheme(s.user.theme);if(!s.user.tutorialDone)setTut(true)}},[]);
   useEffect(()=>{const mq=window.matchMedia('(prefers-color-scheme: dark)');const h=()=>setTick(t=>t+1);mq.addEventListener?mq.addEventListener('change',h):mq.addListener(h);
     const hc=()=>{const r=location.hash.slice(1);if(ROUTES[r])setRoute(r)};window.addEventListener('hashchange',hc);return()=>{window.removeEventListener('hashchange',hc)}},[]);
   const toast=(msg,kind)=>{const id=uid();setToasts(t=>[...t,{id,msg,kind}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),2800)};
   const go=(r,tab)=>{if(!ROUTES[r])return;setRoute(r);setHint({route:r,tab,n:Date.now()});setNOpen(false);setQ('');try{history.replaceState(null,'','#'+r)}catch(e){}window.scrollTo(0,0)};
   const setTheme=t=>{applyTheme(t);upd(d=>{d.user.theme=t})};
-  const reset=()=>{try{localStorage.removeItem(KEY)}catch(e){}const n=seed();applyTheme('auto');setS({...n,user:{...n.user,tutorialDone:true}});toast('Datos de demostración restaurados','ok');go('inicio')};
+  const reset=()=>{const n=seedFor(account);applyTheme('auto');setS({...n,user:{...n.user,tutorialDone:true}});toast('Datos de la cuenta restaurados','ok');go('inicio')};
+  const deleteMe=()=>{deleteAccount(account.id);logout()};
   // insignias nuevas
   const eb=earnedBadges(s).join(',');
   useEffect(()=>{const have=s.academy.badges,neu=earnedBadges(s).filter(b=>!have.includes(b));
     if(neu.length){upd(d=>{neu.forEach(b=>{d.academy.badges.push(b);d.academy.xp+=25})});neu.forEach(b=>toast(`Insignia: ${BADGES.find(x=>x.id===b).name} (+25 XP)`,'ok'))}},[eb]);
-  const ctx={s,upd,toast,go,hint,openTx:(d)=>setTxm({defType:typeof d==='string'?d:undefined}),ask:setConf,reset,setTheme,replayTutorial:()=>setTut(true)};
+  const ctx={s,upd,toast,go,hint,openTx:(d)=>setTxm({defType:typeof d==='string'?d:undefined}),ask:setConf,reset,setTheme,replayTutorial:()=>setTut(true),account,logout,deleteMe,onAccountChange};
   const Page=ROUTES[route];
   const notifs=notifications(s),unread=notifs.filter(n=>!s.notifRead.includes(n.id));
   const results=useMemo(()=>{
@@ -55,7 +56,7 @@ function App(){
       <aside className="side"><div className="brand"><div className="logo">F</div>FINOVA</div><div className="slogan">Tu dinero. Tus decisiones. Tu futuro.</div>
         ${NAV.map(([r,l,,ic])=>html`<button key=${r} className=${'nav '+(route===r?'on':'')} aria-current=${route===r?'page':undefined} onClick=${()=>go(r)}><${Ic} n=${ic}/>${l}</button>`)}
         <hr/><button className=${'nav '+(route==='calculadoras'?'on':'')} onClick=${()=>go('calculadoras')}><${Ic} n="calc"/>Calculadoras</button><button className=${'nav '+(route==='ayuda'?'on':'')} onClick=${()=>go('ayuda')}><${Ic} n="help"/>Centro de ayuda</button>
-        <div className="demo-note"><b style=${{color:'#fff'}}>Modo demostración</b><br/>Usuario: ${s.user.name}. Todo es simulado y se guarda solo en este navegador.</div></aside>
+        <div className="demo-note"><b style=${{color:'#fff'}}>Sesión: ${s.user.name}</b><br/>Tus datos se guardan solo en este dispositivo. Prototipo de demostración.<button className="btn sm" style=${{marginTop:10,width:'100%'}} onClick=${logout}><${Ic} n="lock" s=${15}/>Cerrar sesión</button></div></aside>
       <div className="main">
         <header className="top"><div className="wrap">
           <div className="searchbox"><span className="ico"><${Ic} n="search" s=${18}/></span><input aria-label="Buscar en FINOVA" placeholder="Buscar movimientos, metas, lecciones…" value=${q} onChange=${e=>setQ(e.target.value)} onKeyDown=${e=>{if(e.key==='Escape')setQ('')}}/>
@@ -77,7 +78,16 @@ function App(){
     ${tut?html`<${Tutorial} onClose=${()=>{setTut(false);upd(d=>{d.user.tutorialDone=true})}}/>`:null}
   <//>`;
 }
+/* Raíz: sin sesión muestra la entrada; con sesión monta la app de esa cuenta. */
+function Root(){
+  const [acc,setAcc]=useState(null),[ready,setReady]=useState(false);
+  useEffect(()=>{ensureDefaults().then(a=>{const x=a.find(y=>y.id===getSession());if(x)setAcc(x);setReady(true)})},[]);
+  const enter=a=>{setSession(a.id);setAcc(a);try{history.replaceState(null,'','#inicio')}catch(e){}window.scrollTo(0,0)};
+  const logout=()=>{setSession(null);setAcc(null);applyTheme('auto');window.scrollTo(0,0)};
+  if(!ready)return null;
+  return acc?html`<${App} key=${acc.id} account=${acc} logout=${logout} onAccountChange=${setAcc}/>`:html`<${Login} onEnter=${enter}/>`;
+}
 if(!window.React||!window.ReactDOM||!window.Recharts||!window.htm){document.getElementById('root').textContent='No se pudieron cargar las bibliotecas de la demostración. Recarga la página.'}
-else ReactDOM.createRoot(document.getElementById('root')).render(html`<${App}/>`);
+else ReactDOM.createRoot(document.getElementById('root')).render(html`<${Root}/>`);
 })();
 </script>

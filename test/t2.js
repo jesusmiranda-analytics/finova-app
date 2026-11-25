@@ -1,9 +1,10 @@
-const {chromium}=require('playwright');
+const {chromium}=require('playwright');const entrar=require('./entrar');
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 (async()=>{
  const b=await chromium.launch();const ctx=await b.newContext({viewport:{width:1280,height:900}});const p=await ctx.newPage();
  const errs=[];p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});p.on('pageerror',e=>errs.push('PAGEERR '+e.message));
  await p.goto('file://'+require('path').resolve(__dirname,'..','index.html'));await p.waitForTimeout(1200);
+ await entrar(p,'Rodrigo Demo');
  await p.click('text=Saltar tutorial');
  const kp=async(l)=>p.evaluate(l=>{const k=[...document.querySelectorAll('.kpi')].find(x=>x.innerText.includes(l));return k&&k.querySelector('.v').innerText},l);
  console.log('gastos mes before',await kp('Gastos del mes'));
@@ -52,7 +53,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
  console.log('xp',xp0,'->',await p.$eval('.ph .pill',e=>e.innerText));
  // persistence
  await p.reload();await p.waitForTimeout(1200);
- console.log('after reload: xp',await p.evaluate(()=>JSON.parse(localStorage.getItem('finova_demo_v1')).academy.xp),'tx count',await p.evaluate(()=>JSON.parse(localStorage.getItem('finova_demo_v1')).tx.length),'portfolios',await p.evaluate(()=>JSON.parse(localStorage.getItem('finova_demo_v1')).portfolios.length), 'tutorial?',await p.$$('.modal'));
+ console.log('after reload: xp',await p.evaluate(()=>JSON.parse(localStorage.getItem('finova_u_rodrigo')).academy.xp),'tx count',await p.evaluate(()=>JSON.parse(localStorage.getItem('finova_u_rodrigo')).tx.length),'portfolios',await p.evaluate(()=>JSON.parse(localStorage.getItem('finova_u_rodrigo')).portfolios.length), 'tutorial?',await p.$$('.modal'));
  // mexico
  await p.click('.side >> text=México hoy');await p.waitForTimeout(800);await p.screenshot({path:'mx.png',fullPage:true});
  await p.click('button:has-text("¿Qué significa esto?") >> nth=0');await p.waitForTimeout(500);

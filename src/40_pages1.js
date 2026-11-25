@@ -8,13 +8,14 @@ function Inicio(){
   const last7=[6,5,4,3,2,1,0].map(n=>{const d=addD(new Date(),-n);return {d,on:s.academy.days.includes(iso(d))}});
   const quick=[['plus','Registrar movimiento',()=>openTx()],['flag','Abonar a una meta',()=>go('finanzas','metas')],['book','Hacer una lección',()=>go('academia')],['chart','Simular portafolio',()=>go('inversiones','simulador')],['calc','Calculadoras',()=>go('calculadoras')],['globe','México hoy',()=>go('mexico')]];
   return html`<div className="page">
-    <${Head} title=${html`${greet}, ${s.user.name.split(' ')[0]} <${Demo}/>`} sub="Tu dinero. Tus decisiones. Tu futuro." right=${html`<button className="btn pri" onClick=${()=>openTx()}><${Ic} n="plus" s=${18}/>Nuevo movimiento</button>`}/>
+    <${Head} title=${html`${greet}, ${shortName(s.user)} <${Demo}/>`} sub="Tu dinero. Tus decisiones. Tu futuro." right=${html`<button className="btn pri" onClick=${()=>openTx()}><${Ic} n="plus" s=${18}/>Nuevo movimiento</button>`}/>
     <div className="grid g4">
       <${Kpi} ic="wallet" l="Saldo disponible" v=${fmt(bal)} s=${`Después de apartar ${fmt(savedTotal(s))} en metas`}/>
       <${Kpi} ic="up" l="Ingresos del mes" v=${fmt(T.inc)} s=${`${ml.filter(t=>t.type==='ingreso').length} ${ml.filter(t=>t.type==='ingreso').length===1?'movimiento':'movimientos'}`} cls="up"/>
       <${Kpi} ic="down" l="Gastos del mes" v=${fmt(T.exp)} s=${`${ml.filter(t=>t.type==='gasto').length} movimientos`} cls="down"/>
       <${Kpi} ic="star" l="Ahorro del mes" v=${fmt(T.net)} s=${`${pc(rate,0)} de tus ingresos · meta 20%`} cls=${T.net>=0?'up':'down'}/>
     </div>
+    ${s.plan?html`<${PlanCard} plan=${s.plan}/>`:null}
     <div className="split">
       <div className="card"><div className="ch"><h2>Ingresos vs gastos</h2><span className="muted sm">Últimos 6 meses</span></div>
         <${Chart} h=${250}><${RC.BarChart} data=${six} barGap=${4}><${RC.CartesianGrid} stroke=${c.line} vertical=${false}/><${RC.XAxis} dataKey="label" ...${axis(c)}/><${RC.YAxis} width=${48} tickFormatter=${v=>v>=1000?(v/1000)+'k':v} ...${axis(c)}/><${RC.Tooltip} formatter=${v=>fmt(v)} ...${tipStyle(c)} cursor=${{fill:c.line,opacity:.3}}/>
@@ -36,6 +37,20 @@ function Inicio(){
       <div className="card"><div className="ch"><h2>Accesos rápidos</h2></div>
         <div className="grid" style=${{gridTemplateColumns:'1fr 1fr',gap:10}}>${quick.map(([ic,l,fn])=>html`<button key=${l} className="btn" style=${{flexDirection:'column',height:'auto',padding:'14px 8px',whiteSpace:'normal',textAlign:'center',gap:6}} onClick=${fn}><${Ic} n=${ic}/><span className="sm">${l}</span></button>`)}</div></div>
     </div></div>`;
+}
+
+/* Plan de 24 meses del caso de la consultora (hoja Resumen del modelo final). */
+function PlanCard({plan}){
+  const {go}=useApp();
+  const fv=(r,v)=>r.f==='mxn'?fmt(v):r.f==='meses'?`${nf(v,1)} meses`:v;
+  return html`<div className="card col" style=${{gap:14}}>
+    <div className="ch" style=${{marginBottom:0}}><div><h2>Tu plan en 24 meses</h2><div className="muted sm">De no sobrar nada a fin de mes, a cero deudas y un fondo para emergencias.</div></div><span className="pill g">Plan de la consultora</span></div>
+    <div className="tw"><table className="plan-t"><thead><tr><th>Indicador</th><th>Hoy</th><th>Mes 12</th><th>Mes 24</th></tr></thead><tbody>
+      ${plan.resumen.map(r=>html`<tr key=${r.k}><td>${r.k}</td>${r.v.map((v,i)=>html`<td key=${i} className=${'num '+(i===2?'best':'')}>${fv(r,v)}</td>`)}</tr>`)}
+    </tbody></table></div>
+    <div className="hitos">${plan.hitos.map(h=>html`<div key=${h.mes} className="hito"><b className="m">Mes ${h.mes}</b><span>${h.t}</span></div>`)}</div>
+    <div className="row sp"><span className="muted xs">Fuente: ${plan.fuente}. Proyección del plan, no es garantía.</span><button className="btn gh sm" onClick=${()=>go('finanzas','deudas')}>Ver deudas →</button></div>
+  </div>`;
 }
 
 /* ================= MÉXICO HOY ================= */
