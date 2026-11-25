@@ -1,0 +1,8 @@
+# Netlify: cada push a main regenera index.html desde src/ y lo publica.
+[build]
+  command = "bash build.sh"
+  publish = "."
+
+[build.environment]
+  # Las pruebas corren en local; Netlify no necesita descargar navegadores.
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
