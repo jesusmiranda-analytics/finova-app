@@ -46,9 +46,11 @@ async function ensureDefaults(){
   return a;
 }
 async function createAccount({name,income,pin}){
-  const a=listAccounts(),id='u'+uid();
+  const id='u'+uid();
   const acc={id,name,kind:'propia',income,pin:await makePin(pin),created:todayS()};
-  a.push(acc);saveAccounts(a);saveUserState(id,seedEmpty(name,income));return acc;
+  acc.notice=newAcceptance();
+  // El estado inicial se obtiene con seedFor al abrir el perfil por primera vez.
+  const latest=listAccounts();latest.push(acc);localStorage.setItem(ACC_KEY,JSON.stringify(latest));return acc;
 }
 function deleteAccount(id){saveAccounts(listAccounts().filter(x=>x.id!==id));lsDel(UKEY(id));if(getSession()===id)setSession(null)}
 async function setAccountPin(id,pin){const a=listAccounts(),i=a.findIndex(x=>x.id===id);if(i<0)return;a[i]={...a[i],pin:await makePin(pin)};saveAccounts(a)}

@@ -169,7 +169,7 @@ const BADGES=[
 const FAQ=[
  ['¿FINOVA usa mis datos bancarios?','No. Es un prototipo de demostración: no pide contraseñas ni datos de bancos, y no se conecta a ninguna cuenta real.'],
  ['¿Dónde se guardan mis datos?','Solo en este dispositivo (localStorage), separados por cuenta. No hay servidor: tus datos nunca salen de tu navegador. Si borras los datos del sitio, se pierden; en Perfil puedes exportarlos o eliminar tu cuenta.'],
- ['¿Para qué sirve el PIN?','Protege tu perfil en este dispositivo. Se guarda cifrado (SHA-256) y nunca se envía a ningún lado. FINOVA no pide contraseñas reales ni datos bancarios.'],
+ ['¿Para qué sirve el PIN?','Protege tu perfil en este dispositivo. FINOVA verifica el PIN sin guardar el número original. Los movimientos se conservan en el navegador. FINOVA no pide contraseñas reales ni datos bancarios.'],
  ['¿Las cifras de México hoy son reales?','No. Todas son datos de demostración con etiqueta visible y no representan cifras actuales.'],
  ['¿El Asistente IA es una inteligencia artificial real?','No. Responde con una biblioteca de respuestas predefinidas y con los datos de la cuenta con la que entraste. No sustituye asesoría financiera.'],
  ['¿Los rendimientos del simulador están garantizados?','No. Son supuestos que puedes editar. Es una simulación educativa con rendimientos hipotéticos.'],

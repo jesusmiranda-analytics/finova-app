@@ -28,13 +28,18 @@ function App({account,logout,onAccountChange}){
   const toast=(msg,kind)=>{const id=uid();setToasts(t=>[...t,{id,msg,kind}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),2800)};
   const go=(r,tab)=>{if(!ROUTES[r])return;setRoute(r);setHint({route:r,tab,n:Date.now()});setNOpen(false);setQ('');try{history.replaceState(null,'','#'+r)}catch(e){}window.scrollTo(0,0)};
   const setTheme=t=>{applyTheme(t);upd(d=>{d.user.theme=t})};
-  const reset=()=>{const n=seedFor(account);applyTheme('auto');setS({...n,user:{...n.user,tutorialDone:true}});toast('Datos de la cuenta restaurados','ok');go('inicio')};
+  const changePrivacy=(edit,message)=>{
+    const next=JSON.parse(JSON.stringify(s));edit(next);
+    try{localStorage.setItem(UKEY(account.id),JSON.stringify(next));setS(next);toast(message,'ok');return true}
+    catch{toast('No se pudo guardar el cambio de privacidad. Intenta de nuevo.','err');return false}
+  };
+  const reset=()=>{const n=seedFor(account);n.privacyEvents=[...(s.privacyEvents||[])];if(s.fiscal)recordPrivacy(n,'Permiso retirado al restaurar');applyTheme('auto');setS({...n,user:{...n.user,tutorialDone:true}});toast('Datos de la cuenta restaurados','ok');go('inicio')};
   const deleteMe=()=>{deleteAccount(account.id);logout()};
   // insignias nuevas
   const eb=earnedBadges(s).join(',');
   useEffect(()=>{const have=s.academy.badges,neu=earnedBadges(s).filter(b=>!have.includes(b));
     if(neu.length){upd(d=>{neu.forEach(b=>{d.academy.badges.push(b);d.academy.xp+=25})});neu.forEach(b=>toast(`Insignia: ${BADGES.find(x=>x.id===b).name} (+25 XP)`,'ok'))}},[eb]);
-  const ctx={s,upd,toast,go,hint,openTx:(d)=>setTxm({defType:typeof d==='string'?d:undefined}),ask:setConf,reset,setTheme,replayTutorial:()=>setTut(true),account,logout,deleteMe,onAccountChange};
+  const ctx={s,upd,changePrivacy,toast,go,hint,openTx:(d)=>setTxm({defType:typeof d==='string'?d:undefined}),ask:setConf,reset,setTheme,replayTutorial:()=>setTut(true),account,logout,deleteMe,onAccountChange};
   const Page=ROUTES[route];
   const notifs=notifications(s),unread=notifs.filter(n=>!s.notifRead.includes(n.id));
   const results=useMemo(()=>{
@@ -84,7 +89,26 @@ function Root(){
   useEffect(()=>{ensureDefaults().then(a=>{const x=a.find(y=>y.id===getSession());if(x)setAcc(x);setReady(true)})},[]);
   const enter=a=>{setSession(a.id);setAcc(a);try{history.replaceState(null,'','#inicio')}catch(e){}window.scrollTo(0,0)};
   const logout=()=>{setSession(null);setAcc(null);applyTheme('auto');window.scrollTo(0,0)};
+  // Si otra pestaña retira el permiso, cambia el PIN o elimina esta cuenta,
+  // descarta las vistas abiertas antes de volver a leer el perfil.
+  useEffect(()=>{
+    if(!acc)return;
+    const sync=e=>{
+      if(e.key===ACC_KEY||e.key===null){
+        const current=listAccounts().find(a=>a.id===acc.id);
+        if(!current||JSON.stringify(current.pin)!==JSON.stringify(acc.pin)){logout();return}
+        if(current.notice?.version!==acc.notice?.version)setAcc(current);
+      }
+      if(e.key===UKEY(acc.id)){
+        const previous=e.oldValue&&JSON.parse(e.oldValue),next=e.newValue&&JSON.parse(e.newValue);
+        if(!next){logout();return}
+        if(Boolean(previous&&fiscalAllowed(previous))!==fiscalAllowed(next))location.reload();
+      }
+    };
+    window.addEventListener('storage',sync);return ()=>window.removeEventListener('storage',sync);
+  },[acc]);
   if(!ready)return null;
+  if(acc&&!acceptedNotice(acc))return html`<${NoticeGate} account=${acc} onDone=${enter} onExit=${logout}/>`;
   return acc?html`<${App} key=${acc.id} account=${acc} logout=${logout} onAccountChange=${setAcc}/>`:html`<${Login} onEnter=${enter}/>`;
 }
 if(!window.React||!window.ReactDOM||!window.Recharts||!window.htm){document.getElementById('root').textContent='No se pudieron cargar las bibliotecas de la demostración. Recarga la página.'}

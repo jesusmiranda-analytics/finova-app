@@ -266,6 +266,7 @@ textarea.code{width:100%;height:220px;font:12px/1.4 ui-monospace,Menlo,monospace
   .plan-overview td[data-plazo]{font-size:14px}
   .plan-overview td[data-plazo]::before{content:attr(data-plazo);display:block;color:var(--muted);font-size:12px}
 }
+.notice-gate{width:min(100%,640px);gap:22px}.notice-check{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer}.notice-check input{width:20px;height:20px;accent-color:var(--action);flex:none}.notice-text{padding:12px 16px;border-radius:12px;background:var(--bg)}.notice-text summary{cursor:pointer;font-weight:500}.notice-text[open] summary{margin-bottom:12px}
 </style>
 <div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
@@ -447,7 +448,7 @@ const BADGES=[
 const FAQ=[
  ['¿FINOVA usa mis datos bancarios?','No. Es un prototipo de demostración: no pide contraseñas ni datos de bancos, y no se conecta a ninguna cuenta real.'],
  ['¿Dónde se guardan mis datos?','Solo en este dispositivo (localStorage), separados por cuenta. No hay servidor: tus datos nunca salen de tu navegador. Si borras los datos del sitio, se pierden; en Perfil puedes exportarlos o eliminar tu cuenta.'],
- ['¿Para qué sirve el PIN?','Protege tu perfil en este dispositivo. Se guarda cifrado (SHA-256) y nunca se envía a ningún lado. FINOVA no pide contraseñas reales ni datos bancarios.'],
+ ['¿Para qué sirve el PIN?','Protege tu perfil en este dispositivo. FINOVA verifica el PIN sin guardar el número original. Los movimientos se conservan en el navegador. FINOVA no pide contraseñas reales ni datos bancarios.'],
  ['¿Las cifras de México hoy son reales?','No. Todas son datos de demostración con etiqueta visible y no representan cifras actuales.'],
  ['¿El Asistente IA es una inteligencia artificial real?','No. Responde con una biblioteca de respuestas predefinidas y con los datos de la cuenta con la que entraste. No sustituye asesoría financiera.'],
  ['¿Los rendimientos del simulador están garantizados?','No. Son supuestos que puedes editar. Es una simulación educativa con rendimientos hipotéticos.'],
@@ -1059,9 +1060,11 @@ async function ensureDefaults(){
   return a;
 }
 async function createAccount({name,income,pin}){
-  const a=listAccounts(),id='u'+uid();
+  const id='u'+uid();
   const acc={id,name,kind:'propia',income,pin:await makePin(pin),created:todayS()};
-  a.push(acc);saveAccounts(a);saveUserState(id,seedEmpty(name,income));return acc;
+  acc.notice=newAcceptance();
+  // El estado inicial se obtiene con seedFor al abrir el perfil por primera vez.
+  const latest=listAccounts();latest.push(acc);localStorage.setItem(ACC_KEY,JSON.stringify(latest));return acc;
 }
 function deleteAccount(id){saveAccounts(listAccounts().filter(x=>x.id!==id));lsDel(UKEY(id));if(getSession()===id)setSession(null)}
 async function setAccountPin(id,pin){const a=listAccounts(),i=a.findIndex(x=>x.id===id);if(i<0)return;a[i]={...a[i],pin:await makePin(pin)};saveAccounts(a)}
@@ -1153,6 +1156,59 @@ function TxForm({edit,onClose,defType}){
 function Confirm({c,onClose}){
   return html`<${Modal} title=${c.title} onClose=${onClose}><p>${c.text}</p><div className="mf"><button className="btn" onClick=${onClose}>Cancelar</button><button className=${'btn '+(c.danger===false?'pri':'dng')} onClick=${()=>{c.onYes();onClose()}}>${c.yes||'Eliminar'}</button></div><//>`;
 }
+/* Aviso y permisos del prototipo académico. */
+const NOTICE_VERSION='2026-11-26';
+const FISCAL_PERMISSION='sat-demo-v1';
+const newAcceptance=()=>({version:NOTICE_VERSION,at:new Date().toISOString()});
+const acceptedNotice=a=>a?.notice?.version===NOTICE_VERSION&&Boolean(a.notice.at);
+const fiscalAllowed=s=>s?.fiscal?.permission===FISCAL_PERMISSION&&s.fiscal.conectado===true;
+const privacyDate=iso=>new Date(iso).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
+function recordPrivacy(s,action){
+  s.privacyEvents=[...(s.privacyEvents||[]),{action,at:new Date().toISOString(),scope:FISCAL_PERMISSION}].slice(-30);
+}
+function NoticeText(){
+  return html`<details className="notice-text"><summary>Leer el aviso completo</summary>
+    <div className="col sm"><p><b>Responsable del prototipo.</b> Equipo 6 · Proyecto académico FINOVA. Versión ${NOTICE_VERSION}.</p>
+    <p><b>Qué usamos y para qué.</b> El nombre del perfil permite identificarlo en este navegador. Ingresos, gastos, deudas, metas y movimientos permiten calcular presupuestos, recomendaciones y escenarios. Se conserva también el progreso de las lecciones y del asistente local.</p>
+    <p><b>Dónde se guardan.</b> Los datos del perfil permanecen en el almacenamiento de este navegador hasta que elimines la cuenta o borres los datos del sitio. El PIN opcional controla el acceso desde la interfaz; no cifra los movimientos. En un equipo compartido, cierra tu sesión.</p>
+    <p><b>Servicios externos.</b> Netlify sirve el sitio y el navegador solicita fuentes y bibliotecas a proveedores externos. FINOVA no envía tus movimientos a bancos ni al SAT. Usa solo datos de ejemplo.</p>
+    <p><b>Permiso fiscal opcional.</b> La simulación usa información ficticia y analiza los movimientos de tu perfil. Puedes retirar el permiso en Perfil. Los movimientos y abonos que hayas confirmado permanecen en tu presupuesto.</p>
+    <p><b>Tus controles.</b> En Perfil puedes corregir tus datos, copiar una exportación, consultar la actividad de privacidad o eliminar tu cuenta propia. Los perfiles de ejemplo se pueden restaurar. Una exportación que copies queda bajo tu control.</p></div></details>`;
+}
+function NoticeChoice({checked,onChange}){
+  return html`<div className="col"><p>FINOVA usa los datos de este perfil para calcular tu presupuesto y simular tu plan. Los guarda en este navegador. La simulación fiscal pide un permiso aparte.</p>
+    <${NoticeText}/><label className="notice-check"><input id="notice-check" type="checkbox" checked=${checked} onChange=${e=>onChange(e.target.checked)}/>He leído y acepto el aviso de privacidad</label></div>`;
+}
+function NoticeGate({account,onDone,onExit}){
+  const [checked,setChecked]=useState(false),[error,setError]=useState('');
+  const accept=()=>{if(!checked)return;try{
+    const accounts=listAccounts(),entry=accounts.find(a=>a.id===account.id);
+    if(!entry)throw Error();entry.notice=newAcceptance();
+    localStorage.setItem(ACC_KEY,JSON.stringify(accounts));onDone(entry);
+  }catch{setError('No se pudo guardar tu aceptación. Habilita el almacenamiento de este sitio y vuelve a intentar.')}};
+  return html`<main className="login"><section className="card col notice-gate"><h1>Tu privacidad en FINOVA</h1><p className="muted sm">${account.name}</p><${NoticeChoice} checked=${checked} onChange=${setChecked}/>
+    ${error&&html`<p className="err" role="alert">${error}</p>`}<div className="row sp"><button className="btn" onClick=${onExit}>Salir</button><button className="btn pri" id="notice-accept" disabled=${!checked} onClick=${accept}>Aceptar y continuar</button></div></section></main>`;
+}
+function revokeFiscal({ask,changePrivacy}){
+  ask({title:'¿Retirar el permiso fiscal?',text:'Se borrarán el RFC de demo, los permisos y el historial fiscal de este perfil. Los movimientos y abonos ya registrados se conservan.',yes:'Desconectar y borrar',onYes:()=>changePrivacy(d=>{delete d.fiscal;recordPrivacy(d,'Permiso fiscal retirado')},'Se retiró el permiso fiscal')});
+}
+function PrivacySummary({account}){
+  const ctx=useApp(),{s,go}=ctx;
+  const events=[{action:'Aviso aceptado',scope:account.notice.version,at:account.notice.at},...(s.privacyEvents||[])].sort((a,b)=>b.at.localeCompare(a.at));
+  return html`<div className="col"><p className="muted sm">Aviso ${account.notice.version} · Aceptado el ${privacyDate(account.notice.at)}</p><${NoticeText}/>
+    <div><b>Simulación fiscal</b><p className="sm">${fiscalAllowed(s)?'Autorizada para analizar deducciones y simular devoluciones.':'Sin autorización vigente.'}</p></div>
+    <div>${s.fiscal?html`<button className="btn" onClick=${()=>revokeFiscal(ctx)}>Retirar permiso y borrar datos fiscales</button>`:html`<button className="btn" onClick=${()=>go('impuestos')}>Ver permiso fiscal</button>`}</div>
+    <details className="notice-text"><summary>Actividad de privacidad</summary><ul>${events.map((e,i)=>html`<li key=${i}>${e.action} · ${privacyDate(e.at)} <span className="muted xs">${e.scope}</span></li>`)}</ul></details></div>`;
+}
+function PinChallenge({account,title,onClose,onVerified}){
+  const [pin,setPin]=useState(''),[error,setError]=useState('');
+  const verify=async e=>{e.preventDefault();const current=listAccounts().find(a=>a.id===account.id);
+    if(!current?.pin||!validPin(pin)||!await verifyPin(current,pin)){setError('PIN incorrecto. Intenta de nuevo.');return}
+    onVerified()};
+  return html`<${Modal} title=${title} onClose=${onClose}><form className="col" onSubmit=${verify}><${Field} label="Confirma tu PIN actual" id="privacy-pin" err=${error}><input id="privacy-pin" type="password" inputMode="numeric" maxLength="4" autoFocus value=${pin} onChange=${e=>setPin(e.target.value)}/><//>
+    <div className="mf"><button className="btn" type="button" onClick=${onClose}>Cancelar</button><button className="btn pri" type="submit">Verificar PIN</button></div></form><//>`;
+}
+
 
 /* ================= ENTRADA: PERFILES Y PIN LOCAL ================= */
 const KIND_LABEL={caso:['Caso de la consultora','b'],demo:['Usuario de prueba','b'],propia:['Tu cuenta','']};
@@ -1174,7 +1230,7 @@ function Login({onEnter}){
       </div></div>`:null}
     ${mode==='pin'&&sel?html`<${PinEntry} acc=${sel} onOk=${()=>onEnter(sel)} onBack=${()=>{setSel(null);setMode('list')}}/>`:null}
     ${mode==='create'?html`<${CreateAccount} onCancel=${()=>setMode('list')} onDone=${acc=>{setAccs(listAccounts());onEnter(acc)}}/>`:null}
-    <div className="login-trust"><${Ic} n="lock" s=${18}/><div><b>Tus datos se guardan solo en este dispositivo.</b> No hay servidor ni conexión a bancos. El PIN se guarda cifrado y FINOVA nunca pide contraseñas reales ni datos bancarios. <${Demo} t="Prototipo"/></div></div>
+    <div className="login-trust"><${Ic} n="lock" s=${18}/><div><b>Tus datos se guardan solo en este dispositivo.</b> No hay servidor ni conexión a bancos. El PIN controla el acceso al perfil y FINOVA nunca pide contraseñas reales ni datos bancarios. <${Demo} t="Prototipo"/></div></div>
   </div></div>`;
 }
 function PinEntry({acc,onOk,onBack}){
@@ -1191,6 +1247,7 @@ function PinEntry({acc,onOk,onBack}){
 }
 function CreateAccount({onCancel,onDone}){
   const [f,setF]=useState({name:'',inc:'',pin:'',pin2:''}),[er,setEr]=useState({}),[busy,setBusy]=useState(false);
+  const [checked,setChecked]=useState(false);
   const set=(k,v)=>setF(p=>({...p,[k]:v}));
   const submit=async e=>{e.preventDefault();const x={},i=num(f.inc);
     if(!f.name.trim())x.name='Escribe tu nombre.';else if(f.name.trim().length>40)x.name='Máximo 40 caracteres.';
@@ -1198,7 +1255,10 @@ function CreateAccount({onCancel,onDone}){
     if(f.pin&&!validPin(f.pin))x.pin='El PIN debe tener exactamente 4 dígitos.';
     if(f.pin&&f.pin!==f.pin2)x.pin2='Los PIN no coinciden.';
     setEr(x);if(Object.keys(x).length)return;
-    setBusy(true);const acc=await createAccount({name:f.name.trim(),income:i,pin:f.pin||null});setBusy(false);onDone(acc)};
+    if(!checked)return;setBusy(true);
+    try{onDone(await createAccount({name:f.name.trim(),income:i,pin:f.pin||null}))}
+    catch{setEr({storage:'No se pudo guardar la cuenta. Revisa el almacenamiento del navegador e intenta de nuevo.'})}
+    finally{setBusy(false)}};
   const dig=k=>e=>set(k,e.target.value.replace(/\D/g,'').slice(0,4));
   return html`<form className="card col pin-card" onSubmit=${submit} noValidate>
     <div><h2>Crea tu cuenta</h2><p className="muted sm" style=${{marginTop:4}}>Solo pedimos lo necesario para armar tu presupuesto. Nada sale de este dispositivo.</p></div>
@@ -1208,7 +1268,8 @@ function CreateAccount({onCancel,onDone}){
       <${Field} label="PIN de 4 dígitos (opcional)" id="ca-p" err=${er.pin} hint="Protege tu perfil en este dispositivo."><input id="ca-p" type="password" inputMode="numeric" autoComplete="new-password" maxLength="4" placeholder="••••" className=${er.pin?'bad':''} value=${f.pin} onChange=${dig('pin')}/><//>
       <${Field} label="Confirma tu PIN" id="ca-p2" err=${er.pin2}><input id="ca-p2" type="password" inputMode="numeric" autoComplete="new-password" maxLength="4" placeholder="••••" disabled=${!f.pin} className=${er.pin2?'bad':''} value=${f.pin2} onChange=${dig('pin2')}/><//>
     </div>
-    <div className="row sp"><button type="button" className="btn" onClick=${onCancel}>Volver</button><button type="submit" className="btn pri" disabled=${busy}>Crear cuenta y entrar</button></div>
+    <${NoticeChoice} checked=${checked} onChange=${setChecked}/>${er.storage&&html`<p role="alert" className="err">${er.storage}</p>`}
+    <div className="row sp"><button type="button" className="btn" onClick=${onCancel}>Cancelar</button><button type="submit" className="btn pri" disabled=${busy||!checked}>Aceptar y crear cuenta</button></div>
   </form>`;
 }
 /* ================= INICIO ================= */
@@ -1770,49 +1831,60 @@ function AsesorTarjeta({M}){
    Lo fiscal integrado al plan: conexión con el SAT (simulada, sin contraseñas), radar de deducciones,
    devolución estimada que entra al plan y trazabilidad de devoluciones y pagos (simulados). */
 const PERMISOS_SAT=['Facturas (CFDI) que recibes y emites','Retenciones de ISR de tu nómina','Declaraciones que ya presentaste'];
-const NO_HACE=['Presentar declaraciones por ti','Pagar sin tu confirmación','Compartir tus datos con terceros'];
 const ESTADO_FISCAL={deducible:['g','Deducible'],factura:['y','Pide factura'],efectivo:['r','No deducible: efectivo']};
 
 function Impuestos(){
-  const {s}=useApp(),M=s.plan&&s.plan.modelo;
+  const {s}=useApp(),M=s.plan&&s.plan.modelo,allowed=fiscalAllowed(s);
   return html`<div className="page">
     <${Head} title=${html`Mis impuestos <${Demo}/>`} sub="Tus deducciones se vuelven devolución, y tu devolución se vuelve parte de tu plan."/>
     <${Banner} k="y" ic="warn"><b>Demo: FINOVA no se conecta al SAT real ni paga impuestos en este prototipo.</b> Información educativa; no es asesoría fiscal.<//>
-    <div className="split"><${DevolucionCard} M=${M}/><${ConexionSAT}/></div>
-    <${RadarCard} M=${M}/>
-    ${M?html`<div className="card sm muted">${RIVERA.fiscal.mama}</div>`:html`<${ApartadoCard}/>`}
-    <${HistorialFiscal}/>
+    <div className="split">${(M||allowed)?html`<${DevolucionCard} M=${M}/>`:null}<${ConexionSAT}/></div>
+    ${allowed?html`<${RadarCard} M=${M}/>`:null}
+    ${M?html`<div className="card sm muted">${RIVERA.fiscal.mama}</div>`:allowed?html`<${ApartadoCard}/>`:null}
+    ${allowed?html`<${HistorialFiscal}/>`:null}
   </div>`;
 }
 
 function ConexionSAT(){
-  const {s,upd,toast,ask}=useApp(),F=s.fiscal,M=s.plan&&s.plan.modelo;
-  const conectar=()=>{upd(d=>{d.fiscal={conectado:true,rfc:M?RIVERA.fiscal.rfc:'XAXX010101000',fecha:todayS(),permisos:[...PERMISOS_SAT],historial:[{tipo:'Conexión',fecha:todayS(),monto:null,folio:folioDemo('SAT'),nota:'Permiso de solo lectura (simulado)'}]}});toast('SAT conectado (demo)','ok')};
-  const borrar=()=>ask({title:'Desconectar y borrar mis datos fiscales',text:'FINOVA dejará de leer tu información del SAT y borrará de este dispositivo tu RFC, permisos e historial fiscal. Tus movimientos no se borran.',yes:'Desconectar y borrar',onYes:()=>{upd(d=>{delete d.fiscal});toast('Datos fiscales borrados','ok')}});
+  const ctx=useApp(),{s,changePrivacy}=ctx,F=s.fiscal,M=s.plan&&s.plan.modelo;
+  const [review,setReview]=useState(false);
+  const conectar=()=>{const saved=changePrivacy(d=>{
+    const log=d.fiscal?.historial||[];
+    d.fiscal={conectado:true,permission:FISCAL_PERMISSION,rfc:M?RIVERA.fiscal.rfc:'XAXX010101000',fecha:todayS(),permisos:[...PERMISOS_SAT],historial:[...log,{tipo:'Conexión',fecha:todayS(),monto:null,folio:folioDemo('SAT'),nota:'Permiso de solo lectura (simulado)'}]};
+    recordPrivacy(d,'Permiso fiscal autorizado');
+  },'Simulación fiscal autorizada');if(saved)setReview(false)};
+  const borrar=()=>revokeFiscal(ctx);
   return html`<div className="card col" id="sat-card" style=${{gap:12}}>
-    <div className="ch" style=${{marginBottom:0}}><h2>Conexión con el SAT</h2><span className=${'pill '+(F&&F.conectado?'g':'')}>${F&&F.conectado?'Conectado (demo)':'Sin conectar'}</span></div>
-    ${F&&F.conectado?html`<div className="sm">RFC <b className="num">${F.rfc}</b> <span className="muted">(RFC genérico de demostración)</span> · desde ${fdate(F.fecha)}</div>
+    <div className="ch" style=${{marginBottom:0}}><h2>Conexión con el SAT</h2><span className=${'pill '+(fiscalAllowed(s)?'g':'')}>${fiscalAllowed(s)?'Conectado (demo)':'Sin conectar'}</span></div>
+    ${fiscalAllowed(s)?html`<div className="sm">RFC <b className="num">${F.rfc}</b> <span className="muted">(RFC genérico de demostración)</span> · desde ${fdate(F.fecha)}</div>
       <div className="sm"><b>FINOVA puede leer:</b><ul className="porque">${F.permisos.map(p=>html`<li key=${p}>${p}</li>`)}</ul></div>
       <button className="btn dng sm" style=${{alignSelf:'flex-start'}} onClick=${borrar}><${Ic} n="trash" s=${15}/>Desconectar y borrar mis datos fiscales</button>`
-    :html`<div className="sm">Con tu permiso, FINOVA leería tu información fiscal para encontrar deducciones y estimar tu devolución.</div>
-      <div className="grid" style=${{gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,200px),1fr))',gap:10}}>
-        <div className="card flat sm"><b className="up">Solo leería</b><ul className="porque">${PERMISOS_SAT.map(p=>html`<li key=${p}>${p}</li>`)}</ul></div>
-        <div className="card flat sm"><b className="down">Nunca haría</b><ul className="porque">${NO_HACE.map(p=>html`<li key=${p}>${p}</li>`)}</ul></div></div>
-      <div className="supuesto xs"><b>Sin contraseñas:</b> en este prototipo no te pedimos tu contraseña del SAT (CIEC) ni tu e.firma. En la versión real la autorización se daría en el sitio del SAT o de un proveedor autorizado.</div>
-      <button className="btn pri" style=${{alignSelf:'flex-start'}} onClick=${conectar}><${Ic} n="lock" s=${16}/>Autorizar en el SAT (simulado)</button>`}
+    :html`<p className="sm">Autoriza el uso de tus movimientos de ejemplo para calcular deducciones y simular devoluciones.</p>
+      <p className="muted sm">Sin contraseñas ni conexión al SAT.</p>
+      <div><button className="btn pri" onClick=${()=>setReview(true)}>Revisar permiso fiscal</button></div>
+      ${F?html`<button className="btn" onClick=${borrar}>Borrar datos fiscales anteriores</button>`:null}`}
+    ${review?html`<${Modal} title="Permiso para la simulación fiscal" onClose=${()=>setReview(false)}>
+      <p>Usaremos los movimientos de este perfil y estos datos ficticios para estimar deducciones y devoluciones:</p>
+      <ul>${PERMISOS_SAT.map(p=>html`<li key=${p}>${p}</li>`)}</ul>
+      <p className="muted sm">Puedes retirar el permiso en Perfil y seguir usando tu presupuesto.</p>
+      <div className="mf"><button className="btn" onClick=${()=>setReview(false)}>Ahora no</button><button className="btn pri" onClick=${conectar}>Autorizar simulación</button></div><//>`:null}
   </div>`;
 }
 
+function refundRecorded(s){
+  return s.fiscal?.historial?.some(h=>h.tipo==='Devolución')||
+    s.tx.some(t=>t.fiscalOperation==='devolucion-demo'||(t.demo&&t.cat==='Devolución de impuestos'&&t.note?.startsWith('Devolución de ISR (SAT) · folio ')));
+}
 function DevolucionCard({M}){
   const {s,upd,toast,go}=useApp(),D=devolucionEstimada(s),F=s.fiscal,[comp,setComp]=useState(null);
-  const monto=Math.round(D.modelo?D.anio1:D.monto),recibida=F&&F.historial&&F.historial.some(h=>h.tipo==='Devolución');
+  const monto=Math.round(D.modelo?D.anio1:D.monto),recibida=refundRecorded(s);
   const recibir=()=>{const folio=folioDemo('DEV'),h={tipo:'Devolución',fecha:todayS(),monto,folio,nota:'Devolución de ISR (simulada)'};
-    upd(d=>{d.tx.push({id:uid(),type:'ingreso',amount:monto,cat:'Devolución de impuestos',date:todayS(),method:'Transferencia',note:`Devolución de ISR (SAT) · folio ${folio}`,demo:true});d.fiscal.historial.push(h)});
+    upd(d=>{if(!fiscalAllowed(d)||refundRecorded(d))return;d.tx.push({id:uid(),fiscalOperation:'devolucion-demo',type:'ingreso',amount:monto,cat:'Devolución de impuestos',date:todayS(),method:'Transferencia',note:`Devolución de ISR (SAT) · folio ${folio}`,demo:true});d.fiscal.historial.push(h)});
     setComp({...h,titulo:'Comprobante de devolución (demo)'});toast('Devolución registrada en tus movimientos','ok')};
   const fondo=s.goals.find(g=>/emergencia/i.test(g.name));
-  const abonar=()=>{upd(d=>{const g=d.goals.find(x=>x.id===fondo.id);g.saved=Math.min(g.target,g.saved+monto);d.fiscal.historial.push({tipo:'Abono al fondo',fecha:todayS(),monto,folio:'—',nota:`A «${fondo.name}»`})});toast('Devolución abonada a tu fondo de emergencia','ok');setComp(null)};
+  const abonar=()=>{upd(d=>{if(!fiscalAllowed(d)||d.fiscal.historial.some(h=>h.tipo==='Abono al fondo'&&h.folio===comp.folio))return;const g=d.goals.find(x=>x.id===fondo.id);g.saved=Math.min(g.target,g.saved+monto);d.fiscal.historial.push({tipo:'Abono al fondo',fecha:todayS(),monto,folio:comp.folio,nota:`A «${fondo.name}»`})});toast('Devolución abonada a tu fondo de emergencia','ok');setComp(null)};
   return html`<div className="card col" id="dev-card" style=${{gap:12}}>
-    <div className="ch" style=${{marginBottom:0}}><h2>Tu devolución estimada</h2><span className="pill b">Tasa marginal ${pc(D.tasa*100,2)}</span></div>
+    <div className="ch" style=${{marginBottom:0}}><h2>${M?'Devolución proyectada del caso Rivera':'Tu devolución estimada'}</h2><span className="pill b">Tasa marginal ${pc(D.tasa*100,2)}</span></div>
     ${D.modelo?html`<div className="num" id="dev-monto">${fmt(D.anio1)}</div>
       <div className="sm">Por deducir la prima del seguro de gastos médicos. Llega en el <b>mes ${D.mes} (${mesTxt(M,D.mes)})</b> y lleva al fondo de emergencia a su meta de 3 meses.</div>
       <div className="card flat sm">Desde que inicia el PPR (mes ${RIVERA.fiscal.deducciones[1].desde}), la devolución sube a <b className="num" id="dev-ppr">${fmt(D.anioPPR)}</b> al año: seguro ${fmt(D.anioPPR-D.devolucionPPR)} + PPR ${fmt(D.devolucionPPR)}.</div>
@@ -1821,9 +1893,9 @@ function DevolucionCard({M}){
       <div className="sm">Con tus gastos deducibles con factura de los últimos 12 meses (${fmt(D.base)}). Si pides factura de lo pendiente, podría llegar a <b className="num">${fmt(D.posible)}</b>.</div>
       ${D.perdido>0?html`<div className="supuesto xs">Pagar en efectivo te costó ≈ <b>${fmt(D.perdido)}</b> de devolución.</div>`:null}
       <div className="muted xs">Tope global: ${fmt(D.tope)} (lo menor entre 5 UMA anuales y 15 % de tu ingreso). Tasa según la ${FISCAL.fuenteTarifa}, con tu ingreso de Perfil.</div>`}
-    ${F&&F.conectado&&monto>0?recibida?html`<div className="cuadre ok"><${Ic} n="check" s=${16}/>Devolución recibida y registrada en Movimientos.</div>`
+    ${fiscalAllowed(s)&&monto>0?recibida?html`<div className="cuadre ok"><${Ic} n="check" s=${16}/>Devolución recibida y registrada en Movimientos.</div>`
       :html`<button className="btn pri" style=${{alignSelf:'flex-start'}} onClick=${recibir}>Recibir devolución (demo)</button>`
-     :html`<div className="muted xs">${F&&F.conectado?'Aún no hay devolución que recibir.':'Conecta el SAT (demo) para simular la devolución.'}</div>`}
+     :html`<div className="muted xs">${fiscalAllowed(s)?'Aún no hay devolución que recibir.':'Conecta el SAT (demo) para simular la devolución.'}</div>`}
     ${comp?html`<${Comprobante} c=${comp} onClose=${()=>setComp(null)} extra=${fondo&&fondo.saved<fondo.target?html`<button className="btn pri" onClick=${abonar}>Abonar ${fmt(comp.monto)} a «${fondo.name}»</button>`:null}/>`:null}
   </div>`;
 }
@@ -1863,7 +1935,7 @@ function ApartadoCard(){
     <div className="row" style=${{gap:12,alignItems:'flex-end'}}>
       <${Field} label="¿Qué % quieres apartar?" id="ap-pct" hint="Depende de tu régimen fiscal; consúltalo con tu contador."><input id="ap-pct" type="number" min="0" max="35" step="0.5" placeholder="Ej. 10" value=${pct} onChange=${e=>setPct(e.target.value)} style=${{maxWidth:140}}/><//>
       ${Number.isFinite(p)&&p>0?html`<div className="sm">Deberías tener apartado <b className="num">${fmt(A.debe)}</b> · ya pagaste <b className="num">${fmt(A.pagado)}</b> · pendiente <b className="num" id="ap-pend">${fmt(A.pendiente)}</b></div>`:null}</div>
-    ${Number.isFinite(p)&&p>0&&A.pendiente>0?F&&F.conectado?html`<button className="btn pri" style=${{alignSelf:'flex-start'}} onClick=${pagar}>Pagar ${fmt(A.pendiente)} con línea de captura (demo)</button>`:html`<div className="muted xs">Conecta el SAT (demo) para simular el pago.</div>`:null}
+    ${Number.isFinite(p)&&p>0&&A.pendiente>0?fiscalAllowed(s)?html`<button className="btn pri" style=${{alignSelf:'flex-start'}} onClick=${pagar}>Pagar ${fmt(A.pendiente)} con línea de captura (demo)</button>`:html`<div className="muted xs">Conecta el SAT (demo) para simular el pago.</div>`:null}
     ${comp?html`<${Comprobante} c=${comp} onClose=${()=>setComp(null)}/>`:null}
   </div>`;
 }
@@ -1891,10 +1963,10 @@ function Comprobante({c,onClose,extra}){
 
 /* Tarjeta 4 de «Mi asesor». */
 function AsesorImpuestos({M}){
-  const {s,go}=useApp(),D=devolucionEstimada(s);
+  const {s,go}=useApp(),D=M||fiscalAllowed(s)?devolucionEstimada(s):null;
   return html`<div className="card col asesor" id="as-impuestos" style=${{gap:12}}>
     <${Paso} n="4" t="Impuestos: tu devolución"/>
-    <div className="reco"><div className="muted xs">Recomendación</div><div className="reco-t">${M?`Deduce el seguro y recupera ${fmt(D.anio1)} en ${mesTxt(M,D.mes)}`:D.monto>0?`Presenta tu declaración: podrías recuperar ${fmt(D.monto)}`:'Pide factura y paga con tarjeta tus gastos médicos'}</div>
+    <div className="reco"><div className="muted xs">Recomendación</div><div className="reco-t">${M?`Deduce el seguro y recupera ${fmt(D.anio1)} en ${mesTxt(M,D.mes)}`:!D?'Revisa el permiso fiscal para estimar tu devolución':D.monto>0?`Presenta tu declaración: podrías recuperar ${fmt(D.monto)}`:'Pide factura y paga con tarjeta tus gastos médicos'}</div>
       <div className="muted sm">${M?`Con el PPR, la devolución sube a ${fmt(D.anioPPR)} al año. Esa devolución lleva al fondo de emergencia a su meta.`:'Los gastos médicos pagados en efectivo no se pueden deducir.'}</div></div>
     <button className="btn sm" style=${{alignSelf:'flex-start'}} onClick=${()=>go('impuestos')}>Ver Mis impuestos →</button></div>`;
 }
@@ -2231,6 +2303,8 @@ function Toggle({on,set,label}){return html`<button className=${'sw '+(on?'on':'
 function Perfil(){
   const {s,upd,toast,ask,reset,setTheme,replayTutorial,account,logout,deleteMe,onAccountChange}=useApp();
   const [nm,setNm]=useState(s.user.name),[inc,setInc]=useState(String(s.user.income)),[er,setEr]=useState({}),[ex,setEx]=useState(null),[pinM,setPinM]=useState(false);
+  const [challenge,setChallenge]=useState(null);
+  const protect=(title,run)=>{if(account.pin)setChallenge({title,run});else run()};
   const fl=finLevel(s.academy.xp);
   const save=e=>{e.preventDefault();const x={},i=num(inc);
     if(!nm.trim())x.nm='Escribe tu nombre.';else if(nm.trim().length>40)x.nm='Máximo 40 caracteres.';
@@ -2256,14 +2330,16 @@ function Perfil(){
       ${s.user.members&&s.user.members.length?html`<div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Mi hogar</h2><${Demo} t="Caso"/></div>
         ${s.user.members.map(m=>html`<div key=${m.rol} className="row" style=${{flexWrap:'nowrap',gap:12}}><div className="avatar">${m.rol[0]}</div><div style=${{flex:1}}><div className="b">${m.rol}${m.edad?` · ${m.edad} años`:''}</div><div className="muted sm">${m.nota}</div></div>${m.ingreso?html`<span className="num b">${fmt(m.ingreso)}</span>`:null}</div>`)}
         <div className="row sp" style=${{borderTop:'1px solid var(--line)',paddingTop:10}}><span className="muted sm">Ingreso del hogar</span><span className="num b">${fmt(sum(s.user.members,m=>m.ingreso||0))} al mes</span></div></div>`:null}
-      <div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Tu cuenta y tus datos</h2><span className="pill g"><${Ic} n="lock" s=${13}/>Solo en este dispositivo</span></div>
+      <div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Privacidad y datos</h2><span className="pill g"><${Ic} n="lock" s=${13}/>Solo en este dispositivo</span></div>
         <p className="muted sm">Sesión: <b>${account.name}</b> · ${account.pin?'protegida con PIN':'sin PIN'}. No hay servidor ni conexión a bancos: tus datos no salen de este navegador.</p>
-        <div className="row"><button className="btn" onClick=${()=>setEx('json')}>Exportar datos (JSON)</button><button className="btn" onClick=${()=>setEx('csv')}>Exportar movimientos (CSV)</button></div>
-        <div className="row"><button className="btn" onClick=${()=>setPinM(true)}><${Ic} n="lock" s=${16}/>${account.pin?'Cambiar o quitar PIN':'Agregar PIN'}</button><button className="btn" onClick=${logout}>Cerrar sesión</button><button className="btn" onClick=${replayTutorial}>Ver tutorial de nuevo</button></div>
-        <div className="row"><button className="btn dng" onClick=${()=>ask({title:'Restaurar los datos de la cuenta',text:account.kind==='propia'?'Se borrarán tus movimientos, metas, deudas, portafolios, chats y avances, y la cuenta quedará como recién creada.':'Se borrarán tus cambios y la cuenta volverá a sus datos originales.',yes:'Restaurar',onYes:reset})}><${Ic} n="refresh" s=${16}/>Restaurar datos</button>
-          ${account.kind==='propia'?html`<button className="btn dng" onClick=${()=>ask({title:'Eliminar mi cuenta y mis datos',text:`Se borrarán para siempre la cuenta "${account.name}" y todos sus datos de este dispositivo. No se puede deshacer.`,yes:'Eliminar cuenta',onYes:deleteMe})}><${Ic} n="trash" s=${16}/>Eliminar mi cuenta y mis datos</button>`:null}</div></div>
+        <${PrivacySummary} account=${account}/>
+        <div className="row"><button className="btn" onClick=${()=>protect('Exportar datos',()=>setEx('json'))}>Exportar datos (JSON)</button><button className="btn" onClick=${()=>protect('Exportar movimientos',()=>setEx('csv'))}>Exportar movimientos (CSV)</button></div>
+        <div className="row"><button className="btn" onClick=${()=>protect('Seguridad del PIN',()=>setPinM(true))}><${Ic} n="lock" s=${16}/>${account.pin?'Cambiar o quitar PIN':'Agregar PIN'}</button><button className="btn" onClick=${logout}>Cerrar sesión</button><button className="btn" onClick=${replayTutorial}>Ver tutorial de nuevo</button></div>
+        <div className="row"><button className="btn dng" onClick=${()=>protect('Verificar antes de restaurar',()=>ask({title:'Restaurar los datos de la cuenta',text:account.kind==='propia'?'Se borrarán tus movimientos, metas, deudas, portafolios, chats y avances, y la cuenta quedará como recién creada.':'Se borrarán tus cambios y la cuenta volverá a sus datos originales.',yes:'Restaurar',onYes:reset}))}><${Ic} n="refresh" s=${16}/>Restaurar datos</button>
+          ${account.kind==='propia'?html`<button className="btn dng" onClick=${()=>protect('Verificar antes de eliminar',()=>ask({title:'Eliminar mi cuenta y mis datos',text:`Se borrarán para siempre la cuenta "${account.name}" y todos sus datos de este dispositivo. No se puede deshacer.`,yes:'Eliminar cuenta',onYes:deleteMe}))}><${Ic} n="trash" s=${16}/>Eliminar mi cuenta y mis datos</button>`:null}</div></div>
     </div>
     <${Banner} k="y" ic="warn">FINOVA es un prototipo de demostración: no se conecta a bancos ni a IA real, no pide datos bancarios ni contraseñas y no sustituye asesoría financiera.<//>
+    ${challenge?html`<${PinChallenge} account=${account} title=${challenge.title} onClose=${()=>setChallenge(null)} onVerified=${()=>{setChallenge(null);challenge.run()}}/>`:null}
     ${pinM?html`<${PinModal} onClose=${()=>setPinM(false)}/>`:null}
     ${ex?html`<${Modal} title=${ex==='json'?'Exportar datos (JSON)':'Exportar movimientos (CSV)'} onClose=${()=>setEx(null)} wide><p className="muted sm">Copia el contenido y pégalo en un archivo. Las descargas directas no están disponibles dentro de esta vista.</p><textarea className="code" readOnly aria-label="Datos exportados" value=${ex==='json'?JSON.stringify(s,null,2):csv()} onFocus=${e=>e.target.select()}></textarea><div className="mf"><button className="btn" onClick=${()=>setEx(null)}>Cerrar</button><button className="btn pri" onClick=${()=>copyText(ex==='json'?JSON.stringify(s,null,2):csv(),toast)}><${Ic} n="copy" s=${16}/>Copiar</button></div><//>`:null}</div>`;
 }
@@ -2275,7 +2351,7 @@ function PinModal({onClose}){
   const apply=async pin=>{await setAccountPin(account.id,pin);const a=listAccounts().find(x=>x.id===account.id);onAccountChange(a);toast(pin?'PIN guardado':'PIN eliminado','ok');onClose()};
   const save=e=>{e.preventDefault();if(!validPin(p1))return setEr('El PIN debe tener exactamente 4 dígitos.');if(p1!==p2)return setEr('Los PIN no coinciden.');apply(p1)};
   return html`<${Modal} title=${account.pin?'Cambiar o quitar PIN':'Agregar PIN'} onClose=${onClose}><form className="col" onSubmit=${save} noValidate>
-    <p className="muted sm">El PIN se guarda cifrado (SHA-256) solo en este dispositivo.</p>
+    <p className="muted sm">El PIN controla el acceso desde esta interfaz. FINOVA guarda una huella del PIN en este navegador.</p>
     <div className="form"><${Field} label="Nuevo PIN" id="np-1"><input id="np-1" type="password" inputMode="numeric" maxLength="4" value=${p1} onChange=${dig(setP1)} autoFocus/><//>
     <${Field} label="Confirma el PIN" id="np-2" err=${er}><input id="np-2" type="password" inputMode="numeric" maxLength="4" value=${p2} onChange=${dig(setP2)}/><//></div>
     <div className="mf">${account.pin?html`<button type="button" className="btn dng" onClick=${()=>apply(null)}>Quitar PIN</button>`:null}<button type="button" className="btn" onClick=${onClose}>Cancelar</button><button type="submit" className="btn pri">Guardar PIN</button></div></form><//>`;
@@ -2353,13 +2429,18 @@ function App({account,logout,onAccountChange}){
   const toast=(msg,kind)=>{const id=uid();setToasts(t=>[...t,{id,msg,kind}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),2800)};
   const go=(r,tab)=>{if(!ROUTES[r])return;setRoute(r);setHint({route:r,tab,n:Date.now()});setNOpen(false);setQ('');try{history.replaceState(null,'','#'+r)}catch(e){}window.scrollTo(0,0)};
   const setTheme=t=>{applyTheme(t);upd(d=>{d.user.theme=t})};
-  const reset=()=>{const n=seedFor(account);applyTheme('auto');setS({...n,user:{...n.user,tutorialDone:true}});toast('Datos de la cuenta restaurados','ok');go('inicio')};
+  const changePrivacy=(edit,message)=>{
+    const next=JSON.parse(JSON.stringify(s));edit(next);
+    try{localStorage.setItem(UKEY(account.id),JSON.stringify(next));setS(next);toast(message,'ok');return true}
+    catch{toast('No se pudo guardar el cambio de privacidad. Intenta de nuevo.','err');return false}
+  };
+  const reset=()=>{const n=seedFor(account);n.privacyEvents=[...(s.privacyEvents||[])];if(s.fiscal)recordPrivacy(n,'Permiso retirado al restaurar');applyTheme('auto');setS({...n,user:{...n.user,tutorialDone:true}});toast('Datos de la cuenta restaurados','ok');go('inicio')};
   const deleteMe=()=>{deleteAccount(account.id);logout()};
   // insignias nuevas
   const eb=earnedBadges(s).join(',');
   useEffect(()=>{const have=s.academy.badges,neu=earnedBadges(s).filter(b=>!have.includes(b));
     if(neu.length){upd(d=>{neu.forEach(b=>{d.academy.badges.push(b);d.academy.xp+=25})});neu.forEach(b=>toast(`Insignia: ${BADGES.find(x=>x.id===b).name} (+25 XP)`,'ok'))}},[eb]);
-  const ctx={s,upd,toast,go,hint,openTx:(d)=>setTxm({defType:typeof d==='string'?d:undefined}),ask:setConf,reset,setTheme,replayTutorial:()=>setTut(true),account,logout,deleteMe,onAccountChange};
+  const ctx={s,upd,changePrivacy,toast,go,hint,openTx:(d)=>setTxm({defType:typeof d==='string'?d:undefined}),ask:setConf,reset,setTheme,replayTutorial:()=>setTut(true),account,logout,deleteMe,onAccountChange};
   const Page=ROUTES[route];
   const notifs=notifications(s),unread=notifs.filter(n=>!s.notifRead.includes(n.id));
   const results=useMemo(()=>{
@@ -2409,7 +2490,26 @@ function Root(){
   useEffect(()=>{ensureDefaults().then(a=>{const x=a.find(y=>y.id===getSession());if(x)setAcc(x);setReady(true)})},[]);
   const enter=a=>{setSession(a.id);setAcc(a);try{history.replaceState(null,'','#inicio')}catch(e){}window.scrollTo(0,0)};
   const logout=()=>{setSession(null);setAcc(null);applyTheme('auto');window.scrollTo(0,0)};
+  // Si otra pestaña retira el permiso, cambia el PIN o elimina esta cuenta,
+  // descarta las vistas abiertas antes de volver a leer el perfil.
+  useEffect(()=>{
+    if(!acc)return;
+    const sync=e=>{
+      if(e.key===ACC_KEY||e.key===null){
+        const current=listAccounts().find(a=>a.id===acc.id);
+        if(!current||JSON.stringify(current.pin)!==JSON.stringify(acc.pin)){logout();return}
+        if(current.notice?.version!==acc.notice?.version)setAcc(current);
+      }
+      if(e.key===UKEY(acc.id)){
+        const previous=e.oldValue&&JSON.parse(e.oldValue),next=e.newValue&&JSON.parse(e.newValue);
+        if(!next){logout();return}
+        if(Boolean(previous&&fiscalAllowed(previous))!==fiscalAllowed(next))location.reload();
+      }
+    };
+    window.addEventListener('storage',sync);return ()=>window.removeEventListener('storage',sync);
+  },[acc]);
   if(!ready)return null;
+  if(acc&&!acceptedNotice(acc))return html`<${NoticeGate} account=${acc} onDone=${enter} onExit=${logout}/>`;
   return acc?html`<${App} key=${acc.id} account=${acc} logout=${logout} onAccountChange=${setAcc}/>`:html`<${Login} onEnter=${enter}/>`;
 }
 if(!window.React||!window.ReactDOM||!window.Recharts||!window.htm){document.getElementById('root').textContent='No se pudieron cargar las bibliotecas de la demostración. Recarga la página.'}

@@ -19,7 +19,7 @@ function Login({onEnter}){
       </div></div>`:null}
     ${mode==='pin'&&sel?html`<${PinEntry} acc=${sel} onOk=${()=>onEnter(sel)} onBack=${()=>{setSel(null);setMode('list')}}/>`:null}
     ${mode==='create'?html`<${CreateAccount} onCancel=${()=>setMode('list')} onDone=${acc=>{setAccs(listAccounts());onEnter(acc)}}/>`:null}
-    <div className="login-trust"><${Ic} n="lock" s=${18}/><div><b>Tus datos se guardan solo en este dispositivo.</b> No hay servidor ni conexión a bancos. El PIN se guarda cifrado y FINOVA nunca pide contraseñas reales ni datos bancarios. <${Demo} t="Prototipo"/></div></div>
+    <div className="login-trust"><${Ic} n="lock" s=${18}/><div><b>Tus datos se guardan solo en este dispositivo.</b> No hay servidor ni conexión a bancos. El PIN controla el acceso al perfil y FINOVA nunca pide contraseñas reales ni datos bancarios. <${Demo} t="Prototipo"/></div></div>
   </div></div>`;
 }
 function PinEntry({acc,onOk,onBack}){
@@ -36,6 +36,7 @@ function PinEntry({acc,onOk,onBack}){
 }
 function CreateAccount({onCancel,onDone}){
   const [f,setF]=useState({name:'',inc:'',pin:'',pin2:''}),[er,setEr]=useState({}),[busy,setBusy]=useState(false);
+  const [checked,setChecked]=useState(false);
   const set=(k,v)=>setF(p=>({...p,[k]:v}));
   const submit=async e=>{e.preventDefault();const x={},i=num(f.inc);
     if(!f.name.trim())x.name='Escribe tu nombre.';else if(f.name.trim().length>40)x.name='Máximo 40 caracteres.';
@@ -43,7 +44,10 @@ function CreateAccount({onCancel,onDone}){
     if(f.pin&&!validPin(f.pin))x.pin='El PIN debe tener exactamente 4 dígitos.';
     if(f.pin&&f.pin!==f.pin2)x.pin2='Los PIN no coinciden.';
     setEr(x);if(Object.keys(x).length)return;
-    setBusy(true);const acc=await createAccount({name:f.name.trim(),income:i,pin:f.pin||null});setBusy(false);onDone(acc)};
+    if(!checked)return;setBusy(true);
+    try{onDone(await createAccount({name:f.name.trim(),income:i,pin:f.pin||null}))}
+    catch{setEr({storage:'No se pudo guardar la cuenta. Revisa el almacenamiento del navegador e intenta de nuevo.'})}
+    finally{setBusy(false)}};
   const dig=k=>e=>set(k,e.target.value.replace(/\D/g,'').slice(0,4));
   return html`<form className="card col pin-card" onSubmit=${submit} noValidate>
     <div><h2>Crea tu cuenta</h2><p className="muted sm" style=${{marginTop:4}}>Solo pedimos lo necesario para armar tu presupuesto. Nada sale de este dispositivo.</p></div>
@@ -53,6 +57,7 @@ function CreateAccount({onCancel,onDone}){
       <${Field} label="PIN de 4 dígitos (opcional)" id="ca-p" err=${er.pin} hint="Protege tu perfil en este dispositivo."><input id="ca-p" type="password" inputMode="numeric" autoComplete="new-password" maxLength="4" placeholder="••••" className=${er.pin?'bad':''} value=${f.pin} onChange=${dig('pin')}/><//>
       <${Field} label="Confirma tu PIN" id="ca-p2" err=${er.pin2}><input id="ca-p2" type="password" inputMode="numeric" autoComplete="new-password" maxLength="4" placeholder="••••" disabled=${!f.pin} className=${er.pin2?'bad':''} value=${f.pin2} onChange=${dig('pin2')}/><//>
     </div>
-    <div className="row sp"><button type="button" className="btn" onClick=${onCancel}>Volver</button><button type="submit" className="btn pri" disabled=${busy}>Crear cuenta y entrar</button></div>
+    <${NoticeChoice} checked=${checked} onChange=${setChecked}/>${er.storage&&html`<p role="alert" className="err">${er.storage}</p>`}
+    <div className="row sp"><button type="button" className="btn" onClick=${onCancel}>Cancelar</button><button type="submit" className="btn pri" disabled=${busy||!checked}>Aceptar y crear cuenta</button></div>
   </form>`;
 }

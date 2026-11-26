@@ -3,6 +3,8 @@ function Toggle({on,set,label}){return html`<button className=${'sw '+(on?'on':'
 function Perfil(){
   const {s,upd,toast,ask,reset,setTheme,replayTutorial,account,logout,deleteMe,onAccountChange}=useApp();
   const [nm,setNm]=useState(s.user.name),[inc,setInc]=useState(String(s.user.income)),[er,setEr]=useState({}),[ex,setEx]=useState(null),[pinM,setPinM]=useState(false);
+  const [challenge,setChallenge]=useState(null);
+  const protect=(title,run)=>{if(account.pin)setChallenge({title,run});else run()};
   const fl=finLevel(s.academy.xp);
   const save=e=>{e.preventDefault();const x={},i=num(inc);
     if(!nm.trim())x.nm='Escribe tu nombre.';else if(nm.trim().length>40)x.nm='Máximo 40 caracteres.';
@@ -28,14 +30,16 @@ function Perfil(){
       ${s.user.members&&s.user.members.length?html`<div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Mi hogar</h2><${Demo} t="Caso"/></div>
         ${s.user.members.map(m=>html`<div key=${m.rol} className="row" style=${{flexWrap:'nowrap',gap:12}}><div className="avatar">${m.rol[0]}</div><div style=${{flex:1}}><div className="b">${m.rol}${m.edad?` · ${m.edad} años`:''}</div><div className="muted sm">${m.nota}</div></div>${m.ingreso?html`<span className="num b">${fmt(m.ingreso)}</span>`:null}</div>`)}
         <div className="row sp" style=${{borderTop:'1px solid var(--line)',paddingTop:10}}><span className="muted sm">Ingreso del hogar</span><span className="num b">${fmt(sum(s.user.members,m=>m.ingreso||0))} al mes</span></div></div>`:null}
-      <div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Tu cuenta y tus datos</h2><span className="pill g"><${Ic} n="lock" s=${13}/>Solo en este dispositivo</span></div>
+      <div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Privacidad y datos</h2><span className="pill g"><${Ic} n="lock" s=${13}/>Solo en este dispositivo</span></div>
         <p className="muted sm">Sesión: <b>${account.name}</b> · ${account.pin?'protegida con PIN':'sin PIN'}. No hay servidor ni conexión a bancos: tus datos no salen de este navegador.</p>
-        <div className="row"><button className="btn" onClick=${()=>setEx('json')}>Exportar datos (JSON)</button><button className="btn" onClick=${()=>setEx('csv')}>Exportar movimientos (CSV)</button></div>
-        <div className="row"><button className="btn" onClick=${()=>setPinM(true)}><${Ic} n="lock" s=${16}/>${account.pin?'Cambiar o quitar PIN':'Agregar PIN'}</button><button className="btn" onClick=${logout}>Cerrar sesión</button><button className="btn" onClick=${replayTutorial}>Ver tutorial de nuevo</button></div>
-        <div className="row"><button className="btn dng" onClick=${()=>ask({title:'Restaurar los datos de la cuenta',text:account.kind==='propia'?'Se borrarán tus movimientos, metas, deudas, portafolios, chats y avances, y la cuenta quedará como recién creada.':'Se borrarán tus cambios y la cuenta volverá a sus datos originales.',yes:'Restaurar',onYes:reset})}><${Ic} n="refresh" s=${16}/>Restaurar datos</button>
-          ${account.kind==='propia'?html`<button className="btn dng" onClick=${()=>ask({title:'Eliminar mi cuenta y mis datos',text:`Se borrarán para siempre la cuenta "${account.name}" y todos sus datos de este dispositivo. No se puede deshacer.`,yes:'Eliminar cuenta',onYes:deleteMe})}><${Ic} n="trash" s=${16}/>Eliminar mi cuenta y mis datos</button>`:null}</div></div>
+        <${PrivacySummary} account=${account}/>
+        <div className="row"><button className="btn" onClick=${()=>protect('Exportar datos',()=>setEx('json'))}>Exportar datos (JSON)</button><button className="btn" onClick=${()=>protect('Exportar movimientos',()=>setEx('csv'))}>Exportar movimientos (CSV)</button></div>
+        <div className="row"><button className="btn" onClick=${()=>protect('Seguridad del PIN',()=>setPinM(true))}><${Ic} n="lock" s=${16}/>${account.pin?'Cambiar o quitar PIN':'Agregar PIN'}</button><button className="btn" onClick=${logout}>Cerrar sesión</button><button className="btn" onClick=${replayTutorial}>Ver tutorial de nuevo</button></div>
+        <div className="row"><button className="btn dng" onClick=${()=>protect('Verificar antes de restaurar',()=>ask({title:'Restaurar los datos de la cuenta',text:account.kind==='propia'?'Se borrarán tus movimientos, metas, deudas, portafolios, chats y avances, y la cuenta quedará como recién creada.':'Se borrarán tus cambios y la cuenta volverá a sus datos originales.',yes:'Restaurar',onYes:reset}))}><${Ic} n="refresh" s=${16}/>Restaurar datos</button>
+          ${account.kind==='propia'?html`<button className="btn dng" onClick=${()=>protect('Verificar antes de eliminar',()=>ask({title:'Eliminar mi cuenta y mis datos',text:`Se borrarán para siempre la cuenta "${account.name}" y todos sus datos de este dispositivo. No se puede deshacer.`,yes:'Eliminar cuenta',onYes:deleteMe}))}><${Ic} n="trash" s=${16}/>Eliminar mi cuenta y mis datos</button>`:null}</div></div>
     </div>
     <${Banner} k="y" ic="warn">FINOVA es un prototipo de demostración: no se conecta a bancos ni a IA real, no pide datos bancarios ni contraseñas y no sustituye asesoría financiera.<//>
+    ${challenge?html`<${PinChallenge} account=${account} title=${challenge.title} onClose=${()=>setChallenge(null)} onVerified=${()=>{setChallenge(null);challenge.run()}}/>`:null}
     ${pinM?html`<${PinModal} onClose=${()=>setPinM(false)}/>`:null}
     ${ex?html`<${Modal} title=${ex==='json'?'Exportar datos (JSON)':'Exportar movimientos (CSV)'} onClose=${()=>setEx(null)} wide><p className="muted sm">Copia el contenido y pégalo en un archivo. Las descargas directas no están disponibles dentro de esta vista.</p><textarea className="code" readOnly aria-label="Datos exportados" value=${ex==='json'?JSON.stringify(s,null,2):csv()} onFocus=${e=>e.target.select()}></textarea><div className="mf"><button className="btn" onClick=${()=>setEx(null)}>Cerrar</button><button className="btn pri" onClick=${()=>copyText(ex==='json'?JSON.stringify(s,null,2):csv(),toast)}><${Ic} n="copy" s=${16}/>Copiar</button></div><//>`:null}</div>`;
 }
@@ -47,7 +51,7 @@ function PinModal({onClose}){
   const apply=async pin=>{await setAccountPin(account.id,pin);const a=listAccounts().find(x=>x.id===account.id);onAccountChange(a);toast(pin?'PIN guardado':'PIN eliminado','ok');onClose()};
   const save=e=>{e.preventDefault();if(!validPin(p1))return setEr('El PIN debe tener exactamente 4 dígitos.');if(p1!==p2)return setEr('Los PIN no coinciden.');apply(p1)};
   return html`<${Modal} title=${account.pin?'Cambiar o quitar PIN':'Agregar PIN'} onClose=${onClose}><form className="col" onSubmit=${save} noValidate>
-    <p className="muted sm">El PIN se guarda cifrado (SHA-256) solo en este dispositivo.</p>
+    <p className="muted sm">El PIN controla el acceso desde esta interfaz. FINOVA guarda una huella del PIN en este navegador.</p>
     <div className="form"><${Field} label="Nuevo PIN" id="np-1"><input id="np-1" type="password" inputMode="numeric" maxLength="4" value=${p1} onChange=${dig(setP1)} autoFocus/><//>
     <${Field} label="Confirma el PIN" id="np-2" err=${er}><input id="np-2" type="password" inputMode="numeric" maxLength="4" value=${p2} onChange=${dig(setP2)}/><//></div>
     <div className="mf">${account.pin?html`<button type="button" className="btn dng" onClick=${()=>apply(null)}>Quitar PIN</button>`:null}<button type="button" className="btn" onClick=${onClose}>Cancelar</button><button type="submit" className="btn pri">Guardar PIN</button></div></form><//>`;

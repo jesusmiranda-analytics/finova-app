@@ -48,7 +48,7 @@ const ok=(c,m)=>{if(!c)throw new Error('FALLA: '+m);console.log('ok -',m)};
  // Crear cuenta nueva con PIN
  await p.click('button.acc-new');
  await p.fill('#ca-n','Prueba');await p.fill('#ca-i','18000');await p.fill('#ca-p','1234');await p.fill('#ca-p2','1234');
- await p.click('form.pin-card button[type=submit]');await p.waitForSelector('.app');await p.waitForTimeout(600);
+ await p.check('#notice-check');await p.click('form.pin-card button[type=submit]');await p.waitForSelector('.app');await p.waitForTimeout(600);
  await p.click('text=Saltar tutorial');
  ok((await body()).includes('Prueba'),'la cuenta nueva entra a la app');
  ok(await kp('Ingresos del mes')==='$0','la cuenta nueva empieza sin movimientos');
@@ -62,7 +62,7 @@ const ok=(c,m)=>{if(!c)throw new Error('FALLA: '+m);console.log('ok -',m)};
  ok(JSON.parse(accs).every(a=>!a.pin||/^[0-9a-f]{64}$/.test(a.pin.hash)),'los PIN se guardan como SHA-256');
 
  // Eliminar cuenta
- await p.click('.side >> text=Perfil');await p.click('button:has-text("Eliminar mi cuenta y mis datos")');await p.click('.modal button:has-text("Eliminar cuenta")');
+ await p.click('.side >> text=Perfil');await p.click('button:has-text("Eliminar mi cuenta y mis datos")');await p.fill('#privacy-pin','1234');await p.getByRole('button',{name:'Verificar PIN',exact:true}).click();await p.click('.modal button:has-text("Eliminar cuenta")');
  await p.waitForSelector('.login');
  ok(!(await p.$('button[aria-label="Entrar como Prueba"]')),'la cuenta eliminada ya no aparece');
  ok(await p.evaluate(()=>!Object.keys(localStorage).filter(k=>k.startsWith('finova_u_')).some(k=>JSON.parse(localStorage.getItem(k)).user.name==='Prueba')),'sus datos se borraron del dispositivo');

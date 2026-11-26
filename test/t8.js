@@ -22,13 +22,16 @@ const ok=(c,m)=>{if(!c)throw new Error('FALLA: '+m);console.log('ok -',m)};
  ok(await txt('#dev-monto')==='$5,974'&&(await txt('#dev-card')).includes('mes 16 (marzo 2028)'),'devolución $5,974 en el mes 16 (marzo 2028), como el Excel');
  ok(await txt('#dev-ppr')==='$12,975','con PPR: $12,975 al año (seguro $6,690 + PPR $6,285)');
 
+ const autorizar=async()=>{await p.getByRole('button',{name:'Revisar permiso fiscal'}).click();await p.getByRole('button',{name:'Autorizar simulación'}).click()};
+ ok(!(await p.$('#radar-card')),'el radar requiere autorización');
+ await autorizar();
  // Radar
  ok(await kpi('Perdido por pagar en efectivo')==='$3,600','radar: $3,600 en consultas pagadas en efectivo no deducibles');
  const r=await txt('#radar-card');
  ok(r.includes('Primas de seguro de gastos médicos')&&r.includes('D07')&&r.includes('No deducible: efectivo'),'radar: prima del SGMM del plan (CFDI D07) y consultas en efectivo');
 
  // Conectar, recibir devolución, abonar al fondo
- await p.click('text=Autorizar en el SAT (simulado)');await p.waitForTimeout(300);
+ await p.waitForTimeout(300);
  ok((await txt('#sat-card')).includes('Conectado (demo)')&&(await txt('#sat-card')).includes('XAXX010101000'),'conectado con RFC genérico de demostración');
  await p.click('text=Recibir devolución (demo)');await p.waitForTimeout(300);
  ok((await txt('.modal')).includes('Comprobante de devolución')&&(await txt('.modal')).includes('$5,974'),'comprobante de devolución con folio');
@@ -41,14 +44,17 @@ const ok=(c,m)=>{if(!c)throw new Error('FALLA: '+m);console.log('ok -',m)};
  await p.click('text=Desconectar y borrar mis datos fiscales');await p.click('.modal button:has-text("Desconectar y borrar")');await p.waitForTimeout(300);
  ok(!(await p.evaluate(()=>JSON.parse(localStorage.getItem('finova_u_rivera')).fiscal)),'desconectar borra los datos fiscales');
 
+ await autorizar();
+ ok(!(await p.getByText('Recibir devolución (demo)',{exact:true}).count()),'reconectar no ofrece duplicar la devolución');
  // Rodrigo: gasto médico en efectivo y apartado fiscal con pago
  await p.click('.side >> text=Cerrar sesión');await entrar(p,'Rodrigo Demo');await p.click('text=Saltar tutorial');
  await p.click('text=Nuevo movimiento');await p.fill('#tx-amt','800');await p.selectOption('#tx-cat','Salud');await p.selectOption('#tx-met','Efectivo');await p.fill('#tx-note','Consulta dentista');
  await p.click('.modal button:has-text("Registrar")');await p.waitForTimeout(300);
  await p.click('.side >> text=Mis impuestos');await p.waitForTimeout(500);
+ await autorizar();
  ok(await kpi('Perdido por pagar en efectivo')==='$800','Rodrigo: el dentista en efectivo sale como no deducible');
  ok(await p.$('#apartado-card'),'Rodrigo: aparece el apartado fiscal por su ingreso freelance');
- await p.click('text=Autorizar en el SAT (simulado)');await p.fill('#ap-pct','10');await p.waitForTimeout(200);
+ await p.fill('#ap-pct','10');await p.waitForTimeout(200);
  const pend=await txt('#ap-pend');ok(pend==='$360','apartado del 10 % sobre $3,600 de freelance: $360 pendientes');
  const saldo0=await kpi('Saldo disponible').catch(()=>null);
  await p.click('text=Pagar $360 con línea de captura (demo)');await p.waitForTimeout(300);
