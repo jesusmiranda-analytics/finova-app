@@ -45,7 +45,7 @@ function seedRivera(){
     const mk=d=>iso(new Date(first.getFullYear(),first.getMonth(),Math.min(d,cap)));
     tx.push({id:'r'+(k++),type:'ingreso',amount:RIVERA.members[0].ingreso,cat:'Nómina',date:mk(1),method:'Transferencia',note:'Sueldo del papá',demo:true});
     tx.push({id:'r'+(k++),type:'ingreso',amount:RIVERA.members[1].ingreso,cat:'Negocio propio',date:mk(15),method:'Efectivo',note:'Ventas de repostería (mamá)',demo:true});
-    RIVERA.gastos.forEach((g,i)=>tx.push({id:'r'+(k++),type:'gasto',amount:g[1],cat:g[0],date:mk(g[2]),method:g[0]==='Deudas'?'Transferencia':MM[(i+m)%4],note:g[3],demo:true}));
+    RIVERA.gastos.forEach((g,i)=>tx.push({id:'r'+(k++),type:'gasto',amount:g[1],cat:g[0],date:mk(g[2]),method:g[4]||(g[0]==='Deudas'?'Transferencia':MM[(i+m)%4]),note:g[3],demo:true}));
   }
   const inMonths=n=>iso(new Date(now.getFullYear(),now.getMonth()+n,Math.min(now.getDate(),28)));
   return {...base,
@@ -142,6 +142,45 @@ function escaleraBasica(s){
 }
 /* Lo que paga la familia en un evento médico con seguro: deducible + coaseguro sobre el resto. */
 const eventoMedico=(costo,ded,coas)=>Math.min(costo,ded+Math.max(0,costo-ded)*coas);
+/* ================= MIS IMPUESTOS ================= */
+/* Tasa marginal de ISR según el ingreso mensual (tarifa mensual 2026). */
+function tasaMarginal(ingMensual){if(!(ingMensual>0))return 0;let r=FISCAL.tarifaMensual[0];FISCAL.tarifaMensual.forEach(x=>{if(ingMensual>=x[0])r=x});return r[2]/100}
+const esElectronico=m=>m&&m!=='Efectivo';
+/* Clasifica un gasto para el radar: deducible (con factura), factura (deducible si pides CFDI), efectivo (no deducible por pagar en efectivo) o null. */
+function clasificarGasto(t){
+  if(t.type!=='gasto')return null;const n=norm(t.note||'');
+  let k=null;
+  if(/seguro de gastos|sgmm|prima de seguro/.test(n))k='sgmm';
+  else if(t.cat==='Salud'&&/medic|consulta|dentist|dental|hospital|psicolog|nutri|laboratorio|analisis|cirug|terapia/.test(n))k='medicos';
+  else if(t.cat==='Educación'&&/colegiatura/.test(n))k='colegiatura';
+  if(!k)return null;const C=FISCAL.conceptos[k];
+  const estado=C.electronico&&!esElectronico(t.method)?'efectivo':t.cfdi?'deducible':'factura';
+  return {k,concepto:C.n,cfdi:C.cfdi,estado};
+}
+/* Radar de los últimos 12 meses. */
+function radarDeducciones(s){
+  const desde=iso(addD(new Date(),-365)),items=s.tx.filter(t=>t.date>=desde).map(t=>({t,c:clasificarGasto(t)})).filter(x=>x.c);
+  const tot=e=>sum(items.filter(x=>x.c.estado===e),x=>x.t.amount);
+  return {items,deducible:tot('deducible'),factura:tot('factura'),efectivo:tot('efectivo')};
+}
+/* Devolución estimada. Caso Rivera: cifras del Diagnóstico. Otras cuentas: deducciones con factura (con tope global) × tasa marginal. */
+function devolucionEstimada(s){
+  const M=s.plan&&s.plan.modelo;
+  if(M){const F=RIVERA.fiscal,sg=F.deducciones[0],pp=F.deducciones[1];
+    const anioPPR=sg.anual*(1+sg.alza)*F.tasaMarginal+pp.anual*F.tasaMarginal;
+    return {modelo:true,tasa:F.tasaMarginal,anio1:F.devolucionAnio1,mes:F.mesDevolucion,anioPPR,devolucionPPR:F.devolucionPPR};}
+  const R=radarDeducciones(s),ingAnual=(s.user.income||0)*12,tope=Math.min(5*FISCAL.uma.anual,.15*ingAnual);
+  const tasa=tasaMarginal(s.user.income),base=Math.min(R.deducible,tope);
+  return {modelo:false,tasa,base,tope,monto:base*tasa,posible:Math.min(R.deducible+R.factura,tope)*tasa,perdido:R.efectivo*tasa};
+}
+/* Apartado fiscal: ingresos por cuenta propia de los últimos 12 meses × % elegido − impuestos ya pagados. */
+function apartadoFiscal(s,pct){
+  const desde=iso(addD(new Date(),-365));
+  const ing=sum(s.tx.filter(t=>t.type==='ingreso'&&(t.cat==='Negocio propio'||t.cat==='Freelance')&&t.date>=desde),t=>t.amount);
+  const pagado=sum(s.tx.filter(t=>t.type==='gasto'&&t.cat==='Impuestos'&&t.date>=desde),t=>t.amount);
+  const debe=ing*(pct||0)/100;return {ing,pagado,debe,pendiente:Math.max(0,debe-pagado)};
+}
+const folioDemo=p=>`${p}-${Date.now().toString(36).toUpperCase().slice(-6)}`;
 function recorteMinimo(M){for(let r=0;r<=M.noPlaneados;r+=100)if(!planHogar(M,r).deficit)return r;return null}
 /* Fondo de emergencia para cualquier cuenta: meta = 3 meses del gasto en necesidades del mes. */
 function fondoBasico(s,ahorroMensual){

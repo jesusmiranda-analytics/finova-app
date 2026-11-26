@@ -279,9 +279,9 @@ const realCetes=t=>((1+netoCetes(t)/100)/(1+TASAS.inflacion/100)-1)*100; // % an
 const EXP_CATS=[
   {n:'Alimentación',fixed:false,grp:'needs'},{n:'Transporte',fixed:false,grp:'needs'},{n:'Educación',fixed:true,grp:'needs'},
   {n:'Entretenimiento',fixed:false,grp:'wants'},{n:'Servicios',fixed:true,grp:'needs'},{n:'Otros',fixed:false,grp:'wants'},
-  {n:'Salud',fixed:false,grp:'needs'},{n:'Deudas',fixed:true,grp:'needs'}];
+  {n:'Salud',fixed:false,grp:'needs'},{n:'Deudas',fixed:true,grp:'needs'},{n:'Impuestos',fixed:true,grp:'needs'}];
 const EXP_NAMES=EXP_CATS.map(c=>c.n);
-const INC_CATS=['Nómina','Negocio propio','Freelance','Regalo','Otros ingresos'];
+const INC_CATS=['Nómina','Negocio propio','Freelance','Devolución de impuestos','Regalo','Otros ingresos'];
 const METHODS=['Efectivo','Débito','Crédito','Transferencia'];
 
 /* ================= INSTRUMENTOS ================= */
@@ -444,7 +444,8 @@ const RIVERA={
     ['Deudas',1500,10,'Tarjeta Azul BBVA (pago)'],
     ['Entretenimiento',900,11,'Comida fuera de casa'],
     ['Alimentación',1500,12,'Súper y mercado'],
-    ['Salud',2000,13,'Salud y cuidado personal'],
+    ['Salud',600,13,'Consulta médica','Efectivo'],          // Supuesto: desglose de «salud y cuidado personal»
+    ['Salud',1400,18,'Cuidado personal'],
     ['Transporte',806,14,'Transporte público'],
     ['Otros',540,15,'Gastos hormiga'],
     ['Entretenimiento',850,16,'Suscripciones'],
@@ -488,6 +489,13 @@ const RIVERA={
     primaMama:16488.77,primaHijo:11477.48,anual:27966.26,mensual:2330.52,devolucionISR:5973.59,netoMensual:1832.72,
     deducible:10000,coaseguro:.10,
     porque:'La empresa del papá ya tiene la póliza y permite incluir al cónyuge y a los hijos solteros. Como la aseguradora no publica precios de pólizas colectivas, la prima es una estimación con datos de la industria (AMIS).'},
+  // Diagnóstico final (Supuestos y PPR) y hoja SGMM: situación fiscal del papá. RFC genérico del SAT (no es de una persona).
+  fiscal:{rfc:'XAXX010101000',tasaMarginal:.2136,
+    deducciones:[
+      {k:'sgmm',desde:1,anual:27966.26,alza:.12,nota:'Extensión del seguro colectivo para mamá e hijo'},
+      {k:'retiro',desde:22,anual:29424,nota:'Tope deducible del PPR del papá (aporta $36,000 al año)'}],
+    devolucionAnio1:5973.59,mesDevolucion:16,devolucionPPR:6285,
+    mama:'La repostería de la mamá no está registrada ante el SAT (Diagnóstico); formalizarla queda para una siguiente fase.'},
   // Tarjeta actual (Diagnóstico) y rango de límite. Supuesto: deben $18,000, así que su límite es mayor a $15,000.
   tarjeta:{actual:'Azul BBVA',rango:'15000',uso:'super'},
   // Hoja Supuestos (secciones 1-9): parámetros del plan de 24 meses.
@@ -571,6 +579,25 @@ const PRIORIDADES=[
 
 /* Referencias de gastos médicos (AMIS, citadas en el Diagnóstico final y hoja SGMM del modelo). */
 const SGMM_REF={eventoPromedio:100852,cancer:297000,individual:28252,fuente:'AMIS (2025, 2026), vía Diagnóstico final de la consultora'};
+
+/* ================= DATOS FISCALES (personas físicas) =================
+   Tarifa mensual de ISR 2026: art. 96 LISR, Anexo 8 RMF 2026 (DOF 28-dic-2025); coincide en siemprecontable.net, heru.app y sdv.com.mx.
+   Deducciones personales: minisitio del SAT «Deducciones personales» (sat.gob.mx/minisitio/DeduccionesPersonales). */
+const FISCAL={
+  fuenteTarifa:'Tarifa mensual de ISR 2026, art. 96 LISR (Anexo 8 RMF 2026, DOF 28-dic-2025)',
+  fuenteDeducciones:'SAT, minisitio «Deducciones personales» (art. 151 LISR)',
+  uma:{diaria:117.31,anual:42794.64},
+  // [límite inferior, cuota fija, % sobre el excedente]
+  tarifaMensual:[[0.01,0,1.92],[844.60,16.22,6.40],[7168.52,420.95,10.88],[12598.03,1011.68,16.00],[14644.65,1339.14,17.92],[17533.65,1856.84,21.36],
+    [35362.84,5665.16,23.52],[55736.69,10457.09,30.00],[106410.51,25659.23,32.00],[141880.67,37009.69,34.00],[425642.00,133488.54,35.00]],
+  medios:'transferencia electrónica, tarjeta de crédito, débito o de servicios, o cheque nominativo',
+  conceptos:{
+    medicos:{n:'Honorarios médicos, dentales y hospitalarios',cfdi:'D01',electronico:true},
+    sgmm:{n:'Primas de seguro de gastos médicos',cfdi:'D07',electronico:true},
+    colegiatura:{n:'Colegiaturas (con RVOE; con tope por nivel)',cfdi:'D10',electronico:false},
+    retiro:{n:'Aportaciones complementarias de retiro (PPR)',cfdi:'D06',electronico:true}},
+  colegiaturas:{Preescolar:14200,Primaria:12900,Secundaria:19900,'Profesional técnico':17100,Bachillerato:24500}
+};
 /* ================= DATOS SEMILLA ================= */
 function seed(){
   const now=new Date(),tx=[];let k=0;
@@ -618,7 +645,7 @@ function seedRivera(){
     const mk=d=>iso(new Date(first.getFullYear(),first.getMonth(),Math.min(d,cap)));
     tx.push({id:'r'+(k++),type:'ingreso',amount:RIVERA.members[0].ingreso,cat:'Nómina',date:mk(1),method:'Transferencia',note:'Sueldo del papá',demo:true});
     tx.push({id:'r'+(k++),type:'ingreso',amount:RIVERA.members[1].ingreso,cat:'Negocio propio',date:mk(15),method:'Efectivo',note:'Ventas de repostería (mamá)',demo:true});
-    RIVERA.gastos.forEach((g,i)=>tx.push({id:'r'+(k++),type:'gasto',amount:g[1],cat:g[0],date:mk(g[2]),method:g[0]==='Deudas'?'Transferencia':MM[(i+m)%4],note:g[3],demo:true}));
+    RIVERA.gastos.forEach((g,i)=>tx.push({id:'r'+(k++),type:'gasto',amount:g[1],cat:g[0],date:mk(g[2]),method:g[4]||(g[0]==='Deudas'?'Transferencia':MM[(i+m)%4]),note:g[3],demo:true}));
   }
   const inMonths=n=>iso(new Date(now.getFullYear(),now.getMonth()+n,Math.min(now.getDate(),28)));
   return {...base,
@@ -715,6 +742,45 @@ function escaleraBasica(s){
 }
 /* Lo que paga la familia en un evento médico con seguro: deducible + coaseguro sobre el resto. */
 const eventoMedico=(costo,ded,coas)=>Math.min(costo,ded+Math.max(0,costo-ded)*coas);
+/* ================= MIS IMPUESTOS ================= */
+/* Tasa marginal de ISR según el ingreso mensual (tarifa mensual 2026). */
+function tasaMarginal(ingMensual){if(!(ingMensual>0))return 0;let r=FISCAL.tarifaMensual[0];FISCAL.tarifaMensual.forEach(x=>{if(ingMensual>=x[0])r=x});return r[2]/100}
+const esElectronico=m=>m&&m!=='Efectivo';
+/* Clasifica un gasto para el radar: deducible (con factura), factura (deducible si pides CFDI), efectivo (no deducible por pagar en efectivo) o null. */
+function clasificarGasto(t){
+  if(t.type!=='gasto')return null;const n=norm(t.note||'');
+  let k=null;
+  if(/seguro de gastos|sgmm|prima de seguro/.test(n))k='sgmm';
+  else if(t.cat==='Salud'&&/medic|consulta|dentist|dental|hospital|psicolog|nutri|laboratorio|analisis|cirug|terapia/.test(n))k='medicos';
+  else if(t.cat==='Educación'&&/colegiatura/.test(n))k='colegiatura';
+  if(!k)return null;const C=FISCAL.conceptos[k];
+  const estado=C.electronico&&!esElectronico(t.method)?'efectivo':t.cfdi?'deducible':'factura';
+  return {k,concepto:C.n,cfdi:C.cfdi,estado};
+}
+/* Radar de los últimos 12 meses. */
+function radarDeducciones(s){
+  const desde=iso(addD(new Date(),-365)),items=s.tx.filter(t=>t.date>=desde).map(t=>({t,c:clasificarGasto(t)})).filter(x=>x.c);
+  const tot=e=>sum(items.filter(x=>x.c.estado===e),x=>x.t.amount);
+  return {items,deducible:tot('deducible'),factura:tot('factura'),efectivo:tot('efectivo')};
+}
+/* Devolución estimada. Caso Rivera: cifras del Diagnóstico. Otras cuentas: deducciones con factura (con tope global) × tasa marginal. */
+function devolucionEstimada(s){
+  const M=s.plan&&s.plan.modelo;
+  if(M){const F=RIVERA.fiscal,sg=F.deducciones[0],pp=F.deducciones[1];
+    const anioPPR=sg.anual*(1+sg.alza)*F.tasaMarginal+pp.anual*F.tasaMarginal;
+    return {modelo:true,tasa:F.tasaMarginal,anio1:F.devolucionAnio1,mes:F.mesDevolucion,anioPPR,devolucionPPR:F.devolucionPPR};}
+  const R=radarDeducciones(s),ingAnual=(s.user.income||0)*12,tope=Math.min(5*FISCAL.uma.anual,.15*ingAnual);
+  const tasa=tasaMarginal(s.user.income),base=Math.min(R.deducible,tope);
+  return {modelo:false,tasa,base,tope,monto:base*tasa,posible:Math.min(R.deducible+R.factura,tope)*tasa,perdido:R.efectivo*tasa};
+}
+/* Apartado fiscal: ingresos por cuenta propia de los últimos 12 meses × % elegido − impuestos ya pagados. */
+function apartadoFiscal(s,pct){
+  const desde=iso(addD(new Date(),-365));
+  const ing=sum(s.tx.filter(t=>t.type==='ingreso'&&(t.cat==='Negocio propio'||t.cat==='Freelance')&&t.date>=desde),t=>t.amount);
+  const pagado=sum(s.tx.filter(t=>t.type==='gasto'&&t.cat==='Impuestos'&&t.date>=desde),t=>t.amount);
+  const debe=ing*(pct||0)/100;return {ing,pagado,debe,pendiente:Math.max(0,debe-pagado)};
+}
+const folioDemo=p=>`${p}-${Date.now().toString(36).toUpperCase().slice(-6)}`;
 function recorteMinimo(M){for(let r=0;r<=M.noPlaneados;r+=100)if(!planHogar(M,r).deficit)return r;return null}
 /* Fondo de emergencia para cualquier cuenta: meta = 3 meses del gasto en necesidades del mes. */
 function fondoBasico(s,ahorroMensual){
@@ -981,13 +1047,14 @@ const ICON={
  refresh:'M4 12a8 8 0 0114-5l2 2M20 4v5h-5M20 12a8 8 0 01-14 5l-2-2M4 20v-5h5',news:'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5',spark:'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z',
  info:'M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v6M12 7.5h.01',warn:'M12 3l10 18H2zM12 10v5M12 18h.01',cal:'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',copy2:'M5 5h14v14H5z'};
 ICON.trend=ICON.chart;
+ICON.receipt='M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h4';
 const Ic=({n,s=20})=>html`<svg width=${s} height=${s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d=${ICON[n]||ICON.info}/></svg>`;
 const Demo=({t='Demo'})=>html`<span className="demo">${t}</span>`;
 function col(){const g=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   return {green:g('--green'),blue:g('--blue'),yellow:g('--yellow'),red:g('--red'),purple:g('--purple'),teal:g('--teal'),fg:g('--fg'),muted:g('--muted'),line:g('--line'),card:g('--card')}}
 /* Hogares (cuenta con integrantes) se saludan con el nombre completo: "Familia Rivera". */
 const shortName=u=>u.members&&u.members.length?u.name:u.name.split(' ')[0];
-const catColors=c=>[c.blue,c.green,c.yellow,c.red,c.purple,c.teal,'#E8833A','#C2549D'];
+const catColors=c=>[c.blue,c.green,c.yellow,c.red,c.purple,c.teal,'#E8833A','#C2549D','#6B7A90'];
 
 function Modal({title,onClose,children,wide}){
   useEffect(()=>{const h=e=>{if(e.key==='Escape')onClose()};window.addEventListener('keydown',h);return()=>window.removeEventListener('keydown',h)},[]);
@@ -1566,7 +1633,7 @@ function Asesor(){
   return html`<div className="page">
     <${Head} title=${html`Mi asesor <${Demo} t="Prototipo"/>`} sub="Tres decisiones, cada una con su porqué." right=${M?html`<span className="pill g">Plan de la consultora</span>`:null}/>
     <${Banner} ic="info">Recomendaciones educativas de un prototipo: no son asesoría financiera ni una oferta de los bancos o aseguradoras mencionados. Cada cifra trae su fuente; lo que no tiene cotización dice «Supuesto».<//>
-    <${AsesorSeguro} M=${M}/><${AsesorInversion} M=${M}/><${AsesorTarjeta} M=${M}/>
+    <${AsesorSeguro} M=${M}/><${AsesorInversion} M=${M}/><${AsesorTarjeta} M=${M}/><${AsesorImpuestos} M=${M}/>
   </div>`;
 }
 const Paso=({n,t})=>html`<div className="row" style=${{gap:10,flexWrap:'nowrap'}}><span className="num-badge">${n}</span><h2>${t}</h2></div>`;
@@ -1660,6 +1727,139 @@ function AsesorTarjeta({M}){
     <div className="muted xs">Fuente: <a href=${R.T.url} target="_blank" rel="noopener">${TARJETAS_FUENTE}, límite ${R.T.n.toLowerCase()}</a>; ${TEPP_NT.fuente}. El CAT de una persona depende de su perfil de riesgo y puede ser distinto al de publicidad.</div>
     <${Supuesto}>${M?'que su límite de crédito es mayor a $15,000 (deben $18,000) y que la usarán sobre todo en el súper; ':''}que se cumplen los requisitos de ingreso del banco, que Banxico no publica.<//>
   </div>`;
+}
+
+/* ================= MIS IMPUESTOS =================
+   Lo fiscal integrado al plan: conexión con el SAT (simulada, sin contraseñas), radar de deducciones,
+   devolución estimada que entra al plan y trazabilidad de devoluciones y pagos (simulados). */
+const PERMISOS_SAT=['Facturas (CFDI) que recibes y emites','Retenciones de ISR de tu nómina','Declaraciones que ya presentaste'];
+const NO_HACE=['Presentar declaraciones por ti','Pagar sin tu confirmación','Compartir tus datos con terceros'];
+const ESTADO_FISCAL={deducible:['g','Deducible'],factura:['y','Pide factura'],efectivo:['r','No deducible: efectivo']};
+
+function Impuestos(){
+  const {s}=useApp(),M=s.plan&&s.plan.modelo;
+  return html`<div className="page">
+    <${Head} title=${html`Mis impuestos <${Demo}/>`} sub="Tus deducciones se vuelven devolución, y tu devolución se vuelve parte de tu plan."/>
+    <${Banner} k="y" ic="warn"><b>Demo: FINOVA no se conecta al SAT real ni paga impuestos en este prototipo.</b> Información educativa; no es asesoría fiscal.<//>
+    <div className="split"><${ConexionSAT}/><${DevolucionCard} M=${M}/></div>
+    <${RadarCard} M=${M}/>
+    ${M?html`<div className="card sm muted">${RIVERA.fiscal.mama}</div>`:html`<${ApartadoCard}/>`}
+    <${HistorialFiscal}/>
+  </div>`;
+}
+
+function ConexionSAT(){
+  const {s,upd,toast,ask}=useApp(),F=s.fiscal,M=s.plan&&s.plan.modelo;
+  const conectar=()=>{upd(d=>{d.fiscal={conectado:true,rfc:M?RIVERA.fiscal.rfc:'XAXX010101000',fecha:todayS(),permisos:[...PERMISOS_SAT],historial:[{tipo:'Conexión',fecha:todayS(),monto:null,folio:folioDemo('SAT'),nota:'Permiso de solo lectura (simulado)'}]}});toast('SAT conectado (demo)','ok')};
+  const borrar=()=>ask({title:'Desconectar y borrar mis datos fiscales',text:'FINOVA dejará de leer tu información del SAT y borrará de este dispositivo tu RFC, permisos e historial fiscal. Tus movimientos no se borran.',yes:'Desconectar y borrar',onYes:()=>{upd(d=>{delete d.fiscal});toast('Datos fiscales borrados','ok')}});
+  return html`<div className="card col" id="sat-card" style=${{gap:12}}>
+    <div className="ch" style=${{marginBottom:0}}><h2>Conexión con el SAT</h2><span className=${'pill '+(F&&F.conectado?'g':'')}>${F&&F.conectado?'Conectado (demo)':'Sin conectar'}</span></div>
+    ${F&&F.conectado?html`<div className="sm">RFC <b className="num">${F.rfc}</b> <span className="muted">(RFC genérico de demostración)</span> · desde ${fdate(F.fecha)}</div>
+      <div className="sm"><b>FINOVA puede leer:</b><ul className="porque">${F.permisos.map(p=>html`<li key=${p}>${p}</li>`)}</ul></div>
+      <button className="btn dng sm" style=${{alignSelf:'flex-start'}} onClick=${borrar}><${Ic} n="trash" s=${15}/>Desconectar y borrar mis datos fiscales</button>`
+    :html`<div className="sm">Con tu permiso, FINOVA leería tu información fiscal para encontrar deducciones y estimar tu devolución.</div>
+      <div className="grid" style=${{gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,200px),1fr))',gap:10}}>
+        <div className="card flat sm"><b className="up">Solo leería</b><ul className="porque">${PERMISOS_SAT.map(p=>html`<li key=${p}>${p}</li>`)}</ul></div>
+        <div className="card flat sm"><b className="down">Nunca haría</b><ul className="porque">${NO_HACE.map(p=>html`<li key=${p}>${p}</li>`)}</ul></div></div>
+      <div className="supuesto xs"><b>Sin contraseñas:</b> en este prototipo no te pedimos tu contraseña del SAT (CIEC) ni tu e.firma. En la versión real la autorización se daría en el sitio del SAT o de un proveedor autorizado.</div>
+      <button className="btn pri" style=${{alignSelf:'flex-start'}} onClick=${conectar}><${Ic} n="lock" s=${16}/>Autorizar en el SAT (simulado)</button>`}
+  </div>`;
+}
+
+function DevolucionCard({M}){
+  const {s,upd,toast,go}=useApp(),D=devolucionEstimada(s),F=s.fiscal,[comp,setComp]=useState(null);
+  const monto=Math.round(D.modelo?D.anio1:D.monto),recibida=F&&F.historial&&F.historial.some(h=>h.tipo==='Devolución');
+  const recibir=()=>{const folio=folioDemo('DEV'),h={tipo:'Devolución',fecha:todayS(),monto,folio,nota:'Devolución de ISR (simulada)'};
+    upd(d=>{d.tx.push({id:uid(),type:'ingreso',amount:monto,cat:'Devolución de impuestos',date:todayS(),method:'Transferencia',note:`Devolución de ISR (SAT) · folio ${folio}`,demo:true});d.fiscal.historial.push(h)});
+    setComp({...h,titulo:'Comprobante de devolución (demo)'});toast('Devolución registrada en tus movimientos','ok')};
+  const fondo=s.goals.find(g=>/emergencia/i.test(g.name));
+  const abonar=()=>{upd(d=>{const g=d.goals.find(x=>x.id===fondo.id);g.saved=Math.min(g.target,g.saved+monto);d.fiscal.historial.push({tipo:'Abono al fondo',fecha:todayS(),monto,folio:'—',nota:`A «${fondo.name}»`})});toast('Devolución abonada a tu fondo de emergencia','ok');setComp(null)};
+  return html`<div className="card col" id="dev-card" style=${{gap:12}}>
+    <div className="ch" style=${{marginBottom:0}}><h2>Tu devolución estimada</h2><span className="pill b">Tasa marginal ${pc(D.tasa*100,2)}</span></div>
+    ${D.modelo?html`<div className="num up" style=${{fontSize:34,fontWeight:700,lineHeight:1}} id="dev-monto">${fmt(D.anio1)}</div>
+      <div className="sm">Por deducir la prima del seguro de gastos médicos. Llega en el <b>mes ${D.mes} (${mesTxt(M,D.mes)})</b> y lleva al fondo de emergencia a su meta de 3 meses.</div>
+      <div className="card flat sm">Desde que inicia el PPR (mes ${RIVERA.fiscal.deducciones[1].desde}), la devolución sube a <b className="num" id="dev-ppr">${fmt(D.anioPPR)}</b> al año: seguro ${fmt(D.anioPPR-D.devolucionPPR)} + PPR ${fmt(D.devolucionPPR)}.</div>
+      <button className="btn gh sm" style=${{alignSelf:'flex-start',padding:0,height:24}} onClick=${()=>go('finanzas','hogar')}>Ver el mes ${D.mes} en el plan del hogar →</button>`
+    :html`<div className="num up" style=${{fontSize:34,fontWeight:700,lineHeight:1}} id="dev-monto">${fmt(D.monto)}</div>
+      <div className="sm">Con tus gastos deducibles con factura de los últimos 12 meses (${fmt(D.base)}). Si pides factura de lo pendiente, podría llegar a <b className="num">${fmt(D.posible)}</b>.</div>
+      ${D.perdido>0?html`<div className="supuesto xs">Pagar en efectivo te costó ≈ <b>${fmt(D.perdido)}</b> de devolución.</div>`:null}
+      <div className="muted xs">Tope global: ${fmt(D.tope)} (lo menor entre 5 UMA anuales y 15 % de tu ingreso). Tasa según la ${FISCAL.fuenteTarifa}, con tu ingreso de Perfil.</div>`}
+    ${F&&F.conectado&&monto>0?recibida?html`<div className="cuadre ok"><${Ic} n="check" s=${16}/>Devolución recibida y registrada en Movimientos.</div>`
+      :html`<button className="btn pri" style=${{alignSelf:'flex-start'}} onClick=${recibir}>Recibir devolución (demo)</button>`
+     :html`<div className="muted xs">${F&&F.conectado?'Aún no hay devolución que recibir.':'Conecta el SAT (demo) para simular la devolución.'}</div>`}
+    ${comp?html`<${Comprobante} c=${comp} onClose=${()=>setComp(null)} extra=${fondo&&fondo.saved<fondo.target?html`<button className="btn pri" onClick=${abonar}>Abonar ${fmt(comp.monto)} a «${fondo.name}»</button>`:null}/>`:null}
+  </div>`;
+}
+
+function RadarCard({M}){
+  const {s,upd}=useApp(),R=radarDeducciones(s),[todo,setTodo]=useState(false);
+  const plan=M?RIVERA.fiscal.deducciones.map(d=>({...d,C:FISCAL.conceptos[d.k],fecha:mesTxt(M,d.desde)})):[];
+  const lista=todo?R.items:R.items.slice(0,8);
+  return html`<div className="card col" id="radar-card" style=${{gap:12}}>
+    <div className="ch" style=${{marginBottom:0}}><div><h2>Radar de deducciones</h2><div className="muted sm">FINOVA revisa tus gastos de los últimos 12 meses y te dice cuáles puedes deducir.</div></div></div>
+    <div className="grid g3">
+      <${Kpi} ic="check" l="Deducible (con factura)" v=${fmt(R.deducible)} s="Listo para tu declaración" cls="up"/>
+      <${Kpi} ic="copy2" l="Pide factura" v=${fmt(R.factura)} s="Deducible si tienes el CFDI a tu nombre"/>
+      <${Kpi} ic="warn" l="Perdido por pagar en efectivo" v=${fmt(R.efectivo)} s="Los gastos médicos en efectivo no se deducen" cls=${R.efectivo>0?'down':''}/>
+    </div>
+    ${plan.length?html`<div className="col" style=${{gap:6}}><b className="sm">Deducciones del plan</b>${plan.map(d=>html`<div key=${d.k} className="row sp sm" style=${{flexWrap:'nowrap'}}><span><b>${d.C.n}</b> <span className="muted">· ${d.nota} · desde ${d.fecha} · CFDI ${d.C.cfdi}</span></span><b className="num">${fmt(d.anual)} al año</b></div>`)}</div>`:null}
+    ${R.items.length?html`<div className="tw"><table className="plan-t dest"><thead><tr><th>Fecha</th><th>Gasto</th><th>Pago</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody>
+      ${lista.map(({t,c})=>html`<tr key=${t.id}><td>${fshort(t.date)}</td><td>${t.note||t.cat}<br/><span className="muted xs">${c.concepto} · CFDI ${c.cfdi}</span></td><td>${t.method}</td><td className="num">${fmt(t.amount)}</td>
+        <td><span className=${'pill '+ESTADO_FISCAL[c.estado][0]}>${ESTADO_FISCAL[c.estado][1]}</span></td>
+        <td>${c.estado==='factura'?html`<button className="btn sm" onClick=${()=>upd(d=>{d.tx.find(x=>x.id===t.id).cfdi=true})}>Ya tengo factura</button>`:c.estado==='efectivo'?html`<span className="xs muted">La próxima vez paga con tarjeta o transferencia</span>`:null}</td></tr>`)}
+    </tbody></table></div>${R.items.length>8?html`<button className="btn sm" style=${{alignSelf:'flex-start'}} onClick=${()=>setTodo(!todo)}>${todo?'Ver menos':`Ver los ${R.items.length}`}</button>`:null}`
+    :html`<${Empty} title="Sin gastos deducibles detectados" text="Registra tus consultas médicas, dentista u hospital (categoría Salud) o colegiaturas (Educación)."/>`}
+    <div className="muted xs">Requisitos: factura (CFDI) a tu nombre con el uso correcto y pago con ${FISCAL.medios}. Colegiaturas con tope anual por nivel (primaria ${fmt(FISCAL.colegiaturas.Primaria)}, secundaria ${fmt(FISCAL.colegiaturas.Secundaria)}). Fuente: ${FISCAL.fuenteDeducciones}.</div>
+  </div>`;
+}
+
+function ApartadoCard(){
+  const {s,upd,toast}=useApp(),[pct,setPct]=useState(''),[comp,setComp]=useState(null);
+  const p=num(pct),A=apartadoFiscal(s,Number.isFinite(p)?p:0),F=s.fiscal;
+  if(A.ing<=0)return null;
+  const pagar=()=>{const folio=folioDemo('PAGO'),linea='DEMO'+String(Date.now()).slice(-12).padStart(16,'0'),monto=Math.round(A.pendiente*100)/100;
+    const h={tipo:'Pago',fecha:todayS(),monto,folio,nota:`Línea de captura ${linea}`};
+    upd(d=>{d.tx.push({id:uid(),type:'gasto',amount:monto,cat:'Impuestos',date:todayS(),method:'Transferencia',note:`Pago SAT · línea de captura ${linea}`,demo:true});d.fiscal.historial.push(h)});
+    setComp({...h,titulo:'Comprobante de pago (demo)',linea});toast('Pago registrado en tus movimientos','ok')};
+  return html`<div className="card col" id="apartado-card" style=${{gap:12}}>
+    <div className="ch" style=${{marginBottom:0}}><div><h2>Apartado fiscal</h2><div className="muted sm">Tienes ingresos por tu cuenta (${fmt(A.ing)} en 12 meses). Aparta una parte para que el pago de impuestos no te tome por sorpresa.</div></div></div>
+    <div className="row" style=${{gap:12,alignItems:'flex-end'}}>
+      <${Field} label="¿Qué % quieres apartar?" id="ap-pct" hint="Depende de tu régimen fiscal; consúltalo con tu contador."><input id="ap-pct" type="number" min="0" max="35" step="0.5" placeholder="Ej. 10" value=${pct} onChange=${e=>setPct(e.target.value)} style=${{maxWidth:140}}/><//>
+      ${Number.isFinite(p)&&p>0?html`<div className="sm">Deberías tener apartado <b className="num">${fmt(A.debe)}</b> · ya pagaste <b className="num">${fmt(A.pagado)}</b> · pendiente <b className="num" id="ap-pend">${fmt(A.pendiente)}</b></div>`:null}</div>
+    ${Number.isFinite(p)&&p>0&&A.pendiente>0?F&&F.conectado?html`<button className="btn pri" style=${{alignSelf:'flex-start'}} onClick=${pagar}>Pagar ${fmt(A.pendiente)} con línea de captura (demo)</button>`:html`<div className="muted xs">Conecta el SAT (demo) para simular el pago.</div>`:null}
+    ${comp?html`<${Comprobante} c=${comp} onClose=${()=>setComp(null)}/>`:null}
+  </div>`;
+}
+
+function HistorialFiscal(){
+  const {s}=useApp(),H=s.fiscal&&s.fiscal.historial||[];
+  return html`<div className="card col" id="hist-card" style=${{gap:10}}><h2>Historial fiscal</h2>
+    ${H.length?html`<div className="tw"><table className="plan-t dest"><thead><tr><th>Fecha</th><th>Qué pasó</th><th>Monto</th><th>Folio</th><th>Detalle</th></tr></thead><tbody>
+      ${[...H].reverse().map((h,i)=>html`<tr key=${i}><td>${fdate(h.fecha)}</td><td><b>${h.tipo}</b></td><td className="num">${h.monto!=null?fmt(h.monto):'—'}</td><td className="num xs">${h.folio}</td><td className="sm">${h.nota}</td></tr>`)}
+    </tbody></table></div><div className="muted xs">Cada devolución y pago también queda en Mis finanzas → Movimientos, así sabes de dónde salió y a dónde fue tu dinero.</div>`
+    :html`<${Empty} title="Sin movimientos fiscales" text="Aquí verás conexiones, devoluciones y pagos con su folio."/>`}</div>`;
+}
+
+function Comprobante({c,onClose,extra}){
+  return html`<${Modal} title=${c.titulo} onClose=${onClose}>
+    <div className="card flat col" style=${{gap:6}}>
+      <div className="row sp"><span className="muted sm">Monto</span><b className="num" style=${{fontSize:22}}>${fmt(c.monto)}</b></div>
+      <div className="row sp sm"><span className="muted">Fecha</span><span>${fdate(c.fecha)}</span></div>
+      <div className="row sp sm"><span className="muted">Folio</span><span className="num">${c.folio}</span></div>
+      ${c.linea?html`<div className="row sp sm"><span className="muted">Línea de captura</span><span className="num">${c.linea}</span></div>`:null}
+      <div className="row sp sm"><span className="muted">Cuenta</span><span>FINOVA (demo)</span></div></div>
+    <div className="supuesto xs">Comprobante de demostración: no tiene validez ante el SAT.</div>
+    <div className="mf"><button className="btn" onClick=${onClose}>Cerrar</button>${extra||null}</div><//>`;
+}
+
+/* Tarjeta 4 de «Mi asesor». */
+function AsesorImpuestos({M}){
+  const {s,go}=useApp(),D=devolucionEstimada(s);
+  return html`<div className="card col asesor" id="as-impuestos" style=${{gap:12}}>
+    <${Paso} n="4" t="Impuestos: tu devolución"/>
+    <div className="reco"><div className="muted xs">Recomendación</div><div className="reco-t">${M?`Deduce el seguro y recupera ${fmt(D.anio1)} en ${mesTxt(M,D.mes)}`:D.monto>0?`Presenta tu declaración: podrías recuperar ${fmt(D.monto)}`:'Pide factura y paga con tarjeta tus gastos médicos'}</div>
+      <div className="muted sm">${M?`Con el PPR, la devolución sube a ${fmt(D.anioPPR)} al año. Esa devolución lleva al fondo de emergencia a su meta.`:'Los gastos médicos pagados en efectivo no se pueden deducir.'}</div></div>
+    <button className="btn sm" style=${{alignSelf:'flex-start'}} onClick=${()=>go('impuestos')}>Ver Mis impuestos →</button></div>`;
 }
 /* ================= ASISTENTE IA (DEMO) ================= */
 function aiCtx(s){
@@ -2087,9 +2287,9 @@ function Ayuda(){
     <div className="row"><button className="btn" onClick=${replayTutorial}>Ver tutorial de bienvenida</button><button className="btn" onClick=${()=>go('perfil')}>Ir a Perfil</button></div></div>`;
 }
 /* ================= APP ================= */
-const NAV=[['inicio','Inicio','Inicio','home'],['asesor','Mi asesor','Asesor','star'],['mexico','México hoy','México','globe'],['finanzas','Mis finanzas','Finanzas','wallet'],['asistente','Asistente IA','IA','chat'],['inversiones','Inversiones','Invertir','chart'],['academia','Academia','Academia','book'],['perfil','Perfil','Perfil','user']];
-const ROUTES={inicio:Inicio,asesor:Asesor,mexico:Mexico,finanzas:Finanzas,asistente:Asistente,inversiones:Inversiones,academia:Academia,perfil:Perfil,calculadoras:Calculadoras,ayuda:Ayuda};
-const ROUTE_NAMES={inicio:'Inicio',asesor:'Mi asesor',mexico:'México hoy',finanzas:'Mis finanzas',asistente:'Asistente IA',inversiones:'Inversiones',academia:'Academia',perfil:'Perfil',calculadoras:'Calculadoras',ayuda:'Centro de ayuda'};
+const NAV=[['inicio','Inicio','Inicio','home'],['asesor','Mi asesor','Asesor','star'],['impuestos','Mis impuestos','Impuestos','receipt'],['mexico','México hoy','México','globe'],['finanzas','Mis finanzas','Finanzas','wallet'],['asistente','Asistente IA','IA','chat'],['inversiones','Inversiones','Invertir','chart'],['academia','Academia','Academia','book'],['perfil','Perfil','Perfil','user']];
+const ROUTES={inicio:Inicio,asesor:Asesor,impuestos:Impuestos,mexico:Mexico,finanzas:Finanzas,asistente:Asistente,inversiones:Inversiones,academia:Academia,perfil:Perfil,calculadoras:Calculadoras,ayuda:Ayuda};
+const ROUTE_NAMES={inicio:'Inicio',asesor:'Mi asesor',impuestos:'Mis impuestos',mexico:'México hoy',finanzas:'Mis finanzas',asistente:'Asistente IA',inversiones:'Inversiones',academia:'Academia',perfil:'Perfil',calculadoras:'Calculadoras',ayuda:'Centro de ayuda'};
 function applyTheme(t){const r=document.documentElement;if(t==='light'||t==='dark')r.setAttribute('data-theme',t);else r.removeAttribute('data-theme')}
 
 const TUT=[['wallet','Bienvenido a FINOVA','Tu dinero. Tus decisiones. Tu futuro. Este es un prototipo de demostración: tus datos se guardan solo en este dispositivo y puedes cerrar sesión o cambiar de perfil cuando quieras.'],
@@ -2159,7 +2359,7 @@ function App({account,logout,onAccountChange}){
         <div className="wrap"><${Page} key=${route}/></div>
       </div>
     </div>
-    <nav className="bottom" aria-label="Navegación principal">${NAV.filter(([r])=>r!=='mexico').map(([r,,l,ic])=>html`<button key=${r} className=${route===r?'on':''} aria-current=${route===r?'page':undefined} onClick=${()=>go(r)}><${Ic} n=${ic} s=${22}/>${l}</button>`)}</nav>
+    <nav className="bottom" aria-label="Navegación principal">${NAV.filter(([r])=>r!=='mexico'&&r!=='impuestos').map(([r,,l,ic])=>html`<button key=${r} className=${route===r?'on':''} aria-current=${route===r?'page':undefined} onClick=${()=>go(r)}><${Ic} n=${ic} s=${22}/>${l}</button>`)}</nav>
     <div className="toasts" aria-live="polite">${toasts.map(t=>html`<div key=${t.id} className=${'toast '+(t.kind||'')}>${t.msg}</div>`)}</div>
     ${txm?html`<${TxForm} defType=${txm.defType} onClose=${()=>setTxm(null)}/>`:null}
     ${conf?html`<${Confirm} c=${conf} onClose=${()=>setConf(null)}/>`:null}

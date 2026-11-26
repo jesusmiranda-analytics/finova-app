@@ -7,7 +7,7 @@ function Asesor(){
   return html`<div className="page">
     <${Head} title=${html`Mi asesor <${Demo} t="Prototipo"/>`} sub="Tres decisiones, cada una con su porqué." right=${M?html`<span className="pill g">Plan de la consultora</span>`:null}/>
     <${Banner} ic="info">Recomendaciones educativas de un prototipo: no son asesoría financiera ni una oferta de los bancos o aseguradoras mencionados. Cada cifra trae su fuente; lo que no tiene cotización dice «Supuesto».<//>
-    <${AsesorSeguro} M=${M}/><${AsesorInversion} M=${M}/><${AsesorTarjeta} M=${M}/>
+    <${AsesorSeguro} M=${M}/><${AsesorInversion} M=${M}/><${AsesorTarjeta} M=${M}/><${AsesorImpuestos} M=${M}/>
   </div>`;
 }
 const Paso=({n,t})=>html`<div className="row" style=${{gap:10,flexWrap:'nowrap'}}><span className="num-badge">${n}</span><h2>${t}</h2></div>`;

@@ -24,7 +24,8 @@ const RIVERA={
     ['Deudas',1500,10,'Tarjeta Azul BBVA (pago)'],
     ['Entretenimiento',900,11,'Comida fuera de casa'],
     ['Alimentación',1500,12,'Súper y mercado'],
-    ['Salud',2000,13,'Salud y cuidado personal'],
+    ['Salud',600,13,'Consulta médica','Efectivo'],          // Supuesto: desglose de «salud y cuidado personal»
+    ['Salud',1400,18,'Cuidado personal'],
     ['Transporte',806,14,'Transporte público'],
     ['Otros',540,15,'Gastos hormiga'],
     ['Entretenimiento',850,16,'Suscripciones'],
@@ -68,6 +69,13 @@ const RIVERA={
     primaMama:16488.77,primaHijo:11477.48,anual:27966.26,mensual:2330.52,devolucionISR:5973.59,netoMensual:1832.72,
     deducible:10000,coaseguro:.10,
     porque:'La empresa del papá ya tiene la póliza y permite incluir al cónyuge y a los hijos solteros. Como la aseguradora no publica precios de pólizas colectivas, la prima es una estimación con datos de la industria (AMIS).'},
+  // Diagnóstico final (Supuestos y PPR) y hoja SGMM: situación fiscal del papá. RFC genérico del SAT (no es de una persona).
+  fiscal:{rfc:'XAXX010101000',tasaMarginal:.2136,
+    deducciones:[
+      {k:'sgmm',desde:1,anual:27966.26,alza:.12,nota:'Extensión del seguro colectivo para mamá e hijo'},
+      {k:'retiro',desde:22,anual:29424,nota:'Tope deducible del PPR del papá (aporta $36,000 al año)'}],
+    devolucionAnio1:5973.59,mesDevolucion:16,devolucionPPR:6285,
+    mama:'La repostería de la mamá no está registrada ante el SAT (Diagnóstico); formalizarla queda para una siguiente fase.'},
   // Tarjeta actual (Diagnóstico) y rango de límite. Supuesto: deben $18,000, así que su límite es mayor a $15,000.
   tarjeta:{actual:'Azul BBVA',rango:'15000',uso:'super'},
   // Hoja Supuestos (secciones 1-9): parámetros del plan de 24 meses.

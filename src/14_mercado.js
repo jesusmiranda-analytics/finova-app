@@ -51,3 +51,22 @@ const PRIORIDADES=[
 
 /* Referencias de gastos médicos (AMIS, citadas en el Diagnóstico final y hoja SGMM del modelo). */
 const SGMM_REF={eventoPromedio:100852,cancer:297000,individual:28252,fuente:'AMIS (2025, 2026), vía Diagnóstico final de la consultora'};
+
+/* ================= DATOS FISCALES (personas físicas) =================
+   Tarifa mensual de ISR 2026: art. 96 LISR, Anexo 8 RMF 2026 (DOF 28-dic-2025); coincide en siemprecontable.net, heru.app y sdv.com.mx.
+   Deducciones personales: minisitio del SAT «Deducciones personales» (sat.gob.mx/minisitio/DeduccionesPersonales). */
+const FISCAL={
+  fuenteTarifa:'Tarifa mensual de ISR 2026, art. 96 LISR (Anexo 8 RMF 2026, DOF 28-dic-2025)',
+  fuenteDeducciones:'SAT, minisitio «Deducciones personales» (art. 151 LISR)',
+  uma:{diaria:117.31,anual:42794.64},
+  // [límite inferior, cuota fija, % sobre el excedente]
+  tarifaMensual:[[0.01,0,1.92],[844.60,16.22,6.40],[7168.52,420.95,10.88],[12598.03,1011.68,16.00],[14644.65,1339.14,17.92],[17533.65,1856.84,21.36],
+    [35362.84,5665.16,23.52],[55736.69,10457.09,30.00],[106410.51,25659.23,32.00],[141880.67,37009.69,34.00],[425642.00,133488.54,35.00]],
+  medios:'transferencia electrónica, tarjeta de crédito, débito o de servicios, o cheque nominativo',
+  conceptos:{
+    medicos:{n:'Honorarios médicos, dentales y hospitalarios',cfdi:'D01',electronico:true},
+    sgmm:{n:'Primas de seguro de gastos médicos',cfdi:'D07',electronico:true},
+    colegiatura:{n:'Colegiaturas (con RVOE; con tope por nivel)',cfdi:'D10',electronico:false},
+    retiro:{n:'Aportaciones complementarias de retiro (PPR)',cfdi:'D06',electronico:true}},
+  colegiaturas:{Preescolar:14200,Primaria:12900,Secundaria:19900,'Profesional técnico':17100,Bachillerato:24500}
+};

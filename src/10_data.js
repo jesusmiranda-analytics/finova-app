@@ -37,9 +37,9 @@ const realCetes=t=>((1+netoCetes(t)/100)/(1+TASAS.inflacion/100)-1)*100; // % an
 const EXP_CATS=[
   {n:'Alimentación',fixed:false,grp:'needs'},{n:'Transporte',fixed:false,grp:'needs'},{n:'Educación',fixed:true,grp:'needs'},
   {n:'Entretenimiento',fixed:false,grp:'wants'},{n:'Servicios',fixed:true,grp:'needs'},{n:'Otros',fixed:false,grp:'wants'},
-  {n:'Salud',fixed:false,grp:'needs'},{n:'Deudas',fixed:true,grp:'needs'}];
+  {n:'Salud',fixed:false,grp:'needs'},{n:'Deudas',fixed:true,grp:'needs'},{n:'Impuestos',fixed:true,grp:'needs'}];
 const EXP_NAMES=EXP_CATS.map(c=>c.n);
-const INC_CATS=['Nómina','Negocio propio','Freelance','Regalo','Otros ingresos'];
+const INC_CATS=['Nómina','Negocio propio','Freelance','Devolución de impuestos','Regalo','Otros ingresos'];
 const METHODS=['Efectivo','Débito','Crédito','Transferencia'];
 
 /* ================= INSTRUMENTOS ================= */

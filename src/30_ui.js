@@ -14,13 +14,14 @@ const ICON={
  refresh:'M4 12a8 8 0 0114-5l2 2M20 4v5h-5M20 12a8 8 0 01-14 5l-2-2M4 20v-5h5',news:'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5',spark:'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z',
  info:'M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v6M12 7.5h.01',warn:'M12 3l10 18H2zM12 10v5M12 18h.01',cal:'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',copy2:'M5 5h14v14H5z'};
 ICON.trend=ICON.chart;
+ICON.receipt='M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h4';
 const Ic=({n,s=20})=>html`<svg width=${s} height=${s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d=${ICON[n]||ICON.info}/></svg>`;
 const Demo=({t='Demo'})=>html`<span className="demo">${t}</span>`;
 function col(){const g=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   return {green:g('--green'),blue:g('--blue'),yellow:g('--yellow'),red:g('--red'),purple:g('--purple'),teal:g('--teal'),fg:g('--fg'),muted:g('--muted'),line:g('--line'),card:g('--card')}}
 /* Hogares (cuenta con integrantes) se saludan con el nombre completo: "Familia Rivera". */
 const shortName=u=>u.members&&u.members.length?u.name:u.name.split(' ')[0];
-const catColors=c=>[c.blue,c.green,c.yellow,c.red,c.purple,c.teal,'#E8833A','#C2549D'];
+const catColors=c=>[c.blue,c.green,c.yellow,c.red,c.purple,c.teal,'#E8833A','#C2549D','#6B7A90'];
 
 function Modal({title,onClose,children,wide}){
   useEffect(()=>{const h=e=>{if(e.key==='Escape')onClose()};window.addEventListener('keydown',h);return()=>window.removeEventListener('keydown',h)},[]);
