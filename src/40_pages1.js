@@ -61,7 +61,7 @@ function IndModal({ind,onClose}){
   const chg=change(ind);
   const fmtv=v=>ind.unit==='%'?nf(v,ind.id==='inf_m'||ind.id==='udi'?3:2)+'%':ind.id==='ipc'?nf(v,0):ind.id==='udi'?nf(v,4):nf(v,2);
   return html`<${Modal} title=${ind.name} onClose=${onClose} wide>
-    <${Banner} k="y" ic="warn">Datos de demostración, no son cifras actuales.<//>
+    ${ind.oficial?html`<${Banner} k="g" ic="check"><b>Dato oficial:</b> ${ind.src} (${ind.fecha}). La gráfica histórica es ilustrativa.<//>`:html`<${Banner} k="y" ic="warn">Datos de demostración, no son cifras actuales.<//>`}
     <div className="row sp"><div><span className="num" style=${{fontSize:32,fontWeight:700}}>${fv(ind,ind.val)}</span> <span className=${'pill '+(chg.up?'g':'r')}>${chg.txt} vs. hace 1 mes</span></div><${Seg} opts=${Object.keys(RANGES).map(k=>[k,RANGE_NAMES[k]])} val=${rk} on=${setRk} label="Periodo"/></div>
     <${Chart} h=${250}><${RC.AreaChart} data=${data}><defs><linearGradient id="ig" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor=${c.green} stopOpacity=${.35}/><stop offset="100%" stopColor=${c.green} stopOpacity=${0}/></linearGradient></defs>
       <${RC.CartesianGrid} stroke=${c.line} vertical=${false}/><${RC.XAxis} dataKey="d" minTickGap=${28} ...${axis(c)}/><${RC.YAxis} width=${54} domain=${['auto','auto']} tickFormatter=${v=>ind.id==='ipc'?nf(v,0):nf(v,ind.id==='udi'?2:1)} ...${axis(c)}/>
@@ -79,14 +79,14 @@ function Mexico(){
   const now=todayS();
   return html`<div className="page">
     <${Head} title="México hoy" sub="Los indicadores clave de la economía mexicana, explicados sin tecnicismos."/>
-    <${Banner} k="y" ic="warn"><b>Datos de demostración, no son cifras actuales.</b> Los valores, gráficas, noticias y fechas de esta sección son de ejemplo para el prototipo.<//>
+    <${Banner} k="y" ic="warn"><b>Inflación, tasa de Banxico y CETES a 28 y 364 días son datos oficiales de noviembre de 2026</b>, los mismos del Diagnóstico de la consultora. El resto de los valores, las gráficas históricas y las noticias son de demostración.<//>
     ${groups.map(([g,ids])=>html`<div key=${g} className="col"><h2>${g}</h2><div className="grid g3" style=${{gridTemplateColumns:'repeat(auto-fill,minmax(min(100%,250px),1fr))'}}>
       ${ids.map(id=>{const ind=IND.find(x=>x.id===id),ch=change(ind),sp=chartData(ind,'1M');return html`<div key=${id} className="card col" style=${{gap:8}}>
-        <div className="row sp"><b>${ind.name}</b><${Demo}/></div>
+        <div className="row sp"><b>${ind.name}</b>${ind.oficial?html`<span className="pill g">Dato oficial</span>`:html`<${Demo}/>`}</div>
         <div className="row sp" style=${{alignItems:'flex-end'}}><div className="num" style=${{fontSize:28,fontWeight:700,lineHeight:1.1}}>${fv(ind,ind.val)}</div><span className=${'pill '+(ch.up?'g':'r')}>${ch.up?'▲':'▼'} ${ch.txt}</span></div>
         <div style=${{height:44}}><${RC.ResponsiveContainer} width="100%" height="100%"><${RC.LineChart} data=${sp}><${RC.YAxis} hide domain=${['auto','auto']}/><${RC.Line} type="monotone" dataKey="v" stroke=${ch.up?c.green:c.red} strokeWidth=${2} dot=${false} isAnimationActive=${false}/><//><//></div>
-        <div className="muted xs">Fecha: ${fdate(now)} (ejemplo) · Fuente: ${ind.src}</div>
-        <div className="xs" style=${{color:'var(--yellow-ink)'}}>Datos de demostración, no son cifras actuales</div>
+        ${ind.oficial?html`<div className="muted xs">Fecha: ${ind.fecha} · Fuente: ${ind.src}</div>`:html`<div className="muted xs">Fecha: ${fdate(now)} (ejemplo) · Fuente: ${ind.src}</div>
+        <div className="xs" style=${{color:'var(--yellow-ink)'}}>Datos de demostración, no son cifras actuales</div>`}
         <button className="btn sm" onClick=${()=>setSel(ind)}><${Ic} n="help" s=${15}/>¿Qué significa esto?</button></div>`})}</div></div>`)}
     <div className="split">
       <div className="card"><div className="ch"><h2>Noticias</h2><${Demo} t="Ejemplo"/></div><div className="col">${NEWS.map(n=>html`<div key=${n.id} style=${{borderTop:'1px solid var(--line)',paddingTop:12}}>

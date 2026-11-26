@@ -52,7 +52,7 @@ function seedRivera(){
     user:{...base.user,name:'Familia Rivera',income:RIVERA.ingreso,members:RIVERA.members.map(x=>({...x})),tutorialDone:true},
     tx,
     budgets:{rule:{...base.budgets.rule},cats:{...RIVERA.presupuesto}},
-    goals:[{id:'rv-fe',name:'Fondo de emergencia (CETES)',target:RIVERA.fondo.meta,saved:0,deadline:inMonths(RIVERA.fondo.mesMeta),demo:true}],
+    goals:[{id:'rv-fe',name:'Fondo de emergencia (CETES)',target:RIVERA.fondo.meta,saved:0,deadline:iso(mesFecha(RIVERA.modelo,RIVERA.fondo.mesMeta,28)),demo:true}],
     debts:RIVERA.deudas.map(d=>({...d,demo:true})),
     academy:{xp:0,correct:[],log:[],days:[],badges:[],daily:{},weekly:{claimed:''}},
     plan:{fuente:RIVERA.fuente,resumen:RIVERA.resumen,hitos:RIVERA.hitos,retiro:RIVERA.retiro,modelo:RIVERA.modelo}};
@@ -94,6 +94,25 @@ function planHogar(M,recorte){
       ahorro,fondo,sinRend,mesesCubre:fondo/gc});
   }
   return {meses,mesTarjeta,mesPrestamo,mesMeta,interesesTarjeta:intTc,deficit,deudaFinal:tc+pn};
+}
+/* Fecha calendario del mes m del plan (mes 1 = M.inicio). */
+function mesFecha(M,m,dia=1){const [y,mo]=M.inicio.split('-').map(Number);return new Date(y,mo-1+m-1,dia)}
+const mesTxt=(M,m)=>{const d=mesFecha(M,m);return `${MESL[d.getMonth()]} ${d.getFullYear()}`};
+const mesCorto=(M,m)=>{const d=mesFecha(M,m);return `${MES[d.getMonth()]} ${d.getFullYear()}`};
+/* Plazo de una meta según los meses que faltan para su fecha. */
+const PLAZOS=[{k:'corto',n:'Corto plazo',sub:'hasta 1 año',inst:'CETES 28 días',tasa:()=>TASAS.cetes28,por:'Lo vas a usar pronto: necesitas poder sacarlo rápido.'},
+  {k:'mediano',n:'Mediano plazo',sub:'de 1 a 3 años',inst:'CETES 364 días',tasa:()=>TASAS.cetes364,por:'No lo necesitas en un año: un plazo más largo paga más.'},
+  {k:'largo',n:'Largo plazo',sub:'más de 3 años',inst:'PPR o aportaciones voluntarias a la Afore',tasa:()=>TASAS.cetes364,por:'Para el retiro: son deducibles de impuestos. Comparado aquí contra CETES 364 días.'}];
+/* Instrumento sugerido para una meta: un fondo de emergencia siempre va a CETES 28 días (liquidez), sea cual sea su plazo. */
+function instDe(g,p){
+  if(/emergencia/i.test(g.name))return {inst:'CETES 28 días',cetes:'CETES a 28 días',tasa:TASAS.cetes28,por:'Es tu fondo de emergencia: tiene que estar disponible cada mes, aunque la meta sea a más de un año.'};
+  return {inst:p.inst,cetes:p.k==='corto'?'CETES a 28 días':'CETES a 364 días',tasa:p.tasa(),por:p.por};
+}
+function plazoDe(g){const n=goalInfo(g).monthsLeft;return n<=12?PLAZOS[0]:n<=36?PLAZOS[1]:PLAZOS[2]}
+/* Intereses que daría la meta en CETES: lo ahorrado + la aportación recomendada, a tasa neta de ISR, hasta la fecha. */
+function cetesGanancia(g,tasaAnual){
+  const i=goalInfo(g),n=i.monthsLeft,r=netoCetes(tasaAnual)/100/12,pm=i.rec;
+  const fv=g.saved*Math.pow(1+r,n)+pm*((Math.pow(1+r,n)-1)/r);return Math.max(0,fv-(g.saved+pm*n));
 }
 function recorteMinimo(M){for(let r=0;r<=M.noPlaneados;r+=100)if(!planHogar(M,r).deficit)return r;return null}
 /* Fondo de emergencia para cualquier cuenta: meta = 3 meses del gasto en necesidades del mes. */

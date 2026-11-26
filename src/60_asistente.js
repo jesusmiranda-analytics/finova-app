@@ -14,7 +14,7 @@ const TOPICS=[
  [/(mi meta|mis metas|fondo de emergencia|emergencia)/,c=>c.g?[
   `Tu meta "${c.g.name}" va en **${pc(goalInfo(c.g).pct,0)}**: llevas ${fmt(c.g.saved)} de ${fmt(c.g.target)}. Un fondo de emergencia debe cubrir de 3 a 6 meses de gastos.`,
   `Meta "${c.g.name}": ${fmt(c.g.saved)} de ${fmt(c.g.target)} (${pc(goalInfo(c.g).pct,0)}). Para llegar a tiempo necesitas **${fmt(goalInfo(c.g).rec)} al mes**. Guárdalos en algo líquido y estable, como CETES a plazo corto.`,
-  `"${c.g.name}": faltan ${fmt(goalInfo(c.g).remain)} en ${goalInfo(c.g).monthsLeft} meses (${fmt(goalInfo(c.g).rec)}/mes). Con CETES al rendimiento supuesto de 7.5%, la aportación necesaria baja ligeramente a ${fmt(pmtNeeded(c.g.target,goalInfo(c.g).monthsLeft/12,7.5,c.g.saved))}/mes. Es un cálculo hipotético.`]:'Aún no tienes metas. Crea una en Mis finanzas > Metas y te ayudo a planearla.'],
+  `"${c.g.name}": faltan ${fmt(goalInfo(c.g).remain)} en ${goalInfo(c.g).monthsLeft} meses (${fmt(goalInfo(c.g).rec)}/mes). Con CETES a 28 días (${pc(TASAS.cetes28,2)}, ${pc(netoCetes(TASAS.cetes28),2)} después de ISR), la aportación necesaria baja ligeramente a ${fmt(pmtNeeded(c.g.target,goalInfo(c.g).monthsLeft/12,netoCetes(TASAS.cetes28),c.g.saved))}/mes. Es un cálculo hipotético.`]:'Aún no tienes metas. Crea una en Mis finanzas > Metas y te ayudo a planearla.'],
  [/ahorr/,c=>[
   `Ahorrar es separar una parte de tu ingreso **antes** de gastarlo. Empieza con 10% y súbelo poco a poco. Con tu ingreso de ejemplo (${fmt(c.income)}) serían ${fmt(c.income*.1)} al mes.`,
   `Una buena práctica es automatizar: apenas recibes tu ingreso, separas el ahorro. La regla 50/30/20 sugiere 20% (${fmt(c.income*.2)} al mes para ti). Este mes ahorraste ${pc(c.rate,0)}.`,
@@ -25,7 +25,7 @@ const TOPICS=[
   `Ajusta la regla a tu realidad: si la renta pesa más, mueve puntos de "gustos" hacia "necesidades", pero protege el ahorro. Revisa el presupuesto cada mes con datos reales de gasto, no con estimaciones.`]],
  [/inflaci/,c=>[
   `La inflación es el aumento general de precios. Si sube, tu dinero compra menos. Por eso conviene que tus ahorros rindan más que la inflación.`,
-  `Rendimiento real ≈ rendimiento nominal − inflación. Con CETES a 7.5% y una inflación de ejemplo de 3.9%, el rendimiento real sería cercano a 3.6% (datos de demostración).`,
+  `Rendimiento real ≈ rendimiento nominal − ISR − inflación. Con CETES a 28 días en ${pc(TASAS.cetes28,2)} (${TASAS.fuente.cetes}), menos ${pc(TASAS.isr,2)} de ISR, quedan ${pc(netoCetes(TASAS.cetes28),2)}; con una inflación de ${pc(TASAS.inflacion,2)} (${TASAS.fuente.inflacion}), el rendimiento real es de ≈ ${pc(realCetes(TASAS.cetes28),1)}. Poco, pero positivo: tu dinero no pierde valor.`,
   `La inflación erosiona el poder adquisitivo de forma compuesta. Con 4% anual, $10,000 de hoy equivalen a unos $${nf(10000/Math.pow(1.04,10),0)} dentro de 10 años. Instrumentos ligados a UDIs o con tasa real positiva ayudan a protegerte.`]],
  [/(sofipo)/,c=>[`Las SOFIPOs son entidades digitales que ofrecen cuentas con rendimiento. Revisa la protección y la solidez de cada una antes de depositar.`,`Suelen pagar más que un banco tradicional, pero la protección es limitada. Diversifica entre instituciones y confirma las condiciones vigentes.`,`Evalúa rendimiento neto, liquidez, límite de protección por institución y riesgo de contraparte. No concentres más de lo que cubre la protección.`]],
  [/cetes?/,c=>[

@@ -208,6 +208,10 @@ textarea.code{width:100%;height:220px;font:12px/1.4 ui-monospace,Menlo,monospace
 .gauge .mk{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--fg);border-radius:2px}
 .cuadre{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border-radius:12px;font-size:13.5px;background:var(--green-soft);color:var(--green-ink)}
 .cuadre.bad{background:var(--red-soft);color:var(--red-ink)}
+/* Ahorro por plazos */
+.donde{border-top:1px solid var(--line);padding-top:8px}
+.m-chip{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:1px 7px;font-size:11.5px;white-space:nowrap;flex:none}
+.plazo.corto{border-top:3px solid var(--blue)}.plazo.mediano{border-top:3px solid var(--yellow)}.plazo.largo{border-top:3px solid var(--green)}
 /* Plan del caso */
 .plan-t td,.plan-t th{text-align:right}.plan-t td:first-child,.plan-t th:first-child{text-align:left}
 .plan-t td.best{color:var(--green-ink);font-weight:700}
@@ -253,6 +257,13 @@ const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9. ]/g,'').trim();
 const monthsBetween=(a,b)=>(b.getFullYear()-a.getFullYear())*12+b.getMonth()-a.getMonth();
 
+/* Tasas oficiales del Diagnóstico final de la consultora (sección Supuestos, noviembre 2026).
+   Única fuente de tasas para CETES, inflación y Banxico en toda la app. */
+const TASAS={cetes28:6.20,cetes364:6.95,isr:0.90,inflacion:3.75,banxico:6.25,
+  fuente:{cetes:'Banco de México, subasta del 10 nov 2026',isr:'LIF 2026, art. 24',inflacion:'INEGI, INPC octubre 2026',banxico:'Banco de México, decisión del 5 nov 2026'}};
+const netoCetes=t=>t-TASAS.isr;                                     // % anual después de la retención de ISR
+const realCetes=t=>((1+netoCetes(t)/100)/(1+TASAS.inflacion/100)-1)*100; // % anual real (descontando inflación)
+
 const EXP_CATS=[
   {n:'Alimentación',fixed:false,grp:'needs'},{n:'Transporte',fixed:false,grp:'needs'},{n:'Educación',fixed:true,grp:'needs'},
   {n:'Entretenimiento',fixed:false,grp:'wants'},{n:'Servicios',fixed:true,grp:'needs'},{n:'Otros',fixed:false,grp:'wants'},
@@ -263,7 +274,7 @@ const METHODS=['Efectivo','Débito','Crédito','Transferencia'];
 
 /* ================= INSTRUMENTOS ================= */
 const ASSETS=[
- {id:'CETES',name:'CETES',ret:7.5,risk:1,plazo:'28, 91, 182 o 364 días',liq:'Alta al vencimiento; venta anticipada posible',min:'Desde $100 (dato de ejemplo)',
+ {id:'CETES',name:'CETES',ret:TASAS.cetes28,risk:1,plazo:'28, 91, 182 o 364 días',liq:'Alta al vencimiento; venta anticipada posible',min:'Desde $100 (dato de ejemplo)',
   desc:'Títulos del gobierno federal. Le prestas dinero al gobierno y te paga intereses.',
   yes:'Estás empezando, quieres certeza o ahorras para una meta a menos de un año.',no:'Buscas crecer tu dinero por encima de la inflación a muchos años.',pros:'Muy bajo riesgo de incumplimiento y rendimiento conocido al comprar.',cons:'Rendimiento limitado; cambia con las tasas del momento.'},
  {id:'Bonos',name:'Bonos',ret:8.5,risk:2,plazo:'3 a 30 años',liq:'Media; su precio cambia si suben o bajan las tasas',min:'Desde ~$10,000 (dato de ejemplo)',
@@ -289,13 +300,13 @@ const DEF_RETS=Object.fromEntries(ASSETS.map(a=>[a.id,a.ret]));
 
 /* ================= MÉXICO HOY (DATOS DE DEMOSTRACIÓN) ================= */
 const IND=[
- {id:'inf_a',name:'Inflación anual',unit:'%',val:3.92,vol:.011,src:'INEGI (ejemplo)',mide:'Cuánto subieron en promedio los precios de una canasta de bienes y servicios en los últimos 12 meses.',sube:'Tu dinero compra menos y Banxico suele subir su tasa para frenar los precios.',baja:'Los precios suben más despacio y hay espacio para bajar tasas.',persona:'Si tu sueldo sube menos que la inflación, en la práctica ganas menos.'},
+ {id:'inf_a',name:'Inflación anual',unit:'%',val:TASAS.inflacion,vol:.011,src:TASAS.fuente.inflacion,oficial:true,fecha:'oct 2026',mide:'Cuánto subieron en promedio los precios de una canasta de bienes y servicios en los últimos 12 meses.',sube:'Tu dinero compra menos y Banxico suele subir su tasa para frenar los precios.',baja:'Los precios suben más despacio y hay espacio para bajar tasas.',persona:'Si tu sueldo sube menos que la inflación, en la práctica ganas menos.'},
  {id:'inf_m',name:'Inflación mensual',unit:'%',val:0.27,vol:.012,src:'INEGI (ejemplo)',mide:'El cambio de los precios respecto al mes anterior.',sube:'Señal de presión de precios a corto plazo; a veces es pasajera, por ejemplo por frutas y verduras.',baja:'Los precios se enfrían o incluso bajan en el mes.',persona:'Te ayuda a ver si el súper o el transporte están subiendo ahora mismo.'},
- {id:'banxico',name:'Tasa de Banxico',unit:'%',val:7.0,vol:.004,src:'Banxico (ejemplo)',mide:'La tasa de referencia que fija el Banco de México y que guía el costo del dinero en el país.',sube:'Créditos y tarjetas se encarecen, y ahorrar o invertir en CETES paga más.',baja:'Endeudarte sale más barato, pero lo que te pagan por ahorrar baja.',persona:'Cambia lo que pagas por un crédito y lo que ganas en CETES o SOFIPOs.'},
- {id:'cetes28',name:'CETES 28 días',unit:'%',val:6.85,vol:.01,src:'Banxico (ejemplo)',mide:'La tasa que paga el gobierno federal por pedirte prestado a 28 días.',sube:'Invertir en CETES paga más; suele pasar cuando Banxico sube su tasa.',baja:'Pagan menos; conviene compararlos contra la inflación.',persona:'Sirve para saber cuánto ganarías con tu ahorro a muy corto plazo y sin riesgo de crédito.'},
- {id:'cetes91',name:'CETES 91 días',unit:'%',val:6.95,vol:.01,src:'Banxico (ejemplo)',mide:'La tasa que paga el gobierno federal por pedirte prestado a 91 días.',sube:'Tu dinero a tres meses rinde más.',baja:'Rinde menos; quizá convenga alargar el plazo si lo necesitas.',persona:'Útil para metas de 3 a 6 meses, como un viaje o una colegiatura.'},
- {id:'cetes182',name:'CETES 182 días',unit:'%',val:7.05,vol:.01,src:'Banxico (ejemplo)',mide:'La tasa que paga el gobierno federal por pedirte prestado a 182 días.',sube:'Tu dinero a seis meses rinde más.',baja:'Rinde menos; compara contra otros instrumentos.',persona:'Buena referencia para un fondo de metas a medio año.'},
- {id:'cetes364',name:'CETES 364 días',unit:'%',val:7.15,vol:.01,src:'Banxico (ejemplo)',mide:'La tasa que paga el gobierno federal por pedirte prestado a un año.',sube:'Un año de espera paga más; el mercado espera tasas altas por más tiempo.',baja:'Rinde menos; el mercado espera que las tasas bajen.',persona:'Referencia para ahorrar a un año sin riesgo de que el emisor no pague.'},
+ {id:'banxico',name:'Tasa de Banxico',unit:'%',val:TASAS.banxico,vol:.004,src:TASAS.fuente.banxico,oficial:true,fecha:'5 nov 2026',mide:'La tasa de referencia que fija el Banco de México y que guía el costo del dinero en el país.',sube:'Créditos y tarjetas se encarecen, y ahorrar o invertir en CETES paga más.',baja:'Endeudarte sale más barato, pero lo que te pagan por ahorrar baja.',persona:'Cambia lo que pagas por un crédito y lo que ganas en CETES o SOFIPOs.'},
+ {id:'cetes28',name:'CETES 28 días',unit:'%',val:TASAS.cetes28,vol:.01,src:TASAS.fuente.cetes,oficial:true,fecha:'10 nov 2026',mide:'La tasa que paga el gobierno federal por pedirte prestado a 28 días.',sube:'Invertir en CETES paga más; suele pasar cuando Banxico sube su tasa.',baja:'Pagan menos; conviene compararlos contra la inflación.',persona:'Sirve para saber cuánto ganarías con tu ahorro a muy corto plazo y sin riesgo de crédito.'},
+ {id:'cetes91',name:'CETES 91 días',unit:'%',val:6.45,vol:.01,src:'Banxico (ejemplo)',mide:'La tasa que paga el gobierno federal por pedirte prestado a 91 días.',sube:'Tu dinero a tres meses rinde más.',baja:'Rinde menos; quizá convenga alargar el plazo si lo necesitas.',persona:'Útil para metas de 3 a 6 meses, como un viaje o una colegiatura.'},
+ {id:'cetes182',name:'CETES 182 días',unit:'%',val:6.70,vol:.01,src:'Banxico (ejemplo)',mide:'La tasa que paga el gobierno federal por pedirte prestado a 182 días.',sube:'Tu dinero a seis meses rinde más.',baja:'Rinde menos; compara contra otros instrumentos.',persona:'Buena referencia para un fondo de metas a medio año.'},
+ {id:'cetes364',name:'CETES 364 días',unit:'%',val:TASAS.cetes364,vol:.01,src:TASAS.fuente.cetes,oficial:true,fecha:'10 nov 2026',mide:'La tasa que paga el gobierno federal por pedirte prestado a un año.',sube:'Un año de espera paga más; el mercado espera tasas altas por más tiempo.',baja:'Rinde menos; el mercado espera que las tasas bajen.',persona:'Referencia para ahorrar a un año sin riesgo de que el emisor no pague.'},
  {id:'usd',name:'USD/MXN',unit:'MXN',val:18.42,vol:.035,src:'Banxico (ejemplo)',mide:'Cuántos pesos cuesta un dólar.',sube:'El peso se debilita: viajes, compras en dólares y productos importados salen más caros.',baja:'El peso se fortalece; lo importado y viajar se abaratan, pero tus dólares valen menos en pesos.',persona:'Importa si compras en línea en el extranjero, viajas o tienes ahorros en dólares.'},
  {id:'ipc',name:'IPC (Bolsa)',unit:'pts',val:57840,vol:140,src:'BMV (ejemplo)',mide:'Cómo les va, en conjunto, a las empresas más grandes que cotizan en la Bolsa Mexicana de Valores.',sube:'Las empresas valen más; quienes invierten en fondos o ETFs ligados al índice ganan.',baja:'Las empresas valen menos; esas inversiones caen a corto plazo.',persona:'Es la referencia para saber cómo van los ETFs y fondos de renta variable.'},
  {id:'pib',name:'PIB (crecimiento anual)',unit:'%',val:1.3,vol:.014,src:'INEGI (ejemplo)',mide:'El crecimiento de todo lo que produce el país en un año.',sube:'Hay más empleo y actividad; suele ser buena señal.',baja:'La economía se frena, hay menos empleo y menos aumentos de sueldo.',persona:'Afecta qué tan fácil es encontrar trabajo y negociar un aumento.'},
@@ -471,13 +482,22 @@ const RIVERA={
     tarjeta:{saldo:18000,tasa:.5952},
     prestamo:{saldo:36000,tasa:.241,pago:2150},
     ppr:{mensual:4500,desde:22},                            // papá 3,000 + mamá 1,500
-    cetes:{tasa:.062,isr:.009},                             // CETES 28 días; retención de ISR anual
+    cetes:{tasa:TASAS.cetes28/100,isr:TASAS.isr/100},       // CETES 28 días; retención de ISR anual (10_data.js)
+    inicio:'2026-12',                                       // mes 1 del plan = diciembre 2026 (fecha fija)
     metaFondo:47673,mesesMeta:3,
     // Presupuesto actual (hoja Presupuesto) para la barra «Hoy»
     hoy:{gastoCorriente:15891,deudas:3650,tanda:500,noPlaneados:5914}
   },
+  // Diagnóstico final, sección «Plan financiero»: horizontes del plan y por qué de cada instrumento.
+  plazos:[
+    {k:'corto',nombre:'Corto plazo',titulo:'Protección y tarjeta liquidada',desde:1,hasta:12,instrumento:'CETES 28 días',
+     porque:'El fondo de emergencia tiene que poder sacarse rápido: los CETES a 28 días vencen cada mes y rinden más que dejar el dinero en la cuenta.'},
+    {k:'mediano',nombre:'Mediano plazo',titulo:'Cero deudas y fondo de 3 meses',desde:13,hasta:21,instrumento:'CETES 28 días',
+     porque:'La meta mínima es de 3 meses de gasto y luego avanzar hacia 6, como recomienda la CONDUSEF, porque 79 % del ingreso depende de un solo empleo.'},
+    {k:'largo',nombre:'Largo plazo',titulo:'Retiro',desde:22,hasta:null,instrumento:'PPR + Afore',
+     porque:'El PPR es deducible y le da a la mamá un ahorro propio para el retiro. Sin él, la familia dependería solo de la pensión del papá, cerca de 45 % de su salario.'}],
   // Hoja Resumen: retiro a los 65 años en pesos de hoy (para el módulo de retiro)
-  retiro:{conservador:{total:14593.57,pct:56.2},base:{total:15952.69,pct:61.5},pensionAfore:11675.40}
+  retiro:{conservador:{total:14593.57,pct:56.23},base:{total:15952.69,pct:61.46},pensionAfore:11675.40}
 };
 /* ================= DATOS SEMILLA ================= */
 function seed(){
@@ -533,7 +553,7 @@ function seedRivera(){
     user:{...base.user,name:'Familia Rivera',income:RIVERA.ingreso,members:RIVERA.members.map(x=>({...x})),tutorialDone:true},
     tx,
     budgets:{rule:{...base.budgets.rule},cats:{...RIVERA.presupuesto}},
-    goals:[{id:'rv-fe',name:'Fondo de emergencia (CETES)',target:RIVERA.fondo.meta,saved:0,deadline:inMonths(RIVERA.fondo.mesMeta),demo:true}],
+    goals:[{id:'rv-fe',name:'Fondo de emergencia (CETES)',target:RIVERA.fondo.meta,saved:0,deadline:iso(mesFecha(RIVERA.modelo,RIVERA.fondo.mesMeta,28)),demo:true}],
     debts:RIVERA.deudas.map(d=>({...d,demo:true})),
     academy:{xp:0,correct:[],log:[],days:[],badges:[],daily:{},weekly:{claimed:''}},
     plan:{fuente:RIVERA.fuente,resumen:RIVERA.resumen,hitos:RIVERA.hitos,retiro:RIVERA.retiro,modelo:RIVERA.modelo}};
@@ -575,6 +595,25 @@ function planHogar(M,recorte){
       ahorro,fondo,sinRend,mesesCubre:fondo/gc});
   }
   return {meses,mesTarjeta,mesPrestamo,mesMeta,interesesTarjeta:intTc,deficit,deudaFinal:tc+pn};
+}
+/* Fecha calendario del mes m del plan (mes 1 = M.inicio). */
+function mesFecha(M,m,dia=1){const [y,mo]=M.inicio.split('-').map(Number);return new Date(y,mo-1+m-1,dia)}
+const mesTxt=(M,m)=>{const d=mesFecha(M,m);return `${MESL[d.getMonth()]} ${d.getFullYear()}`};
+const mesCorto=(M,m)=>{const d=mesFecha(M,m);return `${MES[d.getMonth()]} ${d.getFullYear()}`};
+/* Plazo de una meta según los meses que faltan para su fecha. */
+const PLAZOS=[{k:'corto',n:'Corto plazo',sub:'hasta 1 año',inst:'CETES 28 días',tasa:()=>TASAS.cetes28,por:'Lo vas a usar pronto: necesitas poder sacarlo rápido.'},
+  {k:'mediano',n:'Mediano plazo',sub:'de 1 a 3 años',inst:'CETES 364 días',tasa:()=>TASAS.cetes364,por:'No lo necesitas en un año: un plazo más largo paga más.'},
+  {k:'largo',n:'Largo plazo',sub:'más de 3 años',inst:'PPR o aportaciones voluntarias a la Afore',tasa:()=>TASAS.cetes364,por:'Para el retiro: son deducibles de impuestos. Comparado aquí contra CETES 364 días.'}];
+/* Instrumento sugerido para una meta: un fondo de emergencia siempre va a CETES 28 días (liquidez), sea cual sea su plazo. */
+function instDe(g,p){
+  if(/emergencia/i.test(g.name))return {inst:'CETES 28 días',cetes:'CETES a 28 días',tasa:TASAS.cetes28,por:'Es tu fondo de emergencia: tiene que estar disponible cada mes, aunque la meta sea a más de un año.'};
+  return {inst:p.inst,cetes:p.k==='corto'?'CETES a 28 días':'CETES a 364 días',tasa:p.tasa(),por:p.por};
+}
+function plazoDe(g){const n=goalInfo(g).monthsLeft;return n<=12?PLAZOS[0]:n<=36?PLAZOS[1]:PLAZOS[2]}
+/* Intereses que daría la meta en CETES: lo ahorrado + la aportación recomendada, a tasa neta de ISR, hasta la fecha. */
+function cetesGanancia(g,tasaAnual){
+  const i=goalInfo(g),n=i.monthsLeft,r=netoCetes(tasaAnual)/100/12,pm=i.rec;
+  const fv=g.saved*Math.pow(1+r,n)+pm*((Math.pow(1+r,n)-1)/r);return Math.max(0,fv-(g.saved+pm*n));
 }
 function recorteMinimo(M){for(let r=0;r<=M.noPlaneados;r+=100)if(!planHogar(M,r).deficit)return r;return null}
 /* Fondo de emergencia para cualquier cuenta: meta = 3 meses del gasto en necesidades del mes. */
@@ -1032,7 +1071,7 @@ function IndModal({ind,onClose}){
   const chg=change(ind);
   const fmtv=v=>ind.unit==='%'?nf(v,ind.id==='inf_m'||ind.id==='udi'?3:2)+'%':ind.id==='ipc'?nf(v,0):ind.id==='udi'?nf(v,4):nf(v,2);
   return html`<${Modal} title=${ind.name} onClose=${onClose} wide>
-    <${Banner} k="y" ic="warn">Datos de demostración, no son cifras actuales.<//>
+    ${ind.oficial?html`<${Banner} k="g" ic="check"><b>Dato oficial:</b> ${ind.src} (${ind.fecha}). La gráfica histórica es ilustrativa.<//>`:html`<${Banner} k="y" ic="warn">Datos de demostración, no son cifras actuales.<//>`}
     <div className="row sp"><div><span className="num" style=${{fontSize:32,fontWeight:700}}>${fv(ind,ind.val)}</span> <span className=${'pill '+(chg.up?'g':'r')}>${chg.txt} vs. hace 1 mes</span></div><${Seg} opts=${Object.keys(RANGES).map(k=>[k,RANGE_NAMES[k]])} val=${rk} on=${setRk} label="Periodo"/></div>
     <${Chart} h=${250}><${RC.AreaChart} data=${data}><defs><linearGradient id="ig" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor=${c.green} stopOpacity=${.35}/><stop offset="100%" stopColor=${c.green} stopOpacity=${0}/></linearGradient></defs>
       <${RC.CartesianGrid} stroke=${c.line} vertical=${false}/><${RC.XAxis} dataKey="d" minTickGap=${28} ...${axis(c)}/><${RC.YAxis} width=${54} domain=${['auto','auto']} tickFormatter=${v=>ind.id==='ipc'?nf(v,0):nf(v,ind.id==='udi'?2:1)} ...${axis(c)}/>
@@ -1050,14 +1089,14 @@ function Mexico(){
   const now=todayS();
   return html`<div className="page">
     <${Head} title="México hoy" sub="Los indicadores clave de la economía mexicana, explicados sin tecnicismos."/>
-    <${Banner} k="y" ic="warn"><b>Datos de demostración, no son cifras actuales.</b> Los valores, gráficas, noticias y fechas de esta sección son de ejemplo para el prototipo.<//>
+    <${Banner} k="y" ic="warn"><b>Inflación, tasa de Banxico y CETES a 28 y 364 días son datos oficiales de noviembre de 2026</b>, los mismos del Diagnóstico de la consultora. El resto de los valores, las gráficas históricas y las noticias son de demostración.<//>
     ${groups.map(([g,ids])=>html`<div key=${g} className="col"><h2>${g}</h2><div className="grid g3" style=${{gridTemplateColumns:'repeat(auto-fill,minmax(min(100%,250px),1fr))'}}>
       ${ids.map(id=>{const ind=IND.find(x=>x.id===id),ch=change(ind),sp=chartData(ind,'1M');return html`<div key=${id} className="card col" style=${{gap:8}}>
-        <div className="row sp"><b>${ind.name}</b><${Demo}/></div>
+        <div className="row sp"><b>${ind.name}</b>${ind.oficial?html`<span className="pill g">Dato oficial</span>`:html`<${Demo}/>`}</div>
         <div className="row sp" style=${{alignItems:'flex-end'}}><div className="num" style=${{fontSize:28,fontWeight:700,lineHeight:1.1}}>${fv(ind,ind.val)}</div><span className=${'pill '+(ch.up?'g':'r')}>${ch.up?'▲':'▼'} ${ch.txt}</span></div>
         <div style=${{height:44}}><${RC.ResponsiveContainer} width="100%" height="100%"><${RC.LineChart} data=${sp}><${RC.YAxis} hide domain=${['auto','auto']}/><${RC.Line} type="monotone" dataKey="v" stroke=${ch.up?c.green:c.red} strokeWidth=${2} dot=${false} isAnimationActive=${false}/><//><//></div>
-        <div className="muted xs">Fecha: ${fdate(now)} (ejemplo) · Fuente: ${ind.src}</div>
-        <div className="xs" style=${{color:'var(--yellow-ink)'}}>Datos de demostración, no son cifras actuales</div>
+        ${ind.oficial?html`<div className="muted xs">Fecha: ${ind.fecha} · Fuente: ${ind.src}</div>`:html`<div className="muted xs">Fecha: ${fdate(now)} (ejemplo) · Fuente: ${ind.src}</div>
+        <div className="xs" style=${{color:'var(--yellow-ink)'}}>Datos de demostración, no son cifras actuales</div>`}
         <button className="btn sm" onClick=${()=>setSel(ind)}><${Ic} n="help" s=${15}/>¿Qué significa esto?</button></div>`})}</div></div>`)}
     <div className="split">
       <div className="card"><div className="ch"><h2>Noticias</h2><${Demo} t="Ejemplo"/></div><div className="col">${NEWS.map(n=>html`<div key=${n.id} style=${{borderTop:'1px solid var(--line)',paddingTop:12}}>
@@ -1218,14 +1257,17 @@ function Abono({g,onClose}){
 }
 function Metas(){
   const {s,upd,toast,ask}=useApp();const [m,setM]=useState(null);
+  const grupos=PLAZOS.map(p=>({p,gs:s.goals.filter(g=>plazoDe(g).k===p.k)})).filter(x=>x.gs.length);
   return html`<div className="col" style=${{gap:16}}>
+    ${s.plan&&s.plan.modelo?html`<${PlazosModelo} M=${s.plan.modelo}/>`:null}
     <div className="row sp"><div className="muted sm">Total apartado en metas: <b className="num">${fmt(savedTotal(s))}</b></div><button className="btn pri" onClick=${()=>setM({k:'form'})}><${Ic} n="plus" s=${18}/>Nueva meta</button></div>
-    ${s.goals.length?html`<div className="grid g3">${s.goals.map(g=>{const i=goalInfo(g),done=g.saved>=g.target;return html`<div key=${g.id} className="card col">
+    ${s.goals.length?grupos.map(({p,gs})=>html`<div key=${p.k} className="col" style=${{gap:10}}><div className="row" style=${{gap:8,alignItems:'baseline'}}><h2>${p.n}</h2><span className="muted sm">${p.sub}</span></div><div className="grid g3">${gs.map(g=>{const i=goalInfo(g),done=g.saved>=g.target;return html`<div key=${g.id} className="card col">
       <div className="row sp"><b style=${{fontSize:16}}>${g.name}</b>${g.demo?html`<${Demo}/>`:null}</div>
       <div className="row sp" style=${{alignItems:'flex-end'}}><span className="num" style=${{fontSize:26,fontWeight:700}}>${fmt(g.saved)}</span><span className="muted sm">de ${fmt(g.target)}</span></div>
       <${Bar} v=${i.pct} t=${done?'':i.late?'r':''}/><div className="row sp sm"><span className="b">${pc(i.pct,0)} de avance</span><span className="muted">Límite: ${fdate(g.deadline)}</span></div>
       ${done?html`<${Banner} k="g" ic="check">¡Meta lograda!<//>`:i.late?html`<${Banner} k="r" ic="warn">La fecha límite ya pasó. Faltan ${fmt(i.remain)}.<//>`:html`<div className="card flat sm">Aportación recomendada: <b className="num">${fmt(i.rec)}</b> al mes durante ${i.monthsLeft} ${i.monthsLeft===1?'mes':'meses'}.</div>`}
-      <div className="row"><button className="btn pri sm" disabled=${done} onClick=${()=>setM({k:'ab',g})}>Abonar</button><button className="btn sm" onClick=${()=>setM({k:'form',g})}>Editar</button><button className="btn sm" onClick=${()=>ask({title:'Eliminar meta',text:`Se eliminará "${g.name}" y se liberarán ${fmt(g.saved)} a tu saldo disponible.`,onYes:()=>{upd(d=>{d.goals=d.goals.filter(x=>x.id!==g.id)});toast('Meta eliminada','ok')}})}>Eliminar</button></div></div>`})}</div>`
+      ${(()=>{const d=instDe(g,p);return html`<div className="sm donde"><b>Dónde ahorrarlo:</b> ${d.inst}. <span className="muted">${d.por}</span>${done?null:html`<div className="up" style=${{marginTop:4}}>En ${d.cetes} ganarías <b className="num">+${fmt(cetesGanancia(g,d.tasa))}</b> de intereses hasta tu fecha.</div>`}</div>`})()}
+      <div className="row"><button className="btn pri sm" disabled=${done} onClick=${()=>setM({k:'ab',g})}>Abonar</button><button className="btn sm" onClick=${()=>setM({k:'form',g})}>Editar</button><button className="btn sm" onClick=${()=>ask({title:'Eliminar meta',text:`Se eliminará "${g.name}" y se liberarán ${fmt(g.saved)} a tu saldo disponible.`,onYes:()=>{upd(d=>{d.goals=d.goals.filter(x=>x.id!==g.id)});toast('Meta eliminada','ok')}})}>Eliminar</button></div></div>`})}</div></div>`)
       :html`<div className="card"><${Empty} title="Aún no tienes metas" text="Define cuánto quieres ahorrar y para cuándo." action=${html`<button className="btn pri sm" onClick=${()=>setM({k:'form'})}>Crear meta</button>`}/></div>`}
     ${m&&m.k==='form'?html`<${GoalForm} edit=${m.g} onClose=${()=>setM(null)}/>`:null}${m&&m.k==='ab'?html`<${Abono} g=${m.g} onClose=${()=>setM(null)}/>`:null}</div>`;
 }
@@ -1384,6 +1426,37 @@ function PlanBasico(){
         <div className="muted xs">Simulación con CETES 28 días ${pc(RIVERA.modelo.cetes.tasa*100,1)} menos ISR (supuesto de noviembre 2026). No es garantía.</div></div>
     </div></div>`;
 }
+
+/* ================= AHORRO POR PLAZOS (M3) =================
+   Horizontes del Diagnóstico final; cifras de planHogar() con el recorte del plan. */
+function PlazosModelo({M}){
+  const {go}=useApp();
+  const P=useMemo(()=>planHogar(M,M.recortePlan),[]),f=m=>P.meses[m-1];
+  const cetes=m=>m<1?0:f(m).fondo-f(m).sinRend;
+  const ppr24=(RIVERA.resumen.find(r=>/PPR/.test(r.k))||{v:[0,0,0]}).v[2],ret=RIVERA.retiro.base;
+  const h=(m,t,dato)=>({m,t,dato});
+  const datos={
+    corto:{meta:`Mes ${P.mesTarjeta}`,metaSub:`Tarjeta Azul BBVA liquidada · ${mesTxt(M,P.mesTarjeta)}`,
+      hitos:[h(1,'Seguro médico para mamá e hijo',`${fmt(f(1).sgmm)} al mes`),h(P.mesTarjeta,'Tanda de $15,000 y tarjeta liquidada',`${fmt(P.interesesTarjeta)} de intereses`),h(12,'Fondo de emergencia',`${fmt(f(12).fondo)} · ${nf(f(12).mesesCubre,1)} meses`)],
+      cetes:cetes(12)},
+    mediano:{meta:`Mes ${P.mesMeta}`,metaSub:`Fondo de 3 meses (${fmt(M.metaFondo)}) · ${mesTxt(M,P.mesMeta)}`,
+      hitos:[h(M.isr.mes,'Devolución de ISR al fondo',fmt(M.isr.monto)),h(P.mesPrestamo,'Préstamo de Nómina liquidado: cero deudas','$0 de deuda'),h(21,'Fondo de emergencia',`${fmt(f(21).fondo)} · ${nf(f(21).mesesCubre,1)} meses`)],
+      cetes:cetes(21)-cetes(12)},
+    largo:{meta:`${fmt(M.ppr.mensual)} al mes`,metaSub:`PPR de papá y mamá desde el mes ${M.ppr.desde} · ${mesTxt(M,M.ppr.desde)}`,
+      hitos:[h(24,'PPR acumulado',fmt(ppr24)),h(null,'Ingreso al retiro, a los 65 años',`${fmt(ret.total)} al mes (${nf(ret.pct,0)} % del ingreso actual)`)],
+      cetes:null}};
+  return html`<div className="card col" style=${{gap:14}}>
+    <div className="ch" style=${{marginBottom:0}}><div><h2>Ahorro por plazos</h2><div className="muted sm">El plan de la consultora en tres horizontes. Mes 1 = ${mesTxt(M,1)}.</div></div><span className="pill g">Plan de la consultora</span></div>
+    <div className="grid g3">${RIVERA.plazos.map(p=>{const d=datos[p.k];return html`<div key=${p.k} className=${'card flat col plazo '+p.k} style=${{gap:10}}>
+      <div className="row sp"><span className=${'pill '+(p.k==='corto'?'b':p.k==='mediano'?'y':'g')}>${p.nombre}</span><span className="muted xs">${mesCorto(M,p.desde)} – ${p.hasta?mesCorto(M,p.hasta):'65 años'}</span></div>
+      <div><div className="b">${p.titulo}</div><div className="num" style=${{fontSize:26,fontWeight:700,lineHeight:1.2,marginTop:4}}>${d.meta}</div><div className="muted sm">${d.metaSub}</div></div>
+      <div className="col" style=${{gap:6}}>${d.hitos.map((x,i)=>html`<div key=${i} className="row sm" style=${{gap:8,flexWrap:'nowrap',alignItems:'flex-start'}}><b className="m-chip">${x.m?`Mes ${x.m}`:'65 años'}</b><span style=${{flex:1}}>${x.t}<br/><span className="muted xs">${x.m?mesTxt(M,x.m)+' · ':''}${x.dato}</span></span></div>`)}</div>
+      <div className="sm donde"><b>Instrumento: ${p.instrumento}.</b> <span className="muted">${p.porque}</span></div>
+      ${d.cetes!=null?html`<div className="sm up">Los CETES le suman <b className="num">+${fmt(d.cetes)}</b> al fondo en este plazo.</div>`:html`<button className="btn gh sm" style=${{alignSelf:'flex-start',padding:0,height:24}} onClick=${()=>go('finanzas','hogar')}>Ver el plan mes a mes →</button>`}
+    </div>`})}</div>
+    <div className="muted xs">Fuente: ${RIVERA.fuente}; tasas: CETES 28 días ${pc(TASAS.cetes28,2)} (${TASAS.fuente.cetes}), menos ${pc(TASAS.isr,2)} de ISR. Proyección, no garantía.</div>
+  </div>`;
+}
 /* ================= ASISTENTE IA (DEMO) ================= */
 function aiCtx(s){
   const ml=monthList(s),T=tot(ml),bc=byCat(ml),top=Object.entries(bc).sort((a,b)=>b[1]-a[1])[0]||['—',0];
@@ -1400,7 +1473,7 @@ const TOPICS=[
  [/(mi meta|mis metas|fondo de emergencia|emergencia)/,c=>c.g?[
   `Tu meta "${c.g.name}" va en **${pc(goalInfo(c.g).pct,0)}**: llevas ${fmt(c.g.saved)} de ${fmt(c.g.target)}. Un fondo de emergencia debe cubrir de 3 a 6 meses de gastos.`,
   `Meta "${c.g.name}": ${fmt(c.g.saved)} de ${fmt(c.g.target)} (${pc(goalInfo(c.g).pct,0)}). Para llegar a tiempo necesitas **${fmt(goalInfo(c.g).rec)} al mes**. Guárdalos en algo líquido y estable, como CETES a plazo corto.`,
-  `"${c.g.name}": faltan ${fmt(goalInfo(c.g).remain)} en ${goalInfo(c.g).monthsLeft} meses (${fmt(goalInfo(c.g).rec)}/mes). Con CETES al rendimiento supuesto de 7.5%, la aportación necesaria baja ligeramente a ${fmt(pmtNeeded(c.g.target,goalInfo(c.g).monthsLeft/12,7.5,c.g.saved))}/mes. Es un cálculo hipotético.`]:'Aún no tienes metas. Crea una en Mis finanzas > Metas y te ayudo a planearla.'],
+  `"${c.g.name}": faltan ${fmt(goalInfo(c.g).remain)} en ${goalInfo(c.g).monthsLeft} meses (${fmt(goalInfo(c.g).rec)}/mes). Con CETES a 28 días (${pc(TASAS.cetes28,2)}, ${pc(netoCetes(TASAS.cetes28),2)} después de ISR), la aportación necesaria baja ligeramente a ${fmt(pmtNeeded(c.g.target,goalInfo(c.g).monthsLeft/12,netoCetes(TASAS.cetes28),c.g.saved))}/mes. Es un cálculo hipotético.`]:'Aún no tienes metas. Crea una en Mis finanzas > Metas y te ayudo a planearla.'],
  [/ahorr/,c=>[
   `Ahorrar es separar una parte de tu ingreso **antes** de gastarlo. Empieza con 10% y súbelo poco a poco. Con tu ingreso de ejemplo (${fmt(c.income)}) serían ${fmt(c.income*.1)} al mes.`,
   `Una buena práctica es automatizar: apenas recibes tu ingreso, separas el ahorro. La regla 50/30/20 sugiere 20% (${fmt(c.income*.2)} al mes para ti). Este mes ahorraste ${pc(c.rate,0)}.`,
@@ -1411,7 +1484,7 @@ const TOPICS=[
   `Ajusta la regla a tu realidad: si la renta pesa más, mueve puntos de "gustos" hacia "necesidades", pero protege el ahorro. Revisa el presupuesto cada mes con datos reales de gasto, no con estimaciones.`]],
  [/inflaci/,c=>[
   `La inflación es el aumento general de precios. Si sube, tu dinero compra menos. Por eso conviene que tus ahorros rindan más que la inflación.`,
-  `Rendimiento real ≈ rendimiento nominal − inflación. Con CETES a 7.5% y una inflación de ejemplo de 3.9%, el rendimiento real sería cercano a 3.6% (datos de demostración).`,
+  `Rendimiento real ≈ rendimiento nominal − ISR − inflación. Con CETES a 28 días en ${pc(TASAS.cetes28,2)} (${TASAS.fuente.cetes}), menos ${pc(TASAS.isr,2)} de ISR, quedan ${pc(netoCetes(TASAS.cetes28),2)}; con una inflación de ${pc(TASAS.inflacion,2)} (${TASAS.fuente.inflacion}), el rendimiento real es de ≈ ${pc(realCetes(TASAS.cetes28),1)}. Poco, pero positivo: tu dinero no pierde valor.`,
   `La inflación erosiona el poder adquisitivo de forma compuesta. Con 4% anual, $10,000 de hoy equivalen a unos $${nf(10000/Math.pow(1.04,10),0)} dentro de 10 años. Instrumentos ligados a UDIs o con tasa real positiva ayudan a protegerte.`]],
  [/(sofipo)/,c=>[`Las SOFIPOs son entidades digitales que ofrecen cuentas con rendimiento. Revisa la protección y la solidez de cada una antes de depositar.`,`Suelen pagar más que un banco tradicional, pero la protección es limitada. Diversifica entre instituciones y confirma las condiciones vigentes.`,`Evalúa rendimiento neto, liquidez, límite de protección por institución y riesgo de contraparte. No concentres más de lo que cubre la protección.`]],
  [/cetes?/,c=>[

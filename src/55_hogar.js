@@ -97,3 +97,34 @@ function PlanBasico(){
         <div className="muted xs">Simulación con CETES 28 días ${pc(RIVERA.modelo.cetes.tasa*100,1)} menos ISR (supuesto de noviembre 2026). No es garantía.</div></div>
     </div></div>`;
 }
+
+/* ================= AHORRO POR PLAZOS (M3) =================
+   Horizontes del Diagnóstico final; cifras de planHogar() con el recorte del plan. */
+function PlazosModelo({M}){
+  const {go}=useApp();
+  const P=useMemo(()=>planHogar(M,M.recortePlan),[]),f=m=>P.meses[m-1];
+  const cetes=m=>m<1?0:f(m).fondo-f(m).sinRend;
+  const ppr24=(RIVERA.resumen.find(r=>/PPR/.test(r.k))||{v:[0,0,0]}).v[2],ret=RIVERA.retiro.base;
+  const h=(m,t,dato)=>({m,t,dato});
+  const datos={
+    corto:{meta:`Mes ${P.mesTarjeta}`,metaSub:`Tarjeta Azul BBVA liquidada · ${mesTxt(M,P.mesTarjeta)}`,
+      hitos:[h(1,'Seguro médico para mamá e hijo',`${fmt(f(1).sgmm)} al mes`),h(P.mesTarjeta,'Tanda de $15,000 y tarjeta liquidada',`${fmt(P.interesesTarjeta)} de intereses`),h(12,'Fondo de emergencia',`${fmt(f(12).fondo)} · ${nf(f(12).mesesCubre,1)} meses`)],
+      cetes:cetes(12)},
+    mediano:{meta:`Mes ${P.mesMeta}`,metaSub:`Fondo de 3 meses (${fmt(M.metaFondo)}) · ${mesTxt(M,P.mesMeta)}`,
+      hitos:[h(M.isr.mes,'Devolución de ISR al fondo',fmt(M.isr.monto)),h(P.mesPrestamo,'Préstamo de Nómina liquidado: cero deudas','$0 de deuda'),h(21,'Fondo de emergencia',`${fmt(f(21).fondo)} · ${nf(f(21).mesesCubre,1)} meses`)],
+      cetes:cetes(21)-cetes(12)},
+    largo:{meta:`${fmt(M.ppr.mensual)} al mes`,metaSub:`PPR de papá y mamá desde el mes ${M.ppr.desde} · ${mesTxt(M,M.ppr.desde)}`,
+      hitos:[h(24,'PPR acumulado',fmt(ppr24)),h(null,'Ingreso al retiro, a los 65 años',`${fmt(ret.total)} al mes (${nf(ret.pct,0)} % del ingreso actual)`)],
+      cetes:null}};
+  return html`<div className="card col" style=${{gap:14}}>
+    <div className="ch" style=${{marginBottom:0}}><div><h2>Ahorro por plazos</h2><div className="muted sm">El plan de la consultora en tres horizontes. Mes 1 = ${mesTxt(M,1)}.</div></div><span className="pill g">Plan de la consultora</span></div>
+    <div className="grid g3">${RIVERA.plazos.map(p=>{const d=datos[p.k];return html`<div key=${p.k} className=${'card flat col plazo '+p.k} style=${{gap:10}}>
+      <div className="row sp"><span className=${'pill '+(p.k==='corto'?'b':p.k==='mediano'?'y':'g')}>${p.nombre}</span><span className="muted xs">${mesCorto(M,p.desde)} – ${p.hasta?mesCorto(M,p.hasta):'65 años'}</span></div>
+      <div><div className="b">${p.titulo}</div><div className="num" style=${{fontSize:26,fontWeight:700,lineHeight:1.2,marginTop:4}}>${d.meta}</div><div className="muted sm">${d.metaSub}</div></div>
+      <div className="col" style=${{gap:6}}>${d.hitos.map((x,i)=>html`<div key=${i} className="row sm" style=${{gap:8,flexWrap:'nowrap',alignItems:'flex-start'}}><b className="m-chip">${x.m?`Mes ${x.m}`:'65 años'}</b><span style=${{flex:1}}>${x.t}<br/><span className="muted xs">${x.m?mesTxt(M,x.m)+' · ':''}${x.dato}</span></span></div>`)}</div>
+      <div className="sm donde"><b>Instrumento: ${p.instrumento}.</b> <span className="muted">${p.porque}</span></div>
+      ${d.cetes!=null?html`<div className="sm up">Los CETES le suman <b className="num">+${fmt(d.cetes)}</b> al fondo en este plazo.</div>`:html`<button className="btn gh sm" style=${{alignSelf:'flex-start',padding:0,height:24}} onClick=${()=>go('finanzas','hogar')}>Ver el plan mes a mes →</button>`}
+    </div>`})}</div>
+    <div className="muted xs">Fuente: ${RIVERA.fuente}; tasas: CETES 28 días ${pc(TASAS.cetes28,2)} (${TASAS.fuente.cetes}), menos ${pc(TASAS.isr,2)} de ISR. Proyección, no garantía.</div>
+  </div>`;
+}

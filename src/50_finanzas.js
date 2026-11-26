@@ -148,14 +148,17 @@ function Abono({g,onClose}){
 }
 function Metas(){
   const {s,upd,toast,ask}=useApp();const [m,setM]=useState(null);
+  const grupos=PLAZOS.map(p=>({p,gs:s.goals.filter(g=>plazoDe(g).k===p.k)})).filter(x=>x.gs.length);
   return html`<div className="col" style=${{gap:16}}>
+    ${s.plan&&s.plan.modelo?html`<${PlazosModelo} M=${s.plan.modelo}/>`:null}
     <div className="row sp"><div className="muted sm">Total apartado en metas: <b className="num">${fmt(savedTotal(s))}</b></div><button className="btn pri" onClick=${()=>setM({k:'form'})}><${Ic} n="plus" s=${18}/>Nueva meta</button></div>
-    ${s.goals.length?html`<div className="grid g3">${s.goals.map(g=>{const i=goalInfo(g),done=g.saved>=g.target;return html`<div key=${g.id} className="card col">
+    ${s.goals.length?grupos.map(({p,gs})=>html`<div key=${p.k} className="col" style=${{gap:10}}><div className="row" style=${{gap:8,alignItems:'baseline'}}><h2>${p.n}</h2><span className="muted sm">${p.sub}</span></div><div className="grid g3">${gs.map(g=>{const i=goalInfo(g),done=g.saved>=g.target;return html`<div key=${g.id} className="card col">
       <div className="row sp"><b style=${{fontSize:16}}>${g.name}</b>${g.demo?html`<${Demo}/>`:null}</div>
       <div className="row sp" style=${{alignItems:'flex-end'}}><span className="num" style=${{fontSize:26,fontWeight:700}}>${fmt(g.saved)}</span><span className="muted sm">de ${fmt(g.target)}</span></div>
       <${Bar} v=${i.pct} t=${done?'':i.late?'r':''}/><div className="row sp sm"><span className="b">${pc(i.pct,0)} de avance</span><span className="muted">Límite: ${fdate(g.deadline)}</span></div>
       ${done?html`<${Banner} k="g" ic="check">¡Meta lograda!<//>`:i.late?html`<${Banner} k="r" ic="warn">La fecha límite ya pasó. Faltan ${fmt(i.remain)}.<//>`:html`<div className="card flat sm">Aportación recomendada: <b className="num">${fmt(i.rec)}</b> al mes durante ${i.monthsLeft} ${i.monthsLeft===1?'mes':'meses'}.</div>`}
-      <div className="row"><button className="btn pri sm" disabled=${done} onClick=${()=>setM({k:'ab',g})}>Abonar</button><button className="btn sm" onClick=${()=>setM({k:'form',g})}>Editar</button><button className="btn sm" onClick=${()=>ask({title:'Eliminar meta',text:`Se eliminará "${g.name}" y se liberarán ${fmt(g.saved)} a tu saldo disponible.`,onYes:()=>{upd(d=>{d.goals=d.goals.filter(x=>x.id!==g.id)});toast('Meta eliminada','ok')}})}>Eliminar</button></div></div>`})}</div>`
+      ${(()=>{const d=instDe(g,p);return html`<div className="sm donde"><b>Dónde ahorrarlo:</b> ${d.inst}. <span className="muted">${d.por}</span>${done?null:html`<div className="up" style=${{marginTop:4}}>En ${d.cetes} ganarías <b className="num">+${fmt(cetesGanancia(g,d.tasa))}</b> de intereses hasta tu fecha.</div>`}</div>`})()}
+      <div className="row"><button className="btn pri sm" disabled=${done} onClick=${()=>setM({k:'ab',g})}>Abonar</button><button className="btn sm" onClick=${()=>setM({k:'form',g})}>Editar</button><button className="btn sm" onClick=${()=>ask({title:'Eliminar meta',text:`Se eliminará "${g.name}" y se liberarán ${fmt(g.saved)} a tu saldo disponible.`,onYes:()=>{upd(d=>{d.goals=d.goals.filter(x=>x.id!==g.id)});toast('Meta eliminada','ok')}})}>Eliminar</button></div></div>`})}</div></div>`)
       :html`<div className="card"><${Empty} title="Aún no tienes metas" text="Define cuánto quieres ahorrar y para cuándo." action=${html`<button className="btn pri sm" onClick=${()=>setM({k:'form'})}>Crear meta</button>`}/></div>`}
     ${m&&m.k==='form'?html`<${GoalForm} edit=${m.g} onClose=${()=>setM(null)}/>`:null}${m&&m.k==='ab'?html`<${Abono} g=${m.g} onClose=${()=>setM(null)}/>`:null}</div>`;
 }

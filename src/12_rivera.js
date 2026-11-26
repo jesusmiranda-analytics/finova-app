@@ -74,11 +74,20 @@ const RIVERA={
     tarjeta:{saldo:18000,tasa:.5952},
     prestamo:{saldo:36000,tasa:.241,pago:2150},
     ppr:{mensual:4500,desde:22},                            // papá 3,000 + mamá 1,500
-    cetes:{tasa:.062,isr:.009},                             // CETES 28 días; retención de ISR anual
+    cetes:{tasa:TASAS.cetes28/100,isr:TASAS.isr/100},       // CETES 28 días; retención de ISR anual (10_data.js)
+    inicio:'2026-12',                                       // mes 1 del plan = diciembre 2026 (fecha fija)
     metaFondo:47673,mesesMeta:3,
     // Presupuesto actual (hoja Presupuesto) para la barra «Hoy»
     hoy:{gastoCorriente:15891,deudas:3650,tanda:500,noPlaneados:5914}
   },
+  // Diagnóstico final, sección «Plan financiero»: horizontes del plan y por qué de cada instrumento.
+  plazos:[
+    {k:'corto',nombre:'Corto plazo',titulo:'Protección y tarjeta liquidada',desde:1,hasta:12,instrumento:'CETES 28 días',
+     porque:'El fondo de emergencia tiene que poder sacarse rápido: los CETES a 28 días vencen cada mes y rinden más que dejar el dinero en la cuenta.'},
+    {k:'mediano',nombre:'Mediano plazo',titulo:'Cero deudas y fondo de 3 meses',desde:13,hasta:21,instrumento:'CETES 28 días',
+     porque:'La meta mínima es de 3 meses de gasto y luego avanzar hacia 6, como recomienda la CONDUSEF, porque 79 % del ingreso depende de un solo empleo.'},
+    {k:'largo',nombre:'Largo plazo',titulo:'Retiro',desde:22,hasta:null,instrumento:'PPR + Afore',
+     porque:'El PPR es deducible y le da a la mamá un ahorro propio para el retiro. Sin él, la familia dependería solo de la pensión del papá, cerca de 45 % de su salario.'}],
   // Hoja Resumen: retiro a los 65 años en pesos de hoy (para el módulo de retiro)
-  retiro:{conservador:{total:14593.57,pct:56.2},base:{total:15952.69,pct:61.5},pensionAfore:11675.40}
+  retiro:{conservador:{total:14593.57,pct:56.23},base:{total:15952.69,pct:61.46},pensionAfore:11675.40}
 };
