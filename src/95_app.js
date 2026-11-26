@@ -1,7 +1,7 @@
 /* ================= APP ================= */
-const NAV=[['inicio','Inicio','Inicio','home'],['mexico','México hoy','México','globe'],['finanzas','Mis finanzas','Finanzas','wallet'],['asistente','Asistente IA','IA','chat'],['inversiones','Inversiones','Invertir','chart'],['academia','Academia','Academia','book'],['perfil','Perfil','Perfil','user']];
-const ROUTES={inicio:Inicio,mexico:Mexico,finanzas:Finanzas,asistente:Asistente,inversiones:Inversiones,academia:Academia,perfil:Perfil,calculadoras:Calculadoras,ayuda:Ayuda};
-const ROUTE_NAMES={inicio:'Inicio',mexico:'México hoy',finanzas:'Mis finanzas',asistente:'Asistente IA',inversiones:'Inversiones',academia:'Academia',perfil:'Perfil',calculadoras:'Calculadoras',ayuda:'Centro de ayuda'};
+const NAV=[['inicio','Inicio','Inicio','home'],['asesor','Mi asesor','Asesor','star'],['mexico','México hoy','México','globe'],['finanzas','Mis finanzas','Finanzas','wallet'],['asistente','Asistente IA','IA','chat'],['inversiones','Inversiones','Invertir','chart'],['academia','Academia','Academia','book'],['perfil','Perfil','Perfil','user']];
+const ROUTES={inicio:Inicio,asesor:Asesor,mexico:Mexico,finanzas:Finanzas,asistente:Asistente,inversiones:Inversiones,academia:Academia,perfil:Perfil,calculadoras:Calculadoras,ayuda:Ayuda};
+const ROUTE_NAMES={inicio:'Inicio',asesor:'Mi asesor',mexico:'México hoy',finanzas:'Mis finanzas',asistente:'Asistente IA',inversiones:'Inversiones',academia:'Academia',perfil:'Perfil',calculadoras:'Calculadoras',ayuda:'Centro de ayuda'};
 function applyTheme(t){const r=document.documentElement;if(t==='light'||t==='dark')r.setAttribute('data-theme',t);else r.removeAttribute('data-theme')}
 
 const TUT=[['wallet','Bienvenido a FINOVA','Tu dinero. Tus decisiones. Tu futuro. Este es un prototipo de demostración: tus datos se guardan solo en este dispositivo y puedes cerrar sesión o cambiar de perfil cuando quieras.'],
@@ -71,7 +71,7 @@ function App({account,logout,onAccountChange}){
         <div className="wrap"><${Page} key=${route}/></div>
       </div>
     </div>
-    <nav className="bottom" aria-label="Navegación principal">${NAV.map(([r,,l,ic])=>html`<button key=${r} className=${route===r?'on':''} aria-current=${route===r?'page':undefined} onClick=${()=>go(r)}><${Ic} n=${ic} s=${22}/>${l}</button>`)}</nav>
+    <nav className="bottom" aria-label="Navegación principal">${NAV.filter(([r])=>r!=='mexico').map(([r,,l,ic])=>html`<button key=${r} className=${route===r?'on':''} aria-current=${route===r?'page':undefined} onClick=${()=>go(r)}><${Ic} n=${ic} s=${22}/>${l}</button>`)}</nav>
     <div className="toasts" aria-live="polite">${toasts.map(t=>html`<div key=${t.id} className=${'toast '+(t.kind||'')}>${t.msg}</div>`)}</div>
     ${txm?html`<${TxForm} defType=${txm.defType} onClose=${()=>setTxm(null)}/>`:null}
     ${conf?html`<${Confirm} c=${conf} onClose=${()=>setConf(null)}/>`:null}

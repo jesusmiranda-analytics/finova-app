@@ -63,6 +63,13 @@ const RIVERA={
     {mes:16,t:'El fondo de emergencia llega a la meta de 3 meses',dato:'$47,673'},
     {mes:21,t:'Liquidan el Préstamo de Nómina: cero deudas',dato:'$0 de deuda'},
     {mes:22,t:'Inician los PPR de papá y mamá',dato:'$4,500 al mes'}],
+  // Hoja SGMM y Diagnóstico final: extensión del seguro colectivo del papá para mamá e hijo.
+  sgmm:{poliza:'Alfa Medical Colectivo (Seguros Monterrey New York Life)',tipo:'Extensión a dependientes de la póliza colectiva del papá',
+    primaMama:16488.77,primaHijo:11477.48,anual:27966.26,mensual:2330.52,devolucionISR:5973.59,netoMensual:1832.72,
+    deducible:10000,coaseguro:.10,
+    porque:'La empresa del papá ya tiene la póliza y permite incluir al cónyuge y a los hijos solteros. Como la aseguradora no publica precios de pólizas colectivas, la prima es una estimación con datos de la industria (AMIS).'},
+  // Tarjeta actual (Diagnóstico) y rango de límite. Supuesto: deben $18,000, así que su límite es mayor a $15,000.
+  tarjeta:{actual:'Azul BBVA',rango:'15000',uso:'super'},
   // Hoja Supuestos (secciones 1-9): parámetros del plan de 24 meses.
   // planHogar() en 20_calc.js reproduce con ellos las hojas Flujo de efectivo y Ahorro.
   modelo:{

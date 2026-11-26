@@ -114,6 +114,34 @@ function cetesGanancia(g,tasaAnual){
   const i=goalInfo(g),n=i.monthsLeft,r=netoCetes(tasaAnual)/100/12,pm=i.rec;
   const fv=g.saved*Math.pow(1+r,n)+pm*((Math.pow(1+r,n)-1)/r);return Math.max(0,fv-(g.saved+pm*n));
 }
+/* ================= MI ASESOR ================= */
+/* Mejor tarjeta según el perfil, con el comparativo de Banxico del rango de límite.
+   Paga el total → solo tarjetas sin anualidad, por menor CAT. Carga saldo → todas, por menor CAT.
+   Entre las que están a 5 puntos de CAT de la más barata, prefiere la que coincide con el uso. */
+function recomendarTarjeta({paga,rango,uso,actual}){
+  const T=TARJETAS[rango]||TARJETAS['15000'];
+  const filas=T.filas.map(([n,anual,cat,web,u],i)=>({n,anual,cat,web,uso:u,pos:i+1}));
+  const pool=(paga?filas.filter(f=>f.anual===0):filas).slice().sort((a,b)=>a.cat-b.cat);
+  const min=pool[0],top=pool.find(f=>f.uso===uso&&f.cat<=min.cat+5)||min;
+  const otras=pool.filter(f=>f!==top).slice(0,2),act=actual?filas.find(f=>f.n===actual)||null:null;
+  return {T,top,min,otras,act,total:filas.length};
+}
+/* Mes del plan en el que va la familia hoy (mes 1 = M.inicio). */
+function mesPlanActual(M){const [y,mo]=M.inicio.split('-').map(Number),n=new Date();return clamp((n.getFullYear()-y)*12+n.getMonth()-(mo-1)+1,1,24)}
+/* Escalera de prioridades del Diagnóstico con su estado según el mes del plan. */
+function escaleraModelo(M){
+  const P=planHogar(M,M.recortePlan),m=mesPlanActual(M);
+  const r={seguro:[1,1],deuda:[1,P.mesTarjeta],fondo:[P.mesTarjeta,P.mesMeta],cero:[P.mesMeta,P.mesPrestamo],retiro:[M.ppr.desde,null]};
+  return {m,P,pasos:PRIORIDADES.map(p=>{const [a,b]=r[p.k];return {...p,desde:a,hasta:b,estado:b!=null&&m>b?'hecho':m>=a?'ahora':'despues'}})};
+}
+/* Escalera para cualquier cuenta, deducida de sus datos (el seguro lo marca la persona). */
+function escaleraBasica(s){
+  const ok={seguro:s.user.sgmm===true,deuda:!s.debts.some(d=>d.rate>=30),fondo:fondoBasico(s,0).mesesCubre>=3,cero:s.debts.length===0,retiro:s.goals.some(g=>/retiro|ppr|afore/i.test(g.name))};
+  let first=true;
+  return {pasos:PRIORIDADES.map(p=>{const e=ok[p.k]?'hecho':first?'ahora':'despues';if(!ok[p.k])first=false;return {...p,estado:e}})};
+}
+/* Lo que paga la familia en un evento médico con seguro: deducible + coaseguro sobre el resto. */
+const eventoMedico=(costo,ded,coas)=>Math.min(costo,ded+Math.max(0,costo-ded)*coas);
 function recorteMinimo(M){for(let r=0;r<=M.noPlaneados;r+=100)if(!planHogar(M,r).deficit)return r;return null}
 /* Fondo de emergencia para cualquier cuenta: meta = 3 meses del gasto en necesidades del mes. */
 function fondoBasico(s,ahorroMensual){

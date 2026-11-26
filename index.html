@@ -208,6 +208,18 @@ textarea.code{width:100%;height:220px;font:12px/1.4 ui-monospace,Menlo,monospace
 .gauge .mk{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--fg);border-radius:2px}
 .cuadre{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border-radius:12px;font-size:13.5px;background:var(--green-soft);color:var(--green-ink)}
 .cuadre.bad{background:var(--red-soft);color:var(--red-ink)}
+/* Mi asesor */
+.num-badge{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.reco{border-left:4px solid var(--green);background:var(--green-soft);border-radius:10px;padding:12px 14px}
+.reco-t{font-size:19px;font-weight:700;color:var(--fg);margin:2px 0}
+.supuesto{background:var(--yellow-soft);color:var(--yellow-ink);border-radius:8px;padding:6px 10px}
+.hbar{height:12px;border-radius:999px;background:var(--card2);margin-top:4px}.hbar i{display:block;height:100%;border-radius:999px}
+.escalera{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.escalera li{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.escalera li.ahora{border-color:var(--blue);background:var(--blue-soft)}.escalera li.hecho{opacity:.75}.escalera li.hecho .num-badge{background:var(--green)}
+.porque{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.plan-t tr.rec td{background:var(--green-soft)}.plan-t tr.act td{background:var(--red-soft)}
+.dest td,.dest th{text-align:left!important}
 /* Ahorro por plazos */
 .donde{border-top:1px solid var(--line);padding-top:8px}
 .m-chip{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:1px 7px;font-size:11.5px;white-space:nowrap;flex:none}
@@ -471,6 +483,13 @@ const RIVERA={
     {mes:16,t:'El fondo de emergencia llega a la meta de 3 meses',dato:'$47,673'},
     {mes:21,t:'Liquidan el Préstamo de Nómina: cero deudas',dato:'$0 de deuda'},
     {mes:22,t:'Inician los PPR de papá y mamá',dato:'$4,500 al mes'}],
+  // Hoja SGMM y Diagnóstico final: extensión del seguro colectivo del papá para mamá e hijo.
+  sgmm:{poliza:'Alfa Medical Colectivo (Seguros Monterrey New York Life)',tipo:'Extensión a dependientes de la póliza colectiva del papá',
+    primaMama:16488.77,primaHijo:11477.48,anual:27966.26,mensual:2330.52,devolucionISR:5973.59,netoMensual:1832.72,
+    deducible:10000,coaseguro:.10,
+    porque:'La empresa del papá ya tiene la póliza y permite incluir al cónyuge y a los hijos solteros. Como la aseguradora no publica precios de pólizas colectivas, la prima es una estimación con datos de la industria (AMIS).'},
+  // Tarjeta actual (Diagnóstico) y rango de límite. Supuesto: deben $18,000, así que su límite es mayor a $15,000.
+  tarjeta:{actual:'Azul BBVA',rango:'15000',uso:'super'},
   // Hoja Supuestos (secciones 1-9): parámetros del plan de 24 meses.
   // planHogar() en 20_calc.js reproduce con ellos las hojas Flujo de efectivo y Ahorro.
   modelo:{
@@ -499,6 +518,59 @@ const RIVERA={
   // Hoja Resumen: retiro a los 65 años en pesos de hoy (para el módulo de retiro)
   retiro:{conservador:{total:14593.57,pct:56.23},base:{total:15952.69,pct:61.46},pensionAfore:11675.40}
 };
+
+/* ================= DATOS DE MERCADO (FUENTES OFICIALES) ================= */
+/* Banco de México, «Comparativo de tarjetas Clásicas y Básicas», datos a junio de 2026.
+   https://www.banxico.org.mx/tarjetascat/TarjetasEntrada.jsp
+   Fila: [nombre, comisión anual del titular ($), CAT de publicidad (%), sitio, uso].
+   «uso» lo asigna FINOVA según el tipo de tarjeta (viajes, súper, club de precios que pide membresía, o general); no viene de Banxico. */
+const TARJETAS_FUENTE='Banco de México, Comparativo de tarjetas Clásicas y Básicas (datos a junio de 2026)';
+const TARJETAS={
+  '4501_8000':{n:'De $4,501 a $8,000',url:'https://www.banxico.org.mx/tarjetascat/TarjetasCl%C3%A1sicas4501_8000.pdf',filas:[
+    ['Walmart INVEX',0,31.2,'invextarjetas.com.mx','super'],['Volaris INVEX 0',0,50.9,'invextarjetas.com.mx','viajes'],['HSBC Air',915,52.1,'hsbc.com.mx/air','viajes'],
+    ['Now (INVEX)',0,74.7,'now.bank','general'],['Joy Banamex',0,82.1,'banamex.com/joy','general'],['Visa Clásica Garantizada Internacional (Bajío)',700,83.8,'bb.com.mx','general'],
+    ['Tarjeta de Crédito BanCoppel',0,88.4,'bancoppel.com/tdc','general'],['HSBC Zero',0,93.3,'hsbc.com.mx/zero','general'],['Costco Banamex',650,93.7,'banamex.com/costco','club'],
+    ['Vive BBVA',748,110.3,'bbva.mx/vive.html','general'],['Clásica Banamex',815,110.6,'banamex.com/clasica','general'],['The Home Depot Banamex',774,111.2,'banamex.com/homedepot','general'],
+    ['Rayados BBVA',748,111.7,'bbva.mx/rayados.html','general'],['Clásica (Banorte)',720,120.4,'banorte.com/clasica','general'],['Azul BBVA',748,126.3,'bbva.mx/azul.html','general'],
+    ['Tarjeta de Crédito Ualá',0,215.2,'uala.mx/tarjeta-credito','general'],['Plata (Banco Plata)',0,217.1,'bancoplata.mx','general']]},
+  '8001_15000':{n:'De $8,001 a $15,000',url:'https://www.banxico.org.mx/tarjetascat/TarjetasCl%C3%A1sicas8001_15000.pdf',filas:[
+    ['Walmart INVEX',0,31.2,'invextarjetas.com.mx','super'],['HSBC Air',915,49.2,'hsbc.com.mx/air','viajes'],['Volaris INVEX 0',0,49.6,'invextarjetas.com.mx','viajes'],
+    ['Now (INVEX)',0,59.5,'now.bank','general'],['Joy Banamex',0,82.2,'banamex.com/joy','general'],['Visa Clásica Internacional (Bajío)',700,83.1,'bb.com.mx','general'],
+    ['Inbursa Clásica',390,83.5,'inbursa.com','general'],['Costco Banamex',650,86.1,'banamex.com/costco','club'],['Tarjeta de Crédito BanCoppel',0,88.4,'bancoppel.com/tdc','general'],
+    ['Vive BBVA',748,92.9,'bbva.mx/vive.html','general'],['Teletón Banamex',540,93.0,'banamex.com/teleton','general'],['HSBC Zero',0,93.2,'hsbc.com.mx/zero','general'],
+    ['The Home Depot Banamex',774,97.7,'banamex.com/homedepot','general'],['Clásica Banamex',815,98.6,'banamex.com/clasica','general'],['Azul BBVA',748,98.6,'bbva.mx/azul.html','general'],
+    ['Affinity Card Banamex',815,98.9,'banamex.com/affinitycard','general'],['Rayados BBVA',748,100.2,'bbva.mx/rayados.html','general'],['Inbursa Sam\'s Club',750,103.5,'inbursa.com','club'],
+    ['IDEAL Scotiabank',0,105.4,'scotiabank.com.mx/ideal','general'],['Selección Nacional (Banorte)',1150,107.5,'banorte.com/seleccionnacional','general'],['Inbursa Walmart',750,107.6,'inbursa.com','super'],
+    ['Clásica (Banorte)',720,108.0,'banorte.com/clasica','general'],['Clásica (Afirme)',750,110.5,'afirme.com','general'],['Tarjeta de Crédito Ualá',0,179.0,'uala.mx/tarjeta-credito','general'],
+    ['Plata (Banco Plata)',0,217.1,'bancoplata.mx','general']]},
+  '15000':{n:'Más de $15,000',url:'https://www.banxico.org.mx/tarjetascat/TarjetasCl%C3%A1sicas15000.pdf',filas:[
+    ['Volaris INVEX 0',0,28.7,'invextarjetas.com.mx','viajes'],['Sam\'s Club INVEX',0,31.2,'invextarjetas.com.mx','club'],['Walmart INVEX',0,31.2,'invextarjetas.com.mx','super'],
+    ['Más (Banregio)',0,32.6,'banregio.com/tdcmas.php','general'],['HSBC Air',915,48.0,'hsbc.com.mx/air','viajes'],['Hey (Banregio)',600,64.7,'banco.hey.inc','general'],
+    ['IDEAL Scotiabank',0,70.7,'scotiabank.com.mx/ideal','general'],['Costco Banamex',650,78.0,'banamex.com/costco','club'],['Joy Banamex',0,79.9,'banamex.com/joy','general'],
+    ['Visa Clásica Internacional (Bajío)',700,83.4,'bb.com.mx','general'],['Teletón Banamex',540,84.2,'banamex.com/teleton','general'],['Vive BBVA',748,85.2,'bbva.mx/vive.html','general'],
+    ['Clásica Banamex',815,85.5,'banamex.com/clasica','general'],['The Home Depot Banamex',774,85.7,'banamex.com/homedepot','general'],['Affinity Card Banamex',815,85.9,'banamex.com/affinitycard','general'],
+    ['Rayados BBVA',748,89.1,'bbva.mx/rayados.html','general'],['Inbursa Sam\'s Club',750,89.5,'inbursa.com','club'],['Tarjeta de Crédito BanCoppel',0,89.9,'bancoppel.com/tdc','general'],
+    ['Azul BBVA',748,90.1,'bbva.mx/azul.html','general'],['Selección Nacional (Banorte)',1150,91.5,'banorte.com/seleccionnacional','general'],['Clásica (Banorte)',720,92.7,'banorte.com/clasica','general'],
+    ['HSBC Zero',0,93.6,'hsbc.com.mx/zero','general'],['HSBC Viva',0,98.4,'hsbc.com.mx/viva','general'],['Tigres Afirme',850,100.7,'afirme.com','general'],
+    ['Tarjeta de Crédito Ualá',0,143.4,'uala.mx/tarjeta-credito','general'],['Plata (Banco Plata)',0,217.1,'bancoplata.mx','general']]}
+};
+/* Banxico, «Indicadores básicos de tarjetas de crédito», datos a diciembre de 2025 (Cuadro 5):
+   tasa efectiva promedio ponderada por saldo de la clientela que NO paga el total (%). */
+const TEPP_NT={fuente:'Banco de México, Indicadores básicos de tarjetas de crédito, datos a diciembre de 2025 (Cuadro 5)',
+  sistema:36.7,'BBVA':37.2,'INVEX':30.7,'Banregio':30.1,'Banamex':33.2,'HSBC':36.1,'Santander':37.9,'Banorte':38.0,'BanCoppel':45.9,'Inbursa':46.9,'Scotiabank':43.3,'Bajío':34.5,'Ualá':60.0};
+const institucionDe=n=>/INVEX|Now/.test(n)?'INVEX':/Banregio/.test(n)?'Banregio':/BBVA/.test(n)?'BBVA':/Banamex/.test(n)?'Banamex':/HSBC/.test(n)?'HSBC':/Banorte/.test(n)?'Banorte':/BanCoppel/.test(n)?'BanCoppel':/Inbursa/.test(n)?'Inbursa':/Scotiabank/.test(n)?'Scotiabank':/Bajío/.test(n)?'Bajío':/Ualá/.test(n)?'Ualá':null;
+const USOS=[['super','Súper y compras del hogar'],['general','De todo un poco'],['viajes','Viajes'],['club','Club de precios (Sam\'s, Costco)']];
+
+/* Diagnóstico final, «Orden de prioridades y justificaciones». */
+const PRIORIDADES=[
+  {k:'seguro',t:'Proteger la salud',x:'Un evento médico sin seguro termina en la tarjeta más cara. Primero, un seguro de gastos médicos mayores.'},
+  {k:'deuda',t:'Pagar la deuda más cara',x:'Método avalancha: cada peso abonado a una deuda al 59.52 % «rinde» más que cualquier inversión.'},
+  {k:'fondo',t:'Fondo de emergencia en CETES 28 días',x:'Primero 3 meses de gasto y después avanzar hacia 6 (CONDUSEF), con dinero disponible cada mes.'},
+  {k:'cero',t:'Cero deudas',x:'Terminar los créditos restantes en su calendario, sin volver a usar crédito caro.'},
+  {k:'retiro',t:'Invertir para el retiro',x:'PPR deducible y Afore; ya sin deudas y con fondo, para no cancelar antes de tiempo.'}];
+
+/* Referencias de gastos médicos (AMIS, citadas en el Diagnóstico final y hoja SGMM del modelo). */
+const SGMM_REF={eventoPromedio:100852,cancer:297000,individual:28252,fuente:'AMIS (2025, 2026), vía Diagnóstico final de la consultora'};
 /* ================= DATOS SEMILLA ================= */
 function seed(){
   const now=new Date(),tx=[];let k=0;
@@ -615,6 +687,34 @@ function cetesGanancia(g,tasaAnual){
   const i=goalInfo(g),n=i.monthsLeft,r=netoCetes(tasaAnual)/100/12,pm=i.rec;
   const fv=g.saved*Math.pow(1+r,n)+pm*((Math.pow(1+r,n)-1)/r);return Math.max(0,fv-(g.saved+pm*n));
 }
+/* ================= MI ASESOR ================= */
+/* Mejor tarjeta según el perfil, con el comparativo de Banxico del rango de límite.
+   Paga el total → solo tarjetas sin anualidad, por menor CAT. Carga saldo → todas, por menor CAT.
+   Entre las que están a 5 puntos de CAT de la más barata, prefiere la que coincide con el uso. */
+function recomendarTarjeta({paga,rango,uso,actual}){
+  const T=TARJETAS[rango]||TARJETAS['15000'];
+  const filas=T.filas.map(([n,anual,cat,web,u],i)=>({n,anual,cat,web,uso:u,pos:i+1}));
+  const pool=(paga?filas.filter(f=>f.anual===0):filas).slice().sort((a,b)=>a.cat-b.cat);
+  const min=pool[0],top=pool.find(f=>f.uso===uso&&f.cat<=min.cat+5)||min;
+  const otras=pool.filter(f=>f!==top).slice(0,2),act=actual?filas.find(f=>f.n===actual)||null:null;
+  return {T,top,min,otras,act,total:filas.length};
+}
+/* Mes del plan en el que va la familia hoy (mes 1 = M.inicio). */
+function mesPlanActual(M){const [y,mo]=M.inicio.split('-').map(Number),n=new Date();return clamp((n.getFullYear()-y)*12+n.getMonth()-(mo-1)+1,1,24)}
+/* Escalera de prioridades del Diagnóstico con su estado según el mes del plan. */
+function escaleraModelo(M){
+  const P=planHogar(M,M.recortePlan),m=mesPlanActual(M);
+  const r={seguro:[1,1],deuda:[1,P.mesTarjeta],fondo:[P.mesTarjeta,P.mesMeta],cero:[P.mesMeta,P.mesPrestamo],retiro:[M.ppr.desde,null]};
+  return {m,P,pasos:PRIORIDADES.map(p=>{const [a,b]=r[p.k];return {...p,desde:a,hasta:b,estado:b!=null&&m>b?'hecho':m>=a?'ahora':'despues'}})};
+}
+/* Escalera para cualquier cuenta, deducida de sus datos (el seguro lo marca la persona). */
+function escaleraBasica(s){
+  const ok={seguro:s.user.sgmm===true,deuda:!s.debts.some(d=>d.rate>=30),fondo:fondoBasico(s,0).mesesCubre>=3,cero:s.debts.length===0,retiro:s.goals.some(g=>/retiro|ppr|afore/i.test(g.name))};
+  let first=true;
+  return {pasos:PRIORIDADES.map(p=>{const e=ok[p.k]?'hecho':first?'ahora':'despues';if(!ok[p.k])first=false;return {...p,estado:e}})};
+}
+/* Lo que paga la familia en un evento médico con seguro: deducible + coaseguro sobre el resto. */
+const eventoMedico=(costo,ded,coas)=>Math.min(costo,ded+Math.max(0,costo-ded)*coas);
 function recorteMinimo(M){for(let r=0;r<=M.noPlaneados;r+=100)if(!planHogar(M,r).deficit)return r;return null}
 /* Fondo de emergencia para cualquier cuenta: meta = 3 meses del gasto en necesidades del mes. */
 function fondoBasico(s,ahorroMensual){
@@ -1059,7 +1159,7 @@ function PlanCard({plan}){
       ${plan.resumen.map(r=>html`<tr key=${r.k}><td>${r.k}</td>${r.v.map((v,i)=>html`<td key=${i} className=${'num '+(i===2?'best':'')}>${fv(r,v)}</td>`)}</tr>`)}
     </tbody></table></div>
     <div className="hitos">${plan.hitos.map(h=>html`<div key=${h.mes} className="hito"><b className="m">Mes ${h.mes}</b><span>${h.t}</span></div>`)}</div>
-    <div className="row sp"><span className="muted xs">Fuente: ${plan.fuente}. Proyección del plan, no es garantía.</span><button className="btn gh sm" onClick=${()=>go('finanzas','hogar')}>Ver plan del hogar →</button></div>
+    <div className="row sp"><span className="muted xs">Fuente: ${plan.fuente}. Proyección del plan, no es garantía.</span><div className="row" style=${{gap:4}}><button className="btn gh sm" onClick=${()=>go('asesor')}>Ver recomendaciones →</button><button className="btn gh sm" onClick=${()=>go('finanzas','hogar')}>Ver plan del hogar →</button></div></div>
   </div>`;
 }
 
@@ -1455,6 +1555,110 @@ function PlazosModelo({M}){
       ${d.cetes!=null?html`<div className="sm up">Los CETES le suman <b className="num">+${fmt(d.cetes)}</b> al fondo en este plazo.</div>`:html`<button className="btn gh sm" style=${{alignSelf:'flex-start',padding:0,height:24}} onClick=${()=>go('finanzas','hogar')}>Ver el plan mes a mes →</button>`}
     </div>`})}</div>
     <div className="muted xs">Fuente: ${RIVERA.fuente}; tasas: CETES 28 días ${pc(TASAS.cetes28,2)} (${TASAS.fuente.cetes}), menos ${pc(TASAS.isr,2)} de ISR. Proyección, no garantía.</div>
+  </div>`;
+}
+
+/* ================= MI ASESOR (M4) =================
+   Tres recomendaciones con su porqué: seguro de gastos médicos, plan de inversión y mejor tarjeta.
+   Caso Rivera (s.plan.modelo): cifras del modelo final y del Diagnóstico. Otras cuentas: reglas con sus propios datos. */
+function Asesor(){
+  const {s}=useApp(),M=s.plan&&s.plan.modelo;
+  return html`<div className="page">
+    <${Head} title=${html`Mi asesor <${Demo} t="Prototipo"/>`} sub="Tres decisiones, cada una con su porqué." right=${M?html`<span className="pill g">Plan de la consultora</span>`:null}/>
+    <${Banner} ic="info">Recomendaciones educativas de un prototipo: no son asesoría financiera ni una oferta de los bancos o aseguradoras mencionados. Cada cifra trae su fuente; lo que no tiene cotización dice «Supuesto».<//>
+    <${AsesorSeguro} M=${M}/><${AsesorInversion} M=${M}/><${AsesorTarjeta} M=${M}/>
+  </div>`;
+}
+const Paso=({n,t})=>html`<div className="row" style=${{gap:10,flexWrap:'nowrap'}}><span className="num-badge">${n}</span><h2>${t}</h2></div>`;
+const Supuesto=({children})=>html`<div className="xs supuesto"><b>Supuesto:</b> ${children}</div>`;
+
+function AsesorSeguro({M}){
+  const {s,upd}=useApp(),[ev,setEv]=useState('promedio');
+  const costo=ev==='promedio'?SGMM_REF.eventoPromedio:SGMM_REF.cancer;
+  if(M){const G=RIVERA.sgmm,con=eventoMedico(costo,G.deducible,G.coaseguro),indiv=SGMM_REF.individual*2,max=Math.max(indiv,G.anual);
+    return html`<div className="card col asesor" id="as-seguro" style=${{gap:14}}>
+      <${Paso} n="1" t="Seguro de gastos médicos mayores"/>
+      <div className="reco"><div className="muted xs">Recomendación</div><div className="reco-t">Contrata la extensión del seguro colectivo del papá para mamá e hijo</div><div className="muted sm">${G.poliza}</div></div>
+      <div className="grid g3">
+        <${Kpi} ic="wallet" l="Prima de la extensión" v=${`${fmt(G.mensual)} al mes`} s=${`${fmt(G.anual)} al año (mamá ${fmt(G.primaMama)} + hijo ${fmt(G.primaHijo)})`}/>
+        <${Kpi} ic="down" l="Costo neto" v=${`${fmt(G.netoMensual)} al mes`} s=${`La prima es deducible: el papá recupera ${fmt(G.devolucionISR)} de ISR al año`} cls="up"/>
+        <${Kpi} ic="star" l="Contra un seguro individual" v="La mitad" s=${`Individual: ${fmt(SGMM_REF.individual)} al año por persona`} cls="up"/>
+      </div>
+      <div className="split">
+        <div className="col" style=${{gap:8}}><b className="sm">Costo anual para mamá e hijo</b>
+          ${[['Extensión colectiva',G.anual,'var(--green)'],['Dos seguros individuales',indiv,'var(--red)']].map(([l,v,c])=>html`<div key=${l}><div className="row sp sm"><span>${l}</span><b className="num">${fmt(v)}</b></div><div className="hbar"><i style=${{width:v/max*100+'%',background:c}}></i></div></div>`)}</div>
+        <div className="col" style=${{gap:8}}><div className="row sp"><b className="sm">Si pasa un evento médico</b><${Seg} opts=${[['promedio','Evento promedio'],['cancer','Cáncer']]} val=${ev} on=${setEv} label="Evento"/></div>
+          <div className="grid" style=${{gridTemplateColumns:'1fr 1fr',gap:10}}>
+            <div className="card flat"><div className="muted xs">Sin seguro pagan</div><div className="num down" style=${{fontSize:24,fontWeight:700}} id="ev-sin">${fmt(costo)}</div></div>
+            <div className="card flat"><div className="muted xs">Con seguro pagan</div><div className="num up" style=${{fontSize:24,fontWeight:700}} id="ev-con">${fmt(con)}</div></div></div>
+          <div className="sm">El seguro les ahorra <b className="num">${fmt(costo-con)}</b>: deducible de ${fmt(G.deducible)} + coaseguro de ${pc(G.coaseguro*100,0)}. Sin seguro, ese gasto terminaría en la tarjeta al 59.52 %.</div></div>
+      </div>
+      <div className="sm donde"><b>Por qué:</b> <span className="muted">${G.porque} Un evento promedio cuesta lo mismo que ${nf(costo===SGMM_REF.eventoPromedio?SGMM_REF.eventoPromedio/(G.netoMensual*12):SGMM_REF.cancer/(G.netoMensual*12),1)} años de prima neta.</span></div>
+      <${Supuesto}>la prima es una estimación con datos de AMIS; hay que confirmar la cotización con Seguros Monterrey. Fuente de costos médicos: ${SGMM_REF.fuente}.<//>
+    </div>`;}
+  const tiene=s.user.sgmm,meses=s.user.income>0?SGMM_REF.eventoPromedio/s.user.income:0;
+  return html`<div className="card col asesor" id="as-seguro" style=${{gap:14}}>
+    <${Paso} n="1" t="Seguro de gastos médicos mayores"/>
+    <div className="row sp"><b className="sm">¿Tienes seguro de gastos médicos mayores?</b><${Seg} opts=${[['si','Sí'],['no','No']]} val=${tiene===true?'si':tiene===false?'no':''} on=${v=>upd(d=>{d.user.sgmm=v==='si'})} label="Seguro"/></div>
+    ${tiene===true?html`<div className="reco"><div className="muted xs">Recomendación</div><div className="reco-t">Mantenlo y revisa su deducible y coaseguro</div><div className="muted sm">Es el primer paso de la escalera: ya lo tienes cubierto.</div></div>`
+     :html`<div className="reco"><div className="muted xs">Recomendación</div><div className="reco-t">${tiene===false?'Consigue un seguro de gastos médicos mayores':'Primero, revisa si tienes seguro'}</div><div className="muted sm">Pregunta en tu trabajo si la póliza colectiva cubre a tus dependientes: suele costar mucho menos que una individual (${fmt(SGMM_REF.individual)} al año por persona en promedio).</div></div>`}
+    <div className="grid g3"><${Kpi} ic="warn" l="Evento médico promedio" v=${fmt(SGMM_REF.eventoPromedio)} s=${meses?`${nf(meses,1)} meses de tu ingreso`:'Agrega tu ingreso en Perfil'} cls="down"/><${Kpi} ic="warn" l="Cáncer (promedio)" v=${fmt(SGMM_REF.cancer)} s="Sin seguro, casi siempre termina en deuda" cls="down"/><${Kpi} ic="wallet" l="Seguro individual" v=${`${fmt(SGMM_REF.individual)} al año`} s="Prima promedio por persona"/></div>
+    <div className="muted xs">Fuente: ${SGMM_REF.fuente}.</div></div>`;
+}
+
+function AsesorInversion({M}){
+  const {s,go}=useApp(),E=M?escaleraModelo(M):escaleraBasica(s);
+  const est={hecho:['g','Hecho'],ahora:['b','Ahora'],despues:['','Después']};
+  const x=M?E.P.meses[E.m-1]:null;
+  return html`<div className="card col asesor" id="as-inversion" style=${{gap:14}}>
+    <${Paso} n="2" t="Plan de inversión"/>
+    <div className="reco"><div className="muted xs">Recomendación</div><div className="reco-t">Invierte en orden: primero protección y deudas, después el fondo y al final el retiro</div><div className="muted sm">Invertir a largo plazo mientras pagas una tarjeta al 59.52 % es perder dinero: ningún instrumento seguro rinde eso.</div></div>
+    <ol className="escalera">${E.pasos.map((p,i)=>html`<li key=${p.k} className=${p.estado}><span className="num-badge">${i+1}</span><div style=${{flex:1}}><div className="row sp"><b>${p.t}</b><span className=${'pill '+est[p.estado][0]}>${est[p.estado][1]}</span></div>
+      <div className="muted sm">${p.x}</div>${M?html`<div className="xs muted" style=${{marginTop:2}}>${p.hasta===p.desde?`Mes ${p.desde} · ${mesCorto(M,p.desde)}`:p.hasta?`Meses ${p.desde}–${p.hasta} · ${mesCorto(M,p.desde)} a ${mesCorto(M,p.hasta)}`:`Desde el mes ${p.desde} · ${mesTxt(M,p.desde)}`}</div>`:null}</div></li>`)}</ol>
+    ${M?html`<div className="cuadre ok"><${Ic} n="flag" s=${16}/><span><b>Este mes (mes ${E.m}, ${mesTxt(M,E.m)}):</b> ${E.m===1?'contratar la extensión del seguro, abrir la cuenta en CETESdirecto y ':''}${x.tarjeta>0?`abonar ${fmt(x.tarjeta)} a la Azul BBVA`:x.ahorro>0?`ahorrar ${fmt(x.ahorro)} en CETES 28 días`:'seguir el plan'}.</span></div>`:null}
+    <div className="tw"><table className="plan-t dest"><thead><tr><th>Para qué</th><th>Dónde</th><th>Por qué</th></tr></thead><tbody>
+      <tr><td>Fondo de emergencia</td><td><b>CETES 28 días</b> (CETESdirecto)</td><td>Disponible cada mes; ${pc(TASAS.cetes28,2)} anual (${TASAS.fuente.cetes}).</td></tr>
+      <tr><td>Retiro</td><td><b>PPR Imagina Ser Pagos Limitados 10</b> + Afore</td><td>${M?'Deducible: el papá recupera $6,285 de ISR al año; garantía mínima de 1 % real en UDI.':'Deducible y con rendimiento real garantizado mínimo en algunos planes.'}</td></tr>
+      <tr><td>Después de 6 meses de fondo</td><td><b>Aportaciones voluntarias a la Afore</b></td><td>También deducibles y con comisión promedio de solo 0.538 % (CONSAR).</td></tr>
+    </tbody></table></div>
+    <div className="row"><button className="btn sm" onClick=${()=>go('finanzas','hogar')}>Ver el plan del hogar →</button><button className="btn sm" onClick=${()=>go('finanzas','metas')}>Ver metas por plazo →</button></div>
+    <div className="muted xs">Fuente: Diagnóstico final de la consultora, «Orden de prioridades»; PPR: condiciones de Seguros Monterrey NYL; comisión de Afore: CONSAR (2026).</div></div>`;
+}
+
+function AsesorTarjeta({M}){
+  const {s}=useApp();
+  const guess=s.debts.map(d=>d.name).map(n=>Object.values(TARJETAS)[2].filas.find(f=>n.toLowerCase().includes(f[0].toLowerCase().split(' (')[0])));
+  const [paga,setPaga]=useState(M?'si':s.debts.some(d=>/tarjeta/i.test(d.name))?'no':'si');
+  const [rango,setRango]=useState(M?RIVERA.tarjeta.rango:'8001_15000'),[uso,setUso]=useState(M?RIVERA.tarjeta.uso:'general');
+  const actual=M?RIVERA.tarjeta.actual:((guess.find(Boolean)||[])[0]||null);
+  const R=recomendarTarjeta({paga:paga==='si',rango,uso,actual}),t=R.top,a=R.act;
+  const usoL=Object.fromEntries(USOS);
+  const tepp=n=>{const i=institucionDe(n);return i&&TEPP_NT[i]!=null?TEPP_NT[i]:null};
+  const filas=[t,...R.otras,...(a&&a!==t&&!R.otras.includes(a)?[a]:[])];
+  return html`<div className="card col asesor" id="as-tarjeta" style=${{gap:14}}>
+    <${Paso} n="3" t="Mejor tarjeta de crédito"/>
+    <div className="form" style=${{gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,220px),1fr))'}}>
+      <${Field} label="¿Pagas el total cada mes?" id="tc-paga"><${Seg} opts=${[['si',M?'Sí (desde el mes 5)':'Sí, pago el total'],['no',M?'No (hoy)':'No, cargo saldo']]} val=${paga} on=${setPaga} label="Pago"/><//>
+      <${Field} label="Límite de crédito" id="tc-rango"><select id="tc-rango" value=${rango} onChange=${e=>setRango(e.target.value)}>${Object.entries(TARJETAS).map(([k,v])=>html`<option key=${k} value=${k}>${v.n}</option>`)}</select><//>
+      <${Field} label="¿En qué la usas más?" id="tc-uso"><select id="tc-uso" value=${uso} onChange=${e=>setUso(e.target.value)}>${USOS.map(([k,l])=>html`<option key=${k} value=${k}>${l}</option>`)}</select><//>
+    </div>
+    ${paga==='no'?html`<${Banner} k="y" ic="warn"><b>Mientras cargues saldo, una tarjeta nueva no baja tu deuda.</b> Primero liquida la más cara (método avalancha). ${M?'Así lo hace el plan: todo el dinero libre va a la Azul hasta el mes 5.':''} Si necesitas una tarjeta, la de menor costo para tu límite es la de abajo.<//>`:null}
+    <div className="reco"><div className="muted xs">${M?(paga==='si'?'Recomendación desde el mes 5 ('+mesTxt(M,5)+')':'Recomendación hoy (meses 1 a 4)'):'Recomendación'}</div>
+      <div className="reco-t" id="tc-top">${M&&paga==='no'?'No abras otra tarjeta: termina de pagar la Azul BBVA':t.n}</div>
+      <div className="muted sm">${M&&paga==='no'?`Si de todos modos necesitaran una, la de menor CAT para su límite es ${t.n} (${pc(t.cat,1)}).`:`Anualidad ${fmt(t.anual)} · CAT de publicidad ${pc(t.cat,1)} · ${t.web}`}</div></div>
+    <ul className="porque">
+      ${a&&a.anual>t.anual?html`<li>Te ahorras <b className="num">${fmt(a.anual-t.anual)}</b> al año de anualidad frente a tu ${a.n}.</li>`:null}
+      ${a?html`<li>Si algún mes no pagas el total, su CAT es de <b>${pc(t.cat,1)}</b> contra <b>${pc(a.cat,1)}</b> de tu ${a.n}: ${t.cat<a.cat?`cuesta ${nf(a.cat/t.cat,1)} veces menos`:'similar'}.</li>`:html`<li>Es de las de menor CAT de publicidad para tu límite (${R.T.n}).</li>`}
+      ${paga==='si'?html`<li>Si pagas el total cada mes, la tasa no te cobra nada: lo que más pesa es la anualidad, y esta no tiene.</li>`:null}
+      ${t!==R.min?html`<li>La de menor CAT es ${R.min.n} (${pc(R.min.cat,1)}), pero es para ${usoL[R.min.uso].toLowerCase()}; para ${usoL[uso].toLowerCase()}, ${t.n} cuesta casi lo mismo.</li>`:null}
+      ${tepp(t.n)!=null?html`<li>A quienes no pagan el total, ${institucionDe(t.n)} les cobró en promedio ${pc(tepp(t.n),1)} efectivo anual${a&&tepp(a.n)!=null?` contra ${pc(tepp(a.n),1)} de ${institucionDe(a.n)}`:''} (diciembre de 2025).</li>`:null}
+      ${M&&paga==='si'?html`<li>Con la nueva tarjeta aprobada, cancelen la Azul: el banco devuelve la parte proporcional de la anualidad (Banxico).</li>`:null}
+    </ul>
+    <div className="tw"><table className="plan-t"><thead><tr><th>Tarjeta</th><th>Anualidad</th><th>CAT de publicidad</th><th>Lugar de ${R.total}</th></tr></thead><tbody>
+      ${filas.map(f=>html`<tr key=${f.n} className=${f===t?'rec':f===a?'act':''}><td>${f.n}${f===t?html` <span className="pill g">Recomendada</span>`:f===a?html` <span className="pill r">Tu tarjeta</span>`:null}</td><td className="num">${fmt(f.anual)}</td><td className="num">${pc(f.cat,1)}</td><td className="num">${f.pos}</td></tr>`)}
+    </tbody></table></div>
+    <div className="muted xs">Fuente: <a href=${R.T.url} target="_blank" rel="noopener">${TARJETAS_FUENTE}, límite ${R.T.n.toLowerCase()}</a>; ${TEPP_NT.fuente}. El CAT de una persona depende de su perfil de riesgo y puede ser distinto al de publicidad.</div>
+    <${Supuesto}>${M?'que su límite de crédito es mayor a $15,000 (deben $18,000) y que la usarán sobre todo en el súper; ':''}que se cumplen los requisitos de ingreso del banco, que Banxico no publica.<//>
   </div>`;
 }
 /* ================= ASISTENTE IA (DEMO) ================= */
@@ -1883,9 +2087,9 @@ function Ayuda(){
     <div className="row"><button className="btn" onClick=${replayTutorial}>Ver tutorial de bienvenida</button><button className="btn" onClick=${()=>go('perfil')}>Ir a Perfil</button></div></div>`;
 }
 /* ================= APP ================= */
-const NAV=[['inicio','Inicio','Inicio','home'],['mexico','México hoy','México','globe'],['finanzas','Mis finanzas','Finanzas','wallet'],['asistente','Asistente IA','IA','chat'],['inversiones','Inversiones','Invertir','chart'],['academia','Academia','Academia','book'],['perfil','Perfil','Perfil','user']];
-const ROUTES={inicio:Inicio,mexico:Mexico,finanzas:Finanzas,asistente:Asistente,inversiones:Inversiones,academia:Academia,perfil:Perfil,calculadoras:Calculadoras,ayuda:Ayuda};
-const ROUTE_NAMES={inicio:'Inicio',mexico:'México hoy',finanzas:'Mis finanzas',asistente:'Asistente IA',inversiones:'Inversiones',academia:'Academia',perfil:'Perfil',calculadoras:'Calculadoras',ayuda:'Centro de ayuda'};
+const NAV=[['inicio','Inicio','Inicio','home'],['asesor','Mi asesor','Asesor','star'],['mexico','México hoy','México','globe'],['finanzas','Mis finanzas','Finanzas','wallet'],['asistente','Asistente IA','IA','chat'],['inversiones','Inversiones','Invertir','chart'],['academia','Academia','Academia','book'],['perfil','Perfil','Perfil','user']];
+const ROUTES={inicio:Inicio,asesor:Asesor,mexico:Mexico,finanzas:Finanzas,asistente:Asistente,inversiones:Inversiones,academia:Academia,perfil:Perfil,calculadoras:Calculadoras,ayuda:Ayuda};
+const ROUTE_NAMES={inicio:'Inicio',asesor:'Mi asesor',mexico:'México hoy',finanzas:'Mis finanzas',asistente:'Asistente IA',inversiones:'Inversiones',academia:'Academia',perfil:'Perfil',calculadoras:'Calculadoras',ayuda:'Centro de ayuda'};
 function applyTheme(t){const r=document.documentElement;if(t==='light'||t==='dark')r.setAttribute('data-theme',t);else r.removeAttribute('data-theme')}
 
 const TUT=[['wallet','Bienvenido a FINOVA','Tu dinero. Tus decisiones. Tu futuro. Este es un prototipo de demostración: tus datos se guardan solo en este dispositivo y puedes cerrar sesión o cambiar de perfil cuando quieras.'],
@@ -1955,7 +2159,7 @@ function App({account,logout,onAccountChange}){
         <div className="wrap"><${Page} key=${route}/></div>
       </div>
     </div>
-    <nav className="bottom" aria-label="Navegación principal">${NAV.map(([r,,l,ic])=>html`<button key=${r} className=${route===r?'on':''} aria-current=${route===r?'page':undefined} onClick=${()=>go(r)}><${Ic} n=${ic} s=${22}/>${l}</button>`)}</nav>
+    <nav className="bottom" aria-label="Navegación principal">${NAV.filter(([r])=>r!=='mexico').map(([r,,l,ic])=>html`<button key=${r} className=${route===r?'on':''} aria-current=${route===r?'page':undefined} onClick=${()=>go(r)}><${Ic} n=${ic} s=${22}/>${l}</button>`)}</nav>
     <div className="toasts" aria-live="polite">${toasts.map(t=>html`<div key=${t.id} className=${'toast '+(t.kind||'')}>${t.msg}</div>`)}</div>
     ${txm?html`<${TxForm} defType=${txm.defType} onClose=${()=>setTxm(null)}/>`:null}
     ${conf?html`<${Confirm} c=${conf} onClose=${()=>setConf(null)}/>`:null}

@@ -49,7 +49,7 @@ function PlanCard({plan}){
       ${plan.resumen.map(r=>html`<tr key=${r.k}><td>${r.k}</td>${r.v.map((v,i)=>html`<td key=${i} className=${'num '+(i===2?'best':'')}>${fv(r,v)}</td>`)}</tr>`)}
     </tbody></table></div>
     <div className="hitos">${plan.hitos.map(h=>html`<div key=${h.mes} className="hito"><b className="m">Mes ${h.mes}</b><span>${h.t}</span></div>`)}</div>
-    <div className="row sp"><span className="muted xs">Fuente: ${plan.fuente}. Proyección del plan, no es garantía.</span><button className="btn gh sm" onClick=${()=>go('finanzas','hogar')}>Ver plan del hogar →</button></div>
+    <div className="row sp"><span className="muted xs">Fuente: ${plan.fuente}. Proyección del plan, no es garantía.</span><div className="row" style=${{gap:4}}><button className="btn gh sm" onClick=${()=>go('asesor')}>Ver recomendaciones →</button><button className="btn gh sm" onClick=${()=>go('finanzas','hogar')}>Ver plan del hogar →</button></div></div>
   </div>`;
 }
 
