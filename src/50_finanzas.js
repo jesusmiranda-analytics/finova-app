@@ -212,6 +212,6 @@ function Deudas(){
 function Finanzas(){
   const [tab,setTab]=useTab('finanzas','movimientos'),[p,setP]=useState('mes');
   return html`<div className="page"><${Head} title="Mis finanzas" sub="Registra, analiza y planea tu dinero." right=${tab==='movimientos'||tab==='analisis'?html`<${PeriodBar} p=${p} setP=${setP}/>`:null}/>
-    <${Tabs} opts=${[['movimientos','Movimientos'],['analisis','Análisis'],['presupuestos','Presupuestos'],['metas','Metas'],['deudas','Deudas']]} val=${tab} on=${setTab}/>
-    ${tab==='movimientos'?html`<${Movimientos} p=${p}/>`:tab==='analisis'?html`<${Analisis} p=${p}/>`:tab==='presupuestos'?html`<${Presupuestos}/>`:tab==='metas'?html`<${Metas}/>`:html`<${Deudas}/>`}</div>`;
+    <${Tabs} opts=${[['movimientos','Movimientos'],['analisis','Análisis'],['presupuestos','Presupuestos'],['hogar','Plan del hogar'],['metas','Metas'],['deudas','Deudas']]} val=${tab} on=${setTab}/>
+    ${tab==='movimientos'?html`<${Movimientos} p=${p}/>`:tab==='analisis'?html`<${Analisis} p=${p}/>`:tab==='presupuestos'?html`<${Presupuestos}/>`:tab==='hogar'?html`<${PlanHogar}/>`:tab==='metas'?html`<${Metas}/>`:html`<${Deudas}/>`}</div>`;
 }

@@ -55,7 +55,7 @@ function seedRivera(){
     goals:[{id:'rv-fe',name:'Fondo de emergencia (CETES)',target:RIVERA.fondo.meta,saved:0,deadline:inMonths(RIVERA.fondo.mesMeta),demo:true}],
     debts:RIVERA.deudas.map(d=>({...d,demo:true})),
     academy:{xp:0,correct:[],log:[],days:[],badges:[],daily:{},weekly:{claimed:''}},
-    plan:{fuente:RIVERA.fuente,resumen:RIVERA.resumen,hitos:RIVERA.hitos,retiro:RIVERA.retiro}};
+    plan:{fuente:RIVERA.fuente,resumen:RIVERA.resumen,hitos:RIVERA.hitos,retiro:RIVERA.retiro,modelo:RIVERA.modelo}};
 }
 /* Cuenta nueva: sin movimientos; presupuesto 50/30/20 sobre el ingreso declarado. */
 function seedEmpty(name,income){
@@ -66,6 +66,45 @@ function seedEmpty(name,income){
     budgets:{rule:{needs:50,wants:30,save:20},cats:{'Alimentación':b(.2),'Transporte':b(.1),'Servicios':b(.1),'Salud':b(.05),'Educación':b(.05),'Entretenimiento':b(.15),'Otros':b(.15),'Deudas':0}},
     goals:[],debts:[],chats:[],activeChat:null,
     academy:{xp:0,correct:[],log:[],days:[],badges:[],daily:{},weekly:{claimed:''}}};
+}
+/* ================= PLAN DEL HOGAR =================
+   Reproduce las hojas "Flujo de efectivo" y "Ahorro" del modelo final:
+   lo que sobra cada mes paga primero la tarjeta y, ya liquidada, va al fondo de emergencia en CETES.
+   Con recorte = 4,000 da los mismos resultados que el Excel (ver test/t5.js). */
+const cetesNetoMensual=M=>(M.cetes.tasa-M.cetes.isr)/12;
+function planHogar(M,recorte){
+  const rc=cetesNetoMensual(M),rT=M.tarjeta.tasa/12,rP=M.prestamo.tasa/12;
+  let tc=M.tarjeta.saldo,pn=M.prestamo.saldo,fondo=0,sinRend=0,intTc=0,deficit=null,mesTarjeta=null,mesPrestamo=null,mesMeta=null;
+  const meses=[];
+  for(let m=1;m<=24;m++){
+    const y2=m>=M.mesAjuste,g=y2?1+M.crecimiento:1;
+    const ingresoBase=M.ingreso*g,extra=(m===M.tanda.mesRecibe?M.tanda.recibe:0)+(m===M.isr.mes?M.isr.monto:0);
+    const gc=M.gastoCorriente*g,sgmm=M.sgmm.anual/12*(y2?1+M.sgmm.alza:1),np=Math.max(0,M.noPlaneados-recorte);
+    const tanda=m<=M.tanda.hasta?M.tanda.pago:0,ppr=m>=M.ppr.desde?M.ppr.mensual:0;
+    let pagoPrestamo=0;
+    if(pn>0){const i=pn*rP;pagoPrestamo=Math.min(M.prestamo.pago,pn+i);pn=pn+i-pagoPrestamo;if(pn<=0.005){pn=0;mesPrestamo=m}}
+    const res=ingresoBase+extra-gc-sgmm-np-tanda-pagoPrestamo-ppr;
+    let pagoTarjeta=0;
+    if(tc>0){const i=tc*rT;intTc+=i;pagoTarjeta=Math.min(Math.max(res,0),tc+i);tc=tc+i-pagoTarjeta;if(tc<=0.005){tc=0;mesTarjeta=m}}
+    const ahorro=res-pagoTarjeta;               // negativo = se toma del fondo
+    fondo=fondo*(1+rc)+ahorro;sinRend+=ahorro;
+    if(fondo<0){if(!deficit)deficit={mes:m,monto:-fondo};fondo=0;sinRend=Math.max(0,sinRend)}
+    if(mesMeta===null&&fondo>=M.metaFondo)mesMeta=m;
+    meses.push({m,ingreso:ingresoBase+extra,gastoCorriente:gc,sgmm,noPlaneados:np,tanda,prestamo:pagoPrestamo,tarjeta:pagoTarjeta,ppr,
+      ahorro,fondo,sinRend,mesesCubre:fondo/gc});
+  }
+  return {meses,mesTarjeta,mesPrestamo,mesMeta,interesesTarjeta:intTc,deficit,deudaFinal:tc+pn};
+}
+function recorteMinimo(M){for(let r=0;r<=M.noPlaneados;r+=100)if(!planHogar(M,r).deficit)return r;return null}
+/* Fondo de emergencia para cualquier cuenta: meta = 3 meses del gasto en necesidades del mes. */
+function fondoBasico(s,ahorroMensual){
+  const ml=monthList(s),T=tot(ml),bc=byCat(ml);
+  const needsCats=EXP_CATS.filter(c=>c.grp==='needs'&&c.n!=='Deudas').map(c=>c.n);
+  let needs=sum(needsCats,c=>bc[c]||0);if(needs<=0)needs=(s.user.income||0)*.5;
+  const meta=Math.round(needs*3),goal=s.goals.find(g=>/emergencia/i.test(g.name)),actual=goal?goal.saved:0;
+  const rc=cetesNetoMensual(RIVERA.modelo);let f=actual,mes=actual>=meta?0:null;
+  for(let m=1;m<=120&&mes===null;m++){f=f*(1+rc)+ahorroMensual;if(f>=meta)mes=m}
+  return {T,needs,meta,actual,goal,mesesCubre:needs>0?actual/needs:0,mesMeta:mes};
 }
 function loadState(){
   try{const raw=localStorage.getItem(KEY);if(raw){const o=JSON.parse(raw);if(o&&o.v===1&&Array.isArray(o.tx))return {...seed(),...o}}}catch(e){}

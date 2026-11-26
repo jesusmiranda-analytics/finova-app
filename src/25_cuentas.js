@@ -29,7 +29,7 @@ const validPin=p=>/^\d{4}$/.test(p||'');
 
 function seedFor(acc){return acc.kind==='caso'?seedRivera():acc.kind==='demo'?seed():seedEmpty(acc.name,acc.income)}
 function loadUserState(acc){
-  try{const raw=lsGet(UKEY(acc.id));if(raw){const o=JSON.parse(raw);if(o&&o.v===1&&Array.isArray(o.tx))return {...seedFor(acc),...o}}}catch(e){}
+  try{const raw=lsGet(UKEY(acc.id));if(raw){const o=JSON.parse(raw);if(o&&o.v===1&&Array.isArray(o.tx)){const b=seedFor(acc),r={...b,...o};if(b.plan)r.plan=b.plan;return r}}}catch(e){}
   return seedFor(acc);
 }
 function saveUserState(id,s){lsSet(UKEY(id),JSON.stringify(s))}

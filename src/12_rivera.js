@@ -63,6 +63,22 @@ const RIVERA={
     {mes:16,t:'El fondo de emergencia llega a la meta de 3 meses',dato:'$47,673'},
     {mes:21,t:'Liquidan el Préstamo de Nómina: cero deudas',dato:'$0 de deuda'},
     {mes:22,t:'Inician los PPR de papá y mamá',dato:'$4,500 al mes'}],
+  // Hoja Supuestos (secciones 1-9): parámetros del plan de 24 meses.
+  // planHogar() en 20_calc.js reproduce con ellos las hojas Flujo de efectivo y Ahorro.
+  modelo:{
+    ingreso:25955,crecimiento:.0375,mesAjuste:13,          // ingreso e inflación del gasto suben 3.75 % desde el mes 13
+    gastoCorriente:15891,noPlaneados:5914,recortePlan:4000,
+    tanda:{pago:500,hasta:10,recibe:15000,mesRecibe:5},
+    isr:{monto:5973.5921,mes:16},                          // devolución de ISR por deducir el SGMM
+    sgmm:{anual:27966.2552,alza:.12},                       // extensión del seguro para mamá e hijo
+    tarjeta:{saldo:18000,tasa:.5952},
+    prestamo:{saldo:36000,tasa:.241,pago:2150},
+    ppr:{mensual:4500,desde:22},                            // papá 3,000 + mamá 1,500
+    cetes:{tasa:.062,isr:.009},                             // CETES 28 días; retención de ISR anual
+    metaFondo:47673,mesesMeta:3,
+    // Presupuesto actual (hoja Presupuesto) para la barra «Hoy»
+    hoy:{gastoCorriente:15891,deudas:3650,tanda:500,noPlaneados:5914}
+  },
   // Hoja Resumen: retiro a los 65 años en pesos de hoy (para el módulo de retiro)
   retiro:{conservador:{total:14593.57,pct:56.2},base:{total:15952.69,pct:61.5},pensionAfore:11675.40}
 };
