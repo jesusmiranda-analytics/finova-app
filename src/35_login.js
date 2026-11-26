@@ -1,21 +1,21 @@
 
 /* ================= ENTRADA: PERFILES Y PIN LOCAL ================= */
-const KIND_LABEL={caso:['Caso de la consultora','g'],demo:['Usuario de prueba','b'],propia:['Tu cuenta','']};
+const KIND_LABEL={caso:['Caso de la consultora','b'],demo:['Usuario de prueba','b'],propia:['Tu cuenta','']};
 function Login({onEnter}){
   const [accs,setAccs]=useState(()=>listAccounts()),[sel,setSel]=useState(null),[mode,setMode]=useState('list');
   const order={caso:0,demo:1,propia:2},list=[...accs].sort((a,b)=>order[a.kind]-order[b.kind]);
   const pick=acc=>{if(!acc.pin){onEnter(acc);return}setSel(acc);setMode('pin')};
   return html`<div className="login"><div className="login-in">
-    <div className="login-brand"><div className="logo" style=${{width:44,height:44,fontSize:22,borderRadius:13}}>F</div><div><div className="login-name">FINOVA</div><div className="muted sm">Tu dinero. Tus decisiones. Tu futuro.</div></div></div>
+    <div className="login-brand"><img className="day-logo" src="assets/logo/finova-logo-horizontal.svg" alt="FINOVA"/><img className="night-logo" src="assets/logo/finova-logo-horizontal-oscuro.svg" alt="FINOVA"/></div>
     ${mode==='list'?html`<div className="col" style=${{gap:18}}>
-      <div><h1 style=${{fontSize:26}}>¿Quién va a usar FINOVA?</h1><p className="muted" style=${{marginTop:4}}>Elige tu perfil o crea una cuenta. Cada cuenta tiene sus propios datos y su propio plan.</p></div>
+      <div><h1>¿Quién va a usar FINOVA?</h1><p className="muted" style=${{marginTop:4}}>Elige tu perfil o crea una cuenta. Cada cuenta tiene sus propios datos y su propio plan.</p></div>
       <div className="acc-grid">${list.map(a=>{const [lbl,k]=KIND_LABEL[a.kind]||KIND_LABEL.propia,dp=(DEFAULT_ACCOUNTS.find(d=>d.id===a.id)||{}).demoPin;
-        return html`<button key=${a.id} className="acc" onClick=${()=>pick(a)} aria-label=${'Entrar como '+a.name}>
+        return html`<button key=${a.id} className=${a.kind==='caso'?'acc case':'acc'} onClick=${()=>pick(a)} aria-label=${'Entrar como '+a.name}>
           <div className="acc-av">${initials(a.name)}</div>
           <div className="acc-n">${a.name}</div>
           <span className=${'pill '+k}>${lbl}</span>
           <div className="muted xs acc-pin">${a.pin?html`<${Ic} n="lock" s=${13}/> Protegido con PIN${dp?` · PIN de demo: ${dp}`:''}`:'Sin PIN'}</div></button>`})}
-        <button className="acc acc-new" onClick=${()=>setMode('create')}><div className="acc-av"><${Ic} n="plus" s=${26}/></div><div className="acc-n">Crear cuenta</div><span className="muted xs">Gratis, en menos de un minuto</span></button>
+        <button className="acc acc-new" onClick=${()=>setMode('create')}><div className="acc-av"><${Ic} n="plus" s=${26}/></div><div className="acc-n">Crear cuenta</div></button>
       </div></div>`:null}
     ${mode==='pin'&&sel?html`<${PinEntry} acc=${sel} onOk=${()=>onEnter(sel)} onBack=${()=>{setSel(null);setMode('list')}}/>`:null}
     ${mode==='create'?html`<${CreateAccount} onCancel=${()=>setMode('list')} onDone=${acc=>{setAccs(listAccounts());onEnter(acc)}}/>`:null}

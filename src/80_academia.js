@@ -33,7 +33,7 @@ function Player({lesson,daily,onClose}){
   const correctText=!ex?'':ex.t==='mc'?ex.o[ex.a]:ex.t==='tf'?(ex.a?'Verdadero':'Falso'):ex.t==='fill'?ex.a[0]:String(ex.a);
   if(i===-1)return html`<${Modal} title=${lesson.title} onClose=${onClose}><p>${lesson.intro}</p><div className="muted sm">${n} ejercicios · +10 XP por cada acierto nuevo</div><div className="mf"><button className="btn" onClick=${onClose}>Cerrar</button><button className="btn pri" onClick=${()=>setI(0)}>Empezar</button></div><//>`;
   if(finished){const score=Math.round(right/n*100);return html`<${Modal} title=${daily?'Reto diario completado':'Lección completada'} onClose=${onClose}>
-    <div style=${{textAlign:'center'}} className="col"><div style=${{color:'var(--yellow)'}}><${Ic} n="trophy" s=${54}/></div><div className="num" style=${{fontSize:34,fontWeight:700}}>${score}%</div><div className="muted">${right} de ${n} respuestas correctas</div>
+    <div style=${{textAlign:'center'}} className="col"><div style=${{color:'var(--yellow)'}}><${Ic} n="trophy" s=${54}/></div><div className="num" style=${{fontSize:34,fontWeight:500}}>${score}%</div><div className="muted">${right} de ${n} respuestas correctas</div>
       <div className="row" style=${{justifyContent:'center'}}><span className="pill y">+${gain} XP</span><span className="pill g">Racha: ${streakOf([...s.academy.days,todayS()])} días</span></div></div>
     ${!daily&&lesson.rel?html`<${Banner} k="b" ic="spark">Siguiente paso: pon en práctica lo aprendido.<//><button className="btn pri" onClick=${()=>{onClose();go(lesson.rel.route,lesson.rel.tab)}}>${lesson.rel.label}</button>`:null}
     <div className="mf"><button className="btn" onClick=${onClose}>Cerrar</button></div><//>`}

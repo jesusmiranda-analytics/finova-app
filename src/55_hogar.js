@@ -40,11 +40,9 @@ function PlanModelo({M,fuente}){
   const nota={hoy:'Así gastan hoy: entra todo y no sobra nada.','1':'Meses 1 a 4: el recorte y lo que sobra van a liquidar la Tarjeta Azul BBVA.','6':'La tarjeta ya está pagada: ese dinero ahora se ahorra en CETES.','13':'Año 2: el ingreso y el gasto suben 3.75 %, y el seguro sube 12 %.','22':'Ya sin deudas: arrancan los PPR de papá y mamá para el retiro.'}[vista];
   return html`<div className="col" style=${{gap:16}}>
     <div className="card col" style=${{gap:14}}>
-      <div className="ch" style=${{marginBottom:0}}><div><h2>Simulador del plan</h2><div className="muted sm">Mueve el recorte mensual a los gastos no planeados y mira qué pasa con las deudas y el fondo.</div></div><span className="pill g">Plan de la consultora</span></div>
+      <div className="ch" style=${{marginBottom:0}}><div><h2>Simulador del plan</h2><div className="muted sm">Mueve el recorte mensual a los gastos no planeados y mira qué pasa con las deudas y el fondo.</div></div><span className="pill b">Plan de la consultora</span></div>
       <${Field} label=${html`Recorte mensual a gastos no planeados: <b className="num" style=${{color:'var(--fg)',fontSize:16}}>${fmt(rc)}</b> <span className="muted">(de ${fmt(M.noPlaneados)} a ${fmt(M.noPlaneados-rc)} al mes)</span>`} id="ph-r">
         <input id="ph-r" type="range" min="0" max=${M.noPlaneados} step="100" value=${rc} onChange=${setRange(setRc,M.noPlaneados)}/><//>
-      <div className="row sp"><span className="muted xs">$0 = no cambian nada · ${fmt(M.noPlaneados)} = eliminan todos los gastos no planeados</span>
-        <button className="btn sm" disabled=${rc===M.recortePlan} onClick=${()=>setRc(M.recortePlan)}><${Ic} n="refresh" s=${15}/>Volver al plan (${fmt(M.recortePlan)})</button></div>
       ${P.deficit?html`<${Banner} k="r" ic="warn"><b>Con este recorte el plan no alcanza.</b> En el mes ${P.deficit.mes} faltan ${fmt(P.deficit.monto)}. El recorte mínimo para que funcione es ${fmt(minR)} al mes.<//>`:null}
       <div className="grid g4">
         <${Kpi} ic="trend" l="Tarjeta liquidada" v=${P.mesTarjeta?`Mes ${P.mesTarjeta}`:'No se liquida'} s=${`Intereses pagados: ${fmt(P.interesesTarjeta)}`} cls=${P.mesTarjeta?'up':'down'}/>
@@ -52,6 +50,8 @@ function PlanModelo({M,fuente}){
         <${Kpi} ic="wallet" l="Fondo al mes 24" v=${fmt(m24.fondo)} s="Ahorrado en CETES"/>
         <${Kpi} ic="star" l="Meses que cubre (mes 24)" v=${`${nf(m24.mesesCubre,1)} meses`} s="De gasto corriente del hogar" cls=${m24.mesesCubre>=3?'up':'down'}/>
       </div>
+      <div className="row sp"><span className="muted xs">$0 = no cambian nada · ${fmt(M.noPlaneados)} = eliminan todos los gastos no planeados</span>
+        <button className="btn sm" disabled=${rc===M.recortePlan} onClick=${()=>setRc(M.recortePlan)}><${Ic} n="refresh" s=${15}/>Volver al plan (${fmt(M.recortePlan)})</button></div>
     </div>
     <div className="card col" style=${{gap:14}}>
       <div className="ch" style=${{marginBottom:0}}><div><h2>¿A dónde va cada peso?</h2><div className="muted sm">${nota}</div></div><${Seg} opts=${PH_VISTAS} val=${vista} on=${setVista} label="Mes"/></div>
@@ -64,7 +64,7 @@ function PlanModelo({M,fuente}){
           <${RC.Area} type="monotone" dataKey="Sin rendimiento" stroke=${c.muted} fill="transparent" strokeDasharray="4 3" strokeWidth=${1.5} isAnimationActive=${false}/><${RC.Area} type="monotone" dataKey="Con CETES" stroke=${c.green} fill=${c.green} fillOpacity=${.15} strokeWidth=${2.5} isAnimationActive=${false}/><//><//>
         <div className="muted xs">Los CETES suman ${fmt(m24.fondo-m24.sinRend)} al mes 24 frente a guardar el dinero sin rendimiento (CETES 28 días ${pc(M.cetes.tasa*100,1)} menos ISR).</div></div>
       <div className="card col" style=${{gap:12}}><div className="ch" style=${{marginBottom:0}}><h2>Meses que cubre</h2><span className="pill">${PH_VISTAS.find(v=>v[0]===vista)[1]}</span></div>
-        <div className="num" style=${{fontSize:36,fontWeight:700,lineHeight:1}}>${nf(mesesSel,1)} <span className="muted" style=${{fontSize:16,fontWeight:500}}>meses</span></div>
+        <div className="num" style=${{fontSize:36,fontWeight:500,lineHeight:1}}>${nf(mesesSel,1)} <span className="muted" style=${{fontSize:16,fontWeight:500}}>meses</span></div>
         <${MesesGauge} v=${mesesSel}/>
         <div className="sm">Si mañana se quedaran sin ingreso, el fondo pagaría ${nf(mesesSel,1)} meses del gasto corriente del hogar (${fmt(vista==='hoy'?M.gastoCorriente:P.meses[+vista-1].gastoCorriente)} al mes).</div>
         <div className="muted xs">Cambia el mes arriba, en «¿A dónde va cada peso?».</div></div>
@@ -87,13 +87,13 @@ function PlanBasico(){
       ${T.inc===0&&T.exp===0?html`<${Empty} title="Aún no hay movimientos este mes" text="Registra tus ingresos y gastos para ver tu presupuesto."/>`:html`<div className="cuadre ok"><${Ic} n="check" s=${16}/><span>Ingreso <b className="num">${fmt(T.inc)}</b> = gastos <b className="num">${fmt(T.exp)}</b> + ahorro <b className=${'num '+(T.inc-T.exp<0?'down':'up')}>${fmt(T.inc-T.exp)}</b></span></div>`}</div>
     <div className="split">
       <div className="card col" style=${{gap:12}}><div className="ch" style=${{marginBottom:0}}><h2>Fondo de emergencia</h2><span className="pill">Meta: 3 meses</span></div>
-        <div className="num" style=${{fontSize:36,fontWeight:700,lineHeight:1}}>${nf(F.mesesCubre,1)} <span className="muted" style=${{fontSize:16,fontWeight:500}}>meses cubiertos</span></div>
+        <div className="num" style=${{fontSize:36,fontWeight:500,lineHeight:1}}>${nf(F.mesesCubre,1)} <span className="muted" style=${{fontSize:16,fontWeight:500}}>meses cubiertos</span></div>
         <${MesesGauge} v=${F.mesesCubre}/>
         <div className="sm">Tienes ${fmt(F.actual)} de una meta de <b>${fmt(F.meta)}</b> (3 meses de tus gastos básicos: ${fmt(F.needs)} al mes).</div>
         ${F.goal?html`<button className="btn sm" style=${{alignSelf:'flex-start'}} onClick=${()=>go('finanzas','metas')}>Abonar a mi fondo →</button>`:html`<button className="btn pri sm" style=${{alignSelf:'flex-start'}} onClick=${crear}><${Ic} n="flag" s=${15}/>Crear meta «Fondo de emergencia»</button>`}</div>
       <div className="card col" style=${{gap:12}}><h2>¿Cuánto tardas en llegar?</h2>
         <${Field} label=${html`Si ahorras <b className="num" style=${{color:'var(--fg)',fontSize:16}}>${fmt(am)}</b> al mes en CETES`} id="pb-a"><input id="pb-a" type="range" min="0" max=${max} step="100" value=${am} onChange=${setRange(setAm,max)}/><//>
-        <div className="num" style=${{fontSize:28,fontWeight:700}}>${F.mesMeta===0?'¡Ya llegaste!':F.mesMeta?`${F.mesMeta} ${F.mesMeta===1?'mes':'meses'}`:'Más de 10 años'}</div>
+        <div className="num" style=${{fontSize:28,fontWeight:500}}>${F.mesMeta===0?'¡Ya llegaste!':F.mesMeta?`${F.mesMeta} ${F.mesMeta===1?'mes':'meses'}`:'Más de 10 años'}</div>
         <div className="muted xs">Simulación con CETES 28 días ${pc(RIVERA.modelo.cetes.tasa*100,1)} menos ISR (supuesto de noviembre 2026). No es garantía.</div></div>
     </div></div>`;
 }
@@ -117,10 +117,10 @@ function PlazosModelo({M}){
       hitos:[h(24,'PPR acumulado',fmt(ppr24)),h(null,'Ingreso al retiro, a los 65 años',`${fmt(ret.total)} al mes (${nf(ret.pct,0)} % del ingreso actual)`)],
       cetes:null}};
   return html`<div className="card col" style=${{gap:14}}>
-    <div className="ch" style=${{marginBottom:0}}><div><h2>Ahorro por plazos</h2><div className="muted sm">El plan de la consultora en tres horizontes. Mes 1 = ${mesTxt(M,1)}.</div></div><span className="pill g">Plan de la consultora</span></div>
+    <div className="ch" style=${{marginBottom:0}}><div><h2>Ahorro por plazos</h2><div className="muted sm">El plan de la consultora en tres horizontes. Mes 1 = ${mesTxt(M,1)}.</div></div><span className="pill b">Plan de la consultora</span></div>
     <div className="grid g3">${RIVERA.plazos.map(p=>{const d=datos[p.k];return html`<div key=${p.k} className=${'card flat col plazo '+p.k} style=${{gap:10}}>
-      <div className="row sp"><span className=${'pill '+(p.k==='corto'?'b':p.k==='mediano'?'y':'g')}>${p.nombre}</span><span className="muted xs">${mesCorto(M,p.desde)} – ${p.hasta?mesCorto(M,p.hasta):'65 años'}</span></div>
-      <div><div className="b">${p.titulo}</div><div className="num" style=${{fontSize:26,fontWeight:700,lineHeight:1.2,marginTop:4}}>${d.meta}</div><div className="muted sm">${d.metaSub}</div></div>
+      <div className="row sp"><span className="b">${p.nombre}</span><span className="muted xs">${mesCorto(M,p.desde)} – ${p.hasta?mesCorto(M,p.hasta):'65 años'}</span></div>
+      <div><div className="b">${p.titulo}</div><div className="num" style=${{fontSize:26,fontWeight:500,lineHeight:1.2,marginTop:4}}>${d.meta}</div><div className="muted sm">${d.metaSub}</div></div>
       <div className="col" style=${{gap:6}}>${d.hitos.map((x,i)=>html`<div key=${i} className="row sm" style=${{gap:8,flexWrap:'nowrap',alignItems:'flex-start'}}><b className="m-chip">${x.m?`Mes ${x.m}`:'65 años'}</b><span style=${{flex:1}}>${x.t}<br/><span className="muted xs">${x.m?mesTxt(M,x.m)+' · ':''}${x.dato}</span></span></div>`)}</div>
       <div className="sm donde"><b>Instrumento: ${p.instrumento}.</b> <span className="muted">${p.porque}</span></div>
       ${d.cetes!=null?html`<div className="sm up">Los CETES le suman <b className="num">+${fmt(d.cetes)}</b> al fondo en este plazo.</div>`:html`<button className="btn gh sm" style=${{alignSelf:'flex-start',padding:0,height:24}} onClick=${()=>go('finanzas','hogar')}>Ver el plan mes a mes →</button>`}

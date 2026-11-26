@@ -11,7 +11,7 @@ function Impuestos(){
   return html`<div className="page">
     <${Head} title=${html`Mis impuestos <${Demo}/>`} sub="Tus deducciones se vuelven devolución, y tu devolución se vuelve parte de tu plan."/>
     <${Banner} k="y" ic="warn"><b>Demo: FINOVA no se conecta al SAT real ni paga impuestos en este prototipo.</b> Información educativa; no es asesoría fiscal.<//>
-    <div className="split"><${ConexionSAT}/><${DevolucionCard} M=${M}/></div>
+    <div className="split"><${DevolucionCard} M=${M}/><${ConexionSAT}/></div>
     <${RadarCard} M=${M}/>
     ${M?html`<div className="card sm muted">${RIVERA.fiscal.mama}</div>`:html`<${ApartadoCard}/>`}
     <${HistorialFiscal}/>
@@ -46,11 +46,11 @@ function DevolucionCard({M}){
   const abonar=()=>{upd(d=>{const g=d.goals.find(x=>x.id===fondo.id);g.saved=Math.min(g.target,g.saved+monto);d.fiscal.historial.push({tipo:'Abono al fondo',fecha:todayS(),monto,folio:'—',nota:`A «${fondo.name}»`})});toast('Devolución abonada a tu fondo de emergencia','ok');setComp(null)};
   return html`<div className="card col" id="dev-card" style=${{gap:12}}>
     <div className="ch" style=${{marginBottom:0}}><h2>Tu devolución estimada</h2><span className="pill b">Tasa marginal ${pc(D.tasa*100,2)}</span></div>
-    ${D.modelo?html`<div className="num up" style=${{fontSize:34,fontWeight:700,lineHeight:1}} id="dev-monto">${fmt(D.anio1)}</div>
+    ${D.modelo?html`<div className="num" id="dev-monto">${fmt(D.anio1)}</div>
       <div className="sm">Por deducir la prima del seguro de gastos médicos. Llega en el <b>mes ${D.mes} (${mesTxt(M,D.mes)})</b> y lleva al fondo de emergencia a su meta de 3 meses.</div>
       <div className="card flat sm">Desde que inicia el PPR (mes ${RIVERA.fiscal.deducciones[1].desde}), la devolución sube a <b className="num" id="dev-ppr">${fmt(D.anioPPR)}</b> al año: seguro ${fmt(D.anioPPR-D.devolucionPPR)} + PPR ${fmt(D.devolucionPPR)}.</div>
       <button className="btn gh sm" style=${{alignSelf:'flex-start',padding:0,height:24}} onClick=${()=>go('finanzas','hogar')}>Ver el mes ${D.mes} en el plan del hogar →</button>`
-    :html`<div className="num up" style=${{fontSize:34,fontWeight:700,lineHeight:1}} id="dev-monto">${fmt(D.monto)}</div>
+    :html`<div className="num" id="dev-monto">${fmt(D.monto)}</div>
       <div className="sm">Con tus gastos deducibles con factura de los últimos 12 meses (${fmt(D.base)}). Si pides factura de lo pendiente, podría llegar a <b className="num">${fmt(D.posible)}</b>.</div>
       ${D.perdido>0?html`<div className="supuesto xs">Pagar en efectivo te costó ≈ <b>${fmt(D.perdido)}</b> de devolución.</div>`:null}
       <div className="muted xs">Tope global: ${fmt(D.tope)} (lo menor entre 5 UMA anuales y 15 % de tu ingreso). Tasa según la ${FISCAL.fuenteTarifa}, con tu ingreso de Perfil.</div>`}

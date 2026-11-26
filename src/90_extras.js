@@ -19,7 +19,7 @@ function Perfil(){
         <${Field} label="Moneda" id="p-c"><input id="p-c" value="MXN · Peso mexicano" disabled/><//>
         <div><button className="btn pri">Guardar cambios</button></div></form>
       <div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Nivel financiero</h2></div>
-        <div className="row" style=${{gap:14,flexWrap:'nowrap'}}><div className="avatar" style=${{width:56,height:56,fontSize:20}}>${s.user.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()}</div><div><div style=${{fontSize:22,fontWeight:700}}>${fl.name}</div><div className="muted sm">${s.academy.xp} XP · racha de ${streakOf(s.academy.days)} días</div></div></div>
+        <div className="row" style=${{gap:14,flexWrap:'nowrap'}}><div className="avatar" style=${{width:56,height:56,fontSize:20}}>${s.user.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()}</div><div><div style=${{fontSize:22,fontWeight:500}}>${fl.name}</div><div className="muted sm">${s.academy.xp} XP · racha de ${streakOf(s.academy.days)} días</div></div></div>
         <${Bar} v=${(s.academy.xp-fl.lo)/(fl.hi-fl.lo)*100} t="b"/><div className="muted xs">Sube de nivel completando lecciones en Academia.</div>
         <div className="sm">Insignias: <b>${earnedBadges(s).length}</b> de ${BADGES.length} · Lecciones: <b>${new Set(s.academy.log.map(l=>l.lesson)).size}</b> de ${ALL_LESSONS.length}</div></div>
       <div className="card col"><h2>Apariencia</h2><${Seg} opts=${[['auto','Automático'],['light','Claro'],['dark','Oscuro']]} val=${s.user.theme} on=${setTheme} label="Tema"/>

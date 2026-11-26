@@ -15,7 +15,7 @@ const ICON={
  info:'M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v6M12 7.5h.01',warn:'M12 3l10 18H2zM12 10v5M12 18h.01',cal:'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',copy2:'M5 5h14v14H5z'};
 ICON.trend=ICON.chart;
 ICON.receipt='M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h4';
-const Ic=({n,s=20})=>html`<svg width=${s} height=${s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d=${ICON[n]||ICON.info}/></svg>`;
+const Ic=({n,s=20})=>html`<svg width=${s} height=${s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d=${ICON[n]||ICON.info}/></svg>`;
 const Demo=({t='Demo'})=>html`<span className="demo">${t}</span>`;
 function col(){const g=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   return {green:g('--green'),blue:g('--blue'),yellow:g('--yellow'),red:g('--red'),purple:g('--purple'),teal:g('--teal'),fg:g('--fg'),muted:g('--muted'),line:g('--line'),card:g('--card')}}

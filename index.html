@@ -1,47 +1,56 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FINOVA</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@500;600;700&display=swap">
+<link rel="icon" type="image/svg+xml" href="assets/logo/finova-favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/logo/finova-app-icon-180.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@360..500&display=swap">
 <style>
-/* Layout: sidebar navy + contenido en tarjetas planas; barra inferior en celular. Superficies por escalón de color, no por sombra. */
 :root{
-  --navy:#101D35; --green:#16A878; --green-soft:#DDF5EA; --green-ink:#0B7A57;
-  --bg:#F5F7FA; --card:#FFFFFF; --card2:#EEF2F7; --fg:#101D35; --muted:#66758C; --line:#E2E8F0;
-  --blue:#3979CF; --blue-ink:#2A62B0; --yellow:#F2B84B; --yellow-soft:#FCF0D5; --yellow-ink:#7A5200;
-  --red:#E35D6A; --red-soft:#FBE4E7; --red-ink:#B03342; --blue-soft:#E3EEFB; --purple:#7A6AD8; --teal:#2BA3B5;
-  --side:#101D35; --on-green:#0A1A2E; --overlay:rgba(10,20,40,.55);
-  --r:16px; --r-sm:10px; color-scheme:light;
+  --bg:#fbfcfd; --card:#f1f1f7; --card2:#e6e6ef; --panel:#edecfb;
+  --fg:#28253b; --muted:#605e71; --line:#d5d4e1; --control-line:#838194;
+  --action:#5266eb; --action-soft:#e4e4f4; --action-ink:#3947a7; --night-text:#ededf3;
+  --navy:#28253b; --side:#171721; --blue:#5266eb; --blue-soft:#edecfb; --blue-ink:#3848ad;
+  --green:#338868; --green-soft:#e0efe7; --green-ink:#22684f; --on-green:#fff;
+  --yellow:#bf9048; --yellow-soft:#f5ebd8; --yellow-ink:#704e1d;
+  --red:#c75b70; --red-soft:#f6e4e8; --red-ink:#96394d; --purple:#8979bb; --teal:#4a9199;
+  --r:16px; --r-sm:8px; --overlay:rgba(23,23,33,.52); color-scheme:light;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --green:#2CC795; --green-soft:#123B33; --green-ink:#5FDDB0; --bg:#0A1325; --card:#131F38; --card2:#1B2A4A; --fg:#E8EDF5; --muted:#9DABC2; --line:#26365A;
-  --blue:#6A9CE8; --blue-ink:#8FB6F2; --blue-soft:#1A2D52; --yellow:#F2B84B; --yellow-soft:#3A2F14; --yellow-ink:#F5CF86;
-  --red:#F0808B; --red-soft:#432029; --red-ink:#F5A3AB; --purple:#9C8FEA; --teal:#4BC2D3; --side:#0B162B; --overlay:rgba(0,0,0,.65); color-scheme:dark}}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#171721; --card:#232330; --card2:#303041; --panel:#292937;
+  --fg:#ededf3; --muted:#bbb9c9; --line:#404051; --control-line:#777589;
+  --action-soft:#36364e; --action-ink:#c8cafa; --blue-soft:#35364f; --blue-ink:#bcc5ff;
+  --green:#7bc9ad; --green-soft:#223c35; --green-ink:#a0dcc6;
+  --yellow-soft:#403629; --yellow-ink:#f0cd95; --red-soft:#442f39; --red-ink:#ffb5be;
+  --on-green:#17271f; --overlay:rgba(8,8,14,.72); color-scheme:dark;
+}}
 :root[data-theme="dark"]{
-  --green:#2CC795; --green-soft:#123B33; --green-ink:#5FDDB0; --bg:#0A1325; --card:#131F38; --card2:#1B2A4A; --fg:#E8EDF5; --muted:#9DABC2; --line:#26365A;
-  --blue:#6A9CE8; --blue-ink:#8FB6F2; --blue-soft:#1A2D52; --yellow:#F2B84B; --yellow-soft:#3A2F14; --yellow-ink:#F5CF86;
-  --red:#F0808B; --red-soft:#432029; --red-ink:#F5A3AB; --purple:#9C8FEA; --teal:#4BC2D3; --side:#0B162B; --overlay:rgba(0,0,0,.65); color-scheme:dark}
+  --bg:#171721; --card:#232330; --card2:#303041; --panel:#292937;
+  --fg:#ededf3; --muted:#bbb9c9; --line:#404051; --control-line:#777589;
+  --action-soft:#36364e; --action-ink:#c8cafa; --blue-soft:#35364f; --blue-ink:#bcc5ff;
+  --green:#7bc9ad; --green-soft:#223c35; --green-ink:#a0dcc6;
+  --yellow-soft:#403629; --yellow-ink:#f0cd95; --red-soft:#442f39; --red-ink:#ffb5be;
+  --on-green:#17271f; --overlay:rgba(8,8,14,.72); color-scheme:dark;
+}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--fg);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:80}
 h1,h2,h3,h4,p{margin:0}
-h1{font-size:26px;line-height:1.2;letter-spacing:-.02em;text-wrap:balance}
-h2{font-size:18px;letter-spacing:-.01em;text-wrap:balance}
-h3{font-size:15px}
+h1{font-size:clamp(28px,3vw,42px);font-weight:480;line-height:1.12;letter-spacing:.005em;text-wrap:balance}
+h2{font-size:clamp(20px,2vw,28px);font-weight:480;line-height:1.2;text-wrap:balance}
+h3{font-size:18px} h3,h4,b,strong{font-weight:500}
 button,input,select,textarea{font:inherit;color:inherit}
-.num{font-family:"IBM Plex Sans",Inter,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.muted{color:var(--muted)} .sm{font-size:12.5px} .xs{font-size:11.5px} .b{font-weight:600}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.muted{color:var(--muted)} .sm{font-size:14px} .xs{font-size:12px} .b{font-weight:500}
 .app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
 .side{background:var(--side);color:#fff;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:22px 14px;gap:3px;overflow:auto}
-.brand{display:flex;align-items:center;gap:10px;padding:2px 10px 4px;font-weight:700;font-size:20px;letter-spacing:.04em}
-.logo{width:30px;height:30px;border-radius:9px;background:var(--green);display:grid;place-items:center;color:var(--on-green);font-weight:800;font-size:16px;letter-spacing:0}
-.slogan{font-size:11.5px;color:#9FB0CC;padding:0 10px 18px;line-height:1.4}
-.nav{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;color:#B7C4DB;background:none;border:0;cursor:pointer;text-align:left;width:100%;font-weight:500;transition:background .2s,color .2s}
+.brand{padding:6px 12px 24px}.brand img,.login-brand img{display:block;width:132px;height:auto}
+.nav{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:999px;color:#c1bfd0;background:none;border:0;cursor:pointer;text-align:left;width:100%;font-weight:500;transition:background .2s,color .2s}
 .nav:hover{background:rgba(255,255,255,.07);color:#fff}
-.nav.on{background:var(--green);color:var(--on-green);font-weight:600}
+.nav.on{background:#353546;color:var(--night-text)}
 .side hr{border:0;border-top:1px solid rgba(255,255,255,.12);margin:10px 0;width:100%}
-.demo-note{margin-top:auto;font-size:11.5px;color:#9FB0CC;padding:12px;border-radius:12px;background:rgba(255,255,255,.06)}
+.demo-note{margin-top:auto;font-size:12px;color:#b6b5c5;padding:12px;border-radius:12px;background:rgba(255,255,255,.06)}
 .main{min-width:0}
-.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(clamp(16px,2.6vw,40px),env(safe-area-inset-left,0px));padding-right:max(clamp(16px,2.6vw,40px),env(safe-area-inset-right,0px))}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--bg);padding-block:12px;border-bottom:1px solid transparent}
 .top .wrap{display:flex;align-items:center;gap:10px}
 .searchbox{position:relative;flex:1;min-width:0;max-width:480px}
@@ -52,12 +61,12 @@ button,input,select,textarea{font:inherit;color:inherit}
 .results button:hover{background:var(--card2)}
 .ib{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer;position:relative;flex:none;transition:background .2s}
 .ib:hover{background:var(--card2)}
-.dot{position:absolute;top:8px;right:9px;min-width:16px;height:16px;border-radius:8px;background:var(--red);color:#fff;font-size:10px;display:grid;place-items:center;font-weight:700;padding:0 4px}
-.page{padding-block:8px 110px;display:flex;flex-direction:column;gap:20px;animation:fade .35s ease}
+.dot{position:absolute;top:8px;right:9px;min-width:16px;height:16px;border-radius:8px;background:var(--red);color:#fff;font-size:10px;display:grid;place-items:center;font-weight:500;padding:0 4px}
+.page{padding-block:24px 110px;display:flex;flex-direction:column;gap:20px;animation:fade .35s ease}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .ph{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .ph p{color:var(--muted);margin-top:4px;max-width:62ch}
-.card{background:var(--card);border-radius:var(--r);padding:20px;border:1px solid var(--line);min-width:0}
+.card{background:var(--card);border-radius:var(--r);padding:clamp(16px,2vw,32px);min-width:0}
 .card.flat{background:var(--card2);border-color:transparent}
 .card.navy{background:var(--navy);color:#fff;border-color:transparent}
 .ch{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
@@ -69,38 +78,36 @@ button,input,select,textarea{font:inherit;color:inherit}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .sp{justify-content:space-between}
 .col{display:flex;flex-direction:column;gap:12px}
-.kpi .l{color:var(--muted);font-size:12.5px;display:flex;align-items:center;gap:6px}
-.kpi .v{font-size:28px;font-weight:700;margin-top:6px;line-height:1.1}
-.kpi .s{font-size:12.5px;margin-top:6px;color:var(--muted)}
+.kpi .l{color:var(--muted);font-size:14px;display:flex;align-items:center;gap:6px}
+.kpi .v{font-size:28px;font-weight:500;margin-top:6px;line-height:1.1}
+.kpi .s{font-size:14px;margin-top:6px;color:var(--muted)}
 .up{color:var(--green-ink)} .down{color:var(--red-ink)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-weight:600;white-space:nowrap;transition:transform .15s,background .2s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:8px 20px;border-radius:999px;border:0;background:var(--action-soft);color:var(--action-ink);cursor:pointer;font-weight:500;white-space:normal;transition:transform .15s,background .2s}
 .btn:hover{background:var(--card2)} .btn:active{transform:scale(.98)}
-.btn.pri{background:var(--green);border-color:var(--green);color:var(--on-green)} .btn.pri:hover{filter:brightness(1.06)}
-.btn.dng{background:var(--red);border-color:var(--red);color:#fff}
-.btn.sm{height:32px;padding:0 11px;font-size:12.5px;border-radius:8px}
+.btn.pri{background:var(--action);color:white} .btn.pri:hover{filter:brightness(.95)}
+.btn.dng{background:var(--red-soft);color:var(--red-ink)}
+.btn.sm{min-height:32px;padding:5px 14px;font-size:14px}
 .btn.gh{background:none;border-color:transparent;color:var(--blue-ink)}
 .btn[disabled]{opacity:.5;cursor:not-allowed}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .fld{display:flex;flex-direction:column;gap:5px;min-width:0}
-.fld label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.fld label{font-size:14px;font-weight:500;color:var(--muted)}
 .fld input,.fld select,.fld textarea,.in{height:42px;border-radius:10px;border:1px solid var(--line);background:var(--card);padding:0 12px;width:100%;min-width:0}
 .fld textarea{height:auto;padding:10px 12px;resize:vertical}
-.fld input[type=range]{padding:0;height:28px;accent-color:var(--green)}
+.fld input[type=range]{padding:0;height:28px;accent-color:var(--action)}
 .err{color:var(--red-ink);font-size:12px} .hint{color:var(--muted);font-size:12px}
 .fld input.bad,.fld select.bad{border-color:var(--red)}
 .form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .form .full{grid-column:1/-1}
 .seg{display:inline-flex;background:var(--card2);padding:3px;border-radius:12px;gap:2px;flex-wrap:wrap;max-width:100%}
-.seg button{border:0;background:none;padding:7px 13px;border-radius:9px;cursor:pointer;font-weight:600;color:var(--muted);min-height:34px}
+.seg button{border:0;background:none;padding:7px 13px;border-radius:9px;cursor:pointer;font-weight:500;color:var(--muted);min-height:34px}
 .seg button.on{background:var(--card);color:var(--fg)}
 .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
-.tabs button{border:1px solid var(--line);background:var(--card);padding:8px 16px;border-radius:999px;cursor:pointer;font-weight:600;color:var(--muted);white-space:nowrap}
-.tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
-:root[data-theme="dark"] .tabs button.on{background:var(--green);color:var(--on-green);border-color:var(--green)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tabs button.on{background:var(--green);color:var(--on-green);border-color:var(--green)}}
-.pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--card2);color:var(--muted);white-space:nowrap}
+.tabs button{border:1px solid var(--line);background:var(--card);padding:8px 16px;border-radius:999px;cursor:pointer;font-weight:500;color:var(--muted);white-space:nowrap}
+.tabs button.on{background:var(--action-soft);color:var(--action-ink);border-color:currentColor}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;padding:2px 9px;border-radius:999px;background:var(--card2);color:var(--muted);white-space:nowrap}
 .pill.g{background:var(--green-soft);color:var(--green-ink)} .pill.y{background:var(--yellow-soft);color:var(--yellow-ink)} .pill.r{background:var(--red-soft);color:var(--red-ink)} .pill.b{background:var(--blue-soft);color:var(--blue-ink)}
-.demo{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 7px;border-radius:6px;background:var(--yellow-soft);color:var(--yellow-ink);vertical-align:middle}
+.demo{display:inline-block;font-size:12px;font-weight:500;letter-spacing:.02em;padding:1px 7px;border-radius:4px;background:var(--action-soft);color:var(--action-ink);vertical-align:middle}
 .bar{height:9px;border-radius:6px;background:var(--card2);overflow:hidden}
 .bar i{display:block;height:100%;border-radius:6px;background:var(--green);transition:width .5s ease}
 .bar.y i{background:var(--yellow)} .bar.r i{background:var(--red)} .bar.b i{background:var(--blue)}
@@ -109,7 +116,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .banner svg{flex:none;margin-top:2px}
 .tw{overflow-x:auto}
 table{border-collapse:collapse;width:100%}
-th{font-size:12px;color:var(--muted);text-align:left;font-weight:600;padding:8px 10px;white-space:nowrap}
+th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:8px 10px;white-space:nowrap}
 td{padding:11px 10px;border-top:1px solid var(--line);vertical-align:middle}
 .empty{text-align:center;padding:36px 16px;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
 .empty b{color:var(--fg);font-size:15px}
@@ -126,30 +133,30 @@ td{padding:11px 10px;border-top:1px solid var(--line);vertical-align:middle}
 .toast{background:var(--navy);color:#fff;padding:11px 16px;border-radius:12px;font-weight:500;animation:pop .25s;max-width:100%;border:1px solid rgba(255,255,255,.15)}
 .toast.ok{background:var(--green);color:var(--on-green)} .toast.err{background:var(--red);color:#fff}
 .bottom{display:none;position:fixed;left:0;right:0;bottom:0;background:var(--side);z-index:70;padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));justify-content:space-between}
-.bottom button{flex:1;min-width:0;background:none;border:0;color:#9FB0CC;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;padding:6px 0;cursor:pointer;border-radius:10px;font-weight:500}
-.bottom button.on{color:var(--green);font-weight:700}
+.bottom button{flex:1;min-width:0;background:none;border:0;color:#b6b5c5;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;padding:6px 0;cursor:pointer;border-radius:10px;font-weight:500}
+.bottom button.on{color:#ededf3;background:#353546}
 .chat{display:grid;grid-template-columns:240px minmax(0,1fr);gap:16px}
 .msgs{display:flex;flex-direction:column;gap:12px;min-height:360px;max-height:56vh;overflow:auto;padding:4px}
 .msg{max-width:min(640px,92%);padding:12px 14px;border-radius:14px;line-height:1.55}
 .msg.u{align-self:flex-end;background:var(--navy);color:#fff;border-bottom-right-radius:4px}
 .msg.a{align-self:flex-start;background:var(--card2);border-bottom-left-radius:4px}
 .msg p+p,.msg ul{margin-top:8px} .msg ul{padding-left:18px;margin-bottom:0}
-.chip{border:1px solid var(--line);background:var(--card);padding:7px 12px;border-radius:999px;cursor:pointer;font-size:12.5px;font-weight:500}
+.chip{border:1px solid var(--line);background:var(--card);padding:7px 12px;border-radius:999px;cursor:pointer;font-size:14px;font-weight:500}
 .chip:hover{background:var(--card2)}
-.chip.on{background:var(--green-soft);border-color:var(--green);color:var(--green-ink)}
+.chip.on{background:var(--action-soft);border-color:var(--action-ink);color:var(--action-ink)}
 .risk{display:inline-flex;gap:3px;vertical-align:middle}
 .risk i{width:14px;height:6px;border-radius:3px;background:var(--line)} .risk i.on{background:var(--yellow)} .risk.hi i.on{background:var(--red)}
 .path{display:flex;flex-direction:column;gap:18px;position:relative}
 .lvl{display:flex;gap:16px;align-items:flex-start}
-.node{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:20px;flex:none;background:var(--card2);color:var(--muted);border:3px solid var(--line)}
+.node{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-weight:500;font-size:20px;flex:none;background:var(--card2);color:var(--muted);border:3px solid var(--line)}
 .node.done{background:var(--green);border-color:var(--green);color:var(--on-green)} .node.cur{background:var(--blue);border-color:var(--blue);color:#fff}
 .lessons{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px;flex:1;min-width:0}
 .lesson{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--card);display:flex;flex-direction:column;gap:8px;text-align:left;cursor:pointer;transition:transform .15s,border-color .2s}
 .lesson:hover:not([disabled]){transform:translateY(-2px);border-color:var(--green)}
 .lesson[disabled]{opacity:.55;cursor:not-allowed}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
-.cal div{aspect-ratio:1;border-radius:8px;background:var(--card2);display:grid;place-items:center;font-size:11.5px;color:var(--muted)}
-.cal div.on{background:var(--green);color:var(--on-green);font-weight:700} .cal div.now{outline:2px solid var(--blue)}
+.cal div{aspect-ratio:1;border-radius:8px;background:var(--card2);display:grid;place-items:center;font-size:12px;color:var(--muted)}
+.cal div.on{background:var(--green);color:var(--on-green);font-weight:500} .cal div.now{outline:2px solid var(--blue)}
 .opt{display:block;width:100%;text-align:left;border:2px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card);cursor:pointer;font-weight:500;margin-bottom:8px}
 .opt:hover:not([disabled]){border-color:var(--blue)} .opt.sel{border-color:var(--blue);background:var(--blue-soft)}
 .opt.ok{border-color:var(--green);background:var(--green-soft)} .opt.no{border-color:var(--red);background:var(--red-soft)}
@@ -159,14 +166,14 @@ td{padding:11px 10px;border-top:1px solid var(--line);vertical-align:middle}
 .badge.lock{opacity:.6} .badge.lock .ic{background:var(--line);color:var(--muted)}
 .rank{display:flex;align-items:center;gap:10px;padding:9px 6px;border-top:1px solid var(--line)}
 .rank.me{background:var(--green-soft);border-radius:10px;border-color:transparent}
-.avatar{width:32px;height:32px;border-radius:50%;background:var(--blue-soft);color:var(--blue-ink);display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
-.acc button{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:14px 2px;cursor:pointer;font-weight:600}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--blue-soft);color:var(--blue-ink);display:grid;place-items:center;font-weight:500;font-size:12px;flex:none}
+.acc button{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:14px 2px;cursor:pointer;font-weight:500}
 .acc p{padding:0 2px 14px;color:var(--muted)}
 .sw{position:relative;width:44px;height:26px;border-radius:13px;border:0;background:var(--line);cursor:pointer;flex:none;transition:background .2s}
 .sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}
-.sw.on{background:var(--green)} .sw.on::after{transform:translateX(18px)}
+.sw.on{background:var(--action)} .sw.on::after{transform:translateX(18px)}
 .step{display:flex;gap:6px;justify-content:center} .step i{width:8px;height:8px;border-radius:50%;background:var(--line)} .step i.on{background:var(--green)}
-.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)} .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--muted)} .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
 textarea.code{width:100%;height:220px;font:12px/1.4 ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:10px;background:var(--card2);padding:10px}
 .ni{display:flex;gap:10px;padding:10px;border-radius:12px;align-items:flex-start;width:100%;border:0;background:none;text-align:left;cursor:pointer}
 .ni:hover{background:var(--card2)} .ni.unread{background:var(--blue-soft)}
@@ -175,7 +182,7 @@ textarea.code{width:100%;height:220px;font:12px/1.4 ui-monospace,Menlo,monospace
 @media (max-width:900px){
   .app{grid-template-columns:minmax(0,1fr)} .side{display:none} .bottom{display:flex}
   .split,.chat{grid-template-columns:minmax(0,1fr)} .form{grid-template-columns:1fr}
-  h1{font-size:22px} .kpi .v{font-size:24px} .msgs{max-height:50vh}
+  h1{font-size:28px} .kpi .v{font-size:24px} .msgs{max-height:50vh}
   .lvl{gap:10px} .node{width:42px;height:42px;font-size:16px}
 }
 @media (max-width:900px){.hide-m{display:none}}
@@ -184,21 +191,23 @@ textarea.code{width:100%;height:220px;font:12px/1.4 ui-monospace,Menlo,monospace
 /* Botones claros sobre fondo marino (barra lateral y tarjeta de racha) */
 .side .btn,.card.navy .btn{color:var(--fg)}
 /* Entrada: perfiles y PIN */
-.login{min-height:100vh;display:grid;place-items:center;padding:32px 16px;background:radial-gradient(1200px 500px at 50% -10%,var(--green-soft),transparent 70%),var(--bg)}
+.login{min-height:100vh;display:grid;place-items:center;padding:32px 16px;background:var(--bg)}
 .login-in{width:100%;max-width:900px;display:flex;flex-direction:column;gap:26px;animation:fade .35s ease}
 .login-brand{display:flex;align-items:center;gap:14px}
-.login-name{font-size:24px;font-weight:800;letter-spacing:.05em}
-.acc-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr))}
-.acc{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:22px 14px;border-radius:var(--r);border:1px solid var(--line);background:var(--card);cursor:pointer;font:inherit;color:inherit;transition:transform .15s,border-color .15s,box-shadow .15s}
-.acc:hover,.acc:focus-visible{transform:translateY(-2px);border-color:var(--green);box-shadow:0 8px 24px rgba(0,0,0,.08)}
-.acc-av{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:22px;background:var(--navy);color:#fff;flex:none}
-.acc-new{border-style:dashed}.acc-new .acc-av{background:var(--green-soft);color:var(--green-ink)}
-.acc-n{font-weight:700;font-size:16px}
+.login-brand img{width:156px}.login-brand .night-logo{display:none}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .login-brand .day-logo{display:none}:root:not([data-theme="light"]) .login-brand .night-logo{display:block}}
+:root[data-theme="dark"] .login-brand .day-logo{display:none}:root[data-theme="dark"] .login-brand .night-logo{display:block}
+.acc-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
+.acc{display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;padding:24px;border-radius:var(--r);border:1px solid transparent;background:var(--card);cursor:pointer;font:inherit;color:inherit;transition:transform .15s,border-color .15s,box-shadow .15s}
+.acc:hover,.acc:focus-visible{transform:translateY(-2px);border-color:var(--action);background:var(--panel)}
+.acc-av{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-weight:500;font-size:22px;background:var(--navy);color:#fff;flex:none}
+.acc-new{background:var(--bg);border-color:var(--line)}.acc-new .acc-av{background:var(--action-soft);color:var(--action-ink)}
+.acc-n{font-weight:500;font-size:16px}
 .acc-pin{display:inline-flex;align-items:center;gap:4px}
 .pin-card{max-width:460px;width:100%;gap:16px}
 .pin-in{font-size:24px!important;letter-spacing:.5em;text-align:center}
 .login-trust{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
-.login-trust svg{flex:none;color:var(--green-ink);margin-top:1px}
+.login-trust svg{flex:none;color:var(--muted);margin-top:1px}
 /* Plan del hogar */
 .stack{display:flex;height:36px;border-radius:10px;overflow:hidden;background:var(--card2)}
 .stack i{display:block;height:100%;transition:width .3s}
@@ -209,9 +218,9 @@ textarea.code{width:100%;height:220px;font:12px/1.4 ui-monospace,Menlo,monospace
 .cuadre{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border-radius:12px;font-size:13.5px;background:var(--green-soft);color:var(--green-ink)}
 .cuadre.bad{background:var(--red-soft);color:var(--red-ink)}
 /* Mi asesor */
-.num-badge{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
-.reco{border-left:4px solid var(--green);background:var(--green-soft);border-radius:10px;padding:12px 14px}
-.reco-t{font-size:19px;font-weight:700;color:var(--fg);margin:2px 0}
+.num-badge{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:500;font-size:13px;flex:none}
+.reco{background:var(--action-soft);border-radius:12px;padding:16px 20px}
+.reco-t{font-size:19px;font-weight:500;color:var(--fg);margin:2px 0}
 .supuesto{background:var(--yellow-soft);color:var(--yellow-ink);border-radius:8px;padding:6px 10px}
 .hbar{height:12px;border-radius:999px;background:var(--card2);margin-top:4px}.hbar i{display:block;height:100%;border-radius:999px}
 .escalera{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
@@ -222,14 +231,41 @@ textarea.code{width:100%;height:220px;font:12px/1.4 ui-monospace,Menlo,monospace
 .dest td,.dest th{text-align:left!important}
 /* Ahorro por plazos */
 .donde{border-top:1px solid var(--line);padding-top:8px}
-.m-chip{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:1px 7px;font-size:11.5px;white-space:nowrap;flex:none}
-.plazo.corto{border-top:3px solid var(--blue)}.plazo.mediano{border-top:3px solid var(--yellow)}.plazo.largo{border-top:3px solid var(--green)}
+.m-chip{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:1px 7px;font-size:12px;white-space:nowrap;flex:none}
+
 /* Plan del caso */
 .plan-t td,.plan-t th{text-align:right}.plan-t td:first-child,.plan-t th:first-child{text-align:left}
-.plan-t td.best{color:var(--green-ink);font-weight:700}
+.plan-t td.best{color:var(--green-ink);font-weight:500}
 .hitos{display:flex;gap:8px;flex-wrap:wrap}
-.hito{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:12.5px;background:var(--card2)}
-.hito b.m{background:var(--green);color:var(--on-green);border-radius:8px;padding:2px 7px;font-size:11.5px;white-space:nowrap}
+.hito{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:14px;background:var(--card2)}
+.hito b.m{background:var(--action-soft);color:var(--action-ink);border-radius:8px;padding:2px 7px;font-size:12px;white-space:nowrap}
+/* Controles y superficies del recorrido Rivera */
+.ib{border:0;border-radius:50%}
+.searchbox input,.fld input:not([type=range]),.fld select,.in{height:46px;border-radius:24px;border-color:var(--control-line)}
+.nav,.seg,.seg button{border-radius:999px}
+.side .btn,.card.navy .btn{background:#383847;color:#ededf3}
+.plan-overview,#dev-card,.acc.case{background:var(--panel)}
+.plan-overview .hitos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,155px),1fr));gap:16px}
+.plan-overview .hito{align-items:flex-start;flex-direction:column;gap:6px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;padding:10px 0 0}
+.plan-overview .hito .m{background:transparent;color:var(--action-ink);padding:0;font-size:14px}
+.card .card.kpi{background:var(--bg)}
+.month-summary{background:var(--card);border-radius:var(--r);gap:0}
+.month-summary .kpi{background:transparent}
+#dev-monto{font-size:clamp(36px,4vw,60px);font-weight:480;line-height:1.1;color:var(--fg)}
+.quick-actions{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.quick-actions .btn{padding-inline:0;background:transparent}
+.acc.case .acc-av{background:var(--action);color:white}
+@media(pointer:coarse){.btn,.btn.sm,.ib,.nav,.bottom button,.seg button,.tabs button,.chip,.sw::before{min-height:44px}.sw::before{content:"";position:absolute;inset:50% 0 auto;transform:translateY(-50%)}}
+@media(max-width:600px){.month-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.month-summary .kpi{padding:14px}.kpi .v{overflow-wrap:anywhere}.acc{padding:16px}.login-in{gap:20px}.login{place-items:start center}.acc-grid{grid-template-columns:1fr}.acc-grid .acc{display:grid;grid-template-columns:44px 1fr;gap:2px 12px}.acc-grid .acc-av{width:44px;height:44px;grid-column:1;grid-row:1 / span 3;font-size:16px}.acc-grid .acc>*:not(.acc-av){grid-column:2;justify-self:start}}
+@media(max-width:600px){
+  .plan-overview .plan-t,.plan-overview tbody{display:block}
+  .plan-overview thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .plan-overview tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 8px;padding:10px 0;border-top:1px solid var(--line)}
+  .plan-overview td{border:0;padding:0;text-align:left}
+  .plan-overview td:first-child{grid-column:1/-1;font-weight:500}
+  .plan-overview td[data-plazo]{font-size:14px}
+  .plan-overview td[data-plazo]::before{content:attr(data-plazo);display:block;color:var(--muted);font-size:12px}
+}
 </style>
 <div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
@@ -1048,7 +1084,7 @@ const ICON={
  info:'M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v6M12 7.5h.01',warn:'M12 3l10 18H2zM12 10v5M12 18h.01',cal:'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',copy2:'M5 5h14v14H5z'};
 ICON.trend=ICON.chart;
 ICON.receipt='M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h4';
-const Ic=({n,s=20})=>html`<svg width=${s} height=${s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d=${ICON[n]||ICON.info}/></svg>`;
+const Ic=({n,s=20})=>html`<svg width=${s} height=${s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d=${ICON[n]||ICON.info}/></svg>`;
 const Demo=({t='Demo'})=>html`<span className="demo">${t}</span>`;
 function col(){const g=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   return {green:g('--green'),blue:g('--blue'),yellow:g('--yellow'),red:g('--red'),purple:g('--purple'),teal:g('--teal'),fg:g('--fg'),muted:g('--muted'),line:g('--line'),card:g('--card')}}
@@ -1119,22 +1155,22 @@ function Confirm({c,onClose}){
 }
 
 /* ================= ENTRADA: PERFILES Y PIN LOCAL ================= */
-const KIND_LABEL={caso:['Caso de la consultora','g'],demo:['Usuario de prueba','b'],propia:['Tu cuenta','']};
+const KIND_LABEL={caso:['Caso de la consultora','b'],demo:['Usuario de prueba','b'],propia:['Tu cuenta','']};
 function Login({onEnter}){
   const [accs,setAccs]=useState(()=>listAccounts()),[sel,setSel]=useState(null),[mode,setMode]=useState('list');
   const order={caso:0,demo:1,propia:2},list=[...accs].sort((a,b)=>order[a.kind]-order[b.kind]);
   const pick=acc=>{if(!acc.pin){onEnter(acc);return}setSel(acc);setMode('pin')};
   return html`<div className="login"><div className="login-in">
-    <div className="login-brand"><div className="logo" style=${{width:44,height:44,fontSize:22,borderRadius:13}}>F</div><div><div className="login-name">FINOVA</div><div className="muted sm">Tu dinero. Tus decisiones. Tu futuro.</div></div></div>
+    <div className="login-brand"><img className="day-logo" src="assets/logo/finova-logo-horizontal.svg" alt="FINOVA"/><img className="night-logo" src="assets/logo/finova-logo-horizontal-oscuro.svg" alt="FINOVA"/></div>
     ${mode==='list'?html`<div className="col" style=${{gap:18}}>
-      <div><h1 style=${{fontSize:26}}>¿Quién va a usar FINOVA?</h1><p className="muted" style=${{marginTop:4}}>Elige tu perfil o crea una cuenta. Cada cuenta tiene sus propios datos y su propio plan.</p></div>
+      <div><h1>¿Quién va a usar FINOVA?</h1><p className="muted" style=${{marginTop:4}}>Elige tu perfil o crea una cuenta. Cada cuenta tiene sus propios datos y su propio plan.</p></div>
       <div className="acc-grid">${list.map(a=>{const [lbl,k]=KIND_LABEL[a.kind]||KIND_LABEL.propia,dp=(DEFAULT_ACCOUNTS.find(d=>d.id===a.id)||{}).demoPin;
-        return html`<button key=${a.id} className="acc" onClick=${()=>pick(a)} aria-label=${'Entrar como '+a.name}>
+        return html`<button key=${a.id} className=${a.kind==='caso'?'acc case':'acc'} onClick=${()=>pick(a)} aria-label=${'Entrar como '+a.name}>
           <div className="acc-av">${initials(a.name)}</div>
           <div className="acc-n">${a.name}</div>
           <span className=${'pill '+k}>${lbl}</span>
           <div className="muted xs acc-pin">${a.pin?html`<${Ic} n="lock" s=${13}/> Protegido con PIN${dp?` · PIN de demo: ${dp}`:''}`:'Sin PIN'}</div></button>`})}
-        <button className="acc acc-new" onClick=${()=>setMode('create')}><div className="acc-av"><${Ic} n="plus" s=${26}/></div><div className="acc-n">Crear cuenta</div><span className="muted xs">Gratis, en menos de un minuto</span></button>
+        <button className="acc acc-new" onClick=${()=>setMode('create')}><div className="acc-av"><${Ic} n="plus" s=${26}/></div><div className="acc-n">Crear cuenta</div></button>
       </div></div>`:null}
     ${mode==='pin'&&sel?html`<${PinEntry} acc=${sel} onOk=${()=>onEnter(sel)} onBack=${()=>{setSel(null);setMode('list')}}/>`:null}
     ${mode==='create'?html`<${CreateAccount} onCancel=${()=>setMode('list')} onDone=${acc=>{setAccs(listAccounts());onEnter(acc)}}/>`:null}
@@ -1185,20 +1221,20 @@ function Inicio(){
   const last7=[6,5,4,3,2,1,0].map(n=>{const d=addD(new Date(),-n);return {d,on:s.academy.days.includes(iso(d))}});
   const quick=[['plus','Registrar movimiento',()=>openTx()],['flag','Abonar a una meta',()=>go('finanzas','metas')],['book','Hacer una lección',()=>go('academia')],['chart','Simular portafolio',()=>go('inversiones','simulador')],['calc','Calculadoras',()=>go('calculadoras')],['globe','México hoy',()=>go('mexico')]];
   return html`<div className="page">
-    <${Head} title=${html`${greet}, ${shortName(s.user)} <${Demo}/>`} sub="Tu dinero. Tus decisiones. Tu futuro." right=${html`<button className="btn pri" onClick=${()=>openTx()}><${Ic} n="plus" s=${18}/>Nuevo movimiento</button>`}/>
-    <div className="grid g4">
+    <${Head} title=${html`${greet}, ${shortName(s.user)} <${Demo}/>`} right=${html`<button className="btn pri" onClick=${()=>openTx()}><${Ic} n="plus" s=${18}/>Nuevo movimiento</button>`}/>
+    ${s.plan?html`<${PlanCard} plan=${s.plan}/>`:null}
+    <div className="grid g4 month-summary">
       <${Kpi} ic="wallet" l="Saldo disponible" v=${fmt(bal)} s=${`Después de apartar ${fmt(savedTotal(s))} en metas`}/>
       <${Kpi} ic="up" l="Ingresos del mes" v=${fmt(T.inc)} s=${`${ml.filter(t=>t.type==='ingreso').length} ${ml.filter(t=>t.type==='ingreso').length===1?'movimiento':'movimientos'}`} cls="up"/>
       <${Kpi} ic="down" l="Gastos del mes" v=${fmt(T.exp)} s=${`${ml.filter(t=>t.type==='gasto').length} movimientos`} cls="down"/>
       <${Kpi} ic="star" l="Ahorro del mes" v=${fmt(T.net)} s=${`${pc(rate,0)} de tus ingresos · meta 20%`} cls=${T.net>=0?'up':'down'}/>
     </div>
-    ${s.plan?html`<${PlanCard} plan=${s.plan}/>`:null}
     <div className="split">
       <div className="card"><div className="ch"><h2>Ingresos vs gastos</h2><span className="muted sm">Últimos 6 meses</span></div>
         <${Chart} h=${250}><${RC.BarChart} data=${six} barGap=${4}><${RC.CartesianGrid} stroke=${c.line} vertical=${false}/><${RC.XAxis} dataKey="label" ...${axis(c)}/><${RC.YAxis} width=${48} tickFormatter=${v=>v>=1000?(v/1000)+'k':v} ...${axis(c)}/><${RC.Tooltip} formatter=${v=>fmt(v)} ...${tipStyle(c)} cursor=${{fill:c.line,opacity:.3}}/>
           <${RC.Bar} dataKey="Ingresos" fill=${c.green} radius=${[6,6,0,0]}/><${RC.Bar} dataKey="Gastos" fill=${c.red} radius=${[6,6,0,0]}/><//><//>
         <div className="legend"><span><i style=${{background:c.green}}></i>Ingresos</span><span><i style=${{background:c.red}}></i>Gastos</span></div></div>
-      <div className="card"><div className="ch"><h2>Tu siguiente paso</h2><span className="pill b">Según tus acciones</span></div>
+      <div className="card"><div className="ch"><h2>Tu siguiente paso</h2></div>
         <div className="col">${steps.length?steps.map((x,i)=>html`<div key=${i} className="row" style=${{alignItems:'flex-start',flexWrap:'nowrap'}}>
           <div className="avatar" style=${{background:'var(--green-soft)',color:'var(--green-ink)'}}><${Ic} n=${x.ic} s=${16}/></div>
           <div style=${{flex:1,minWidth:0}}><div className="b">${x.t}</div><div className="muted sm">${x.x}</div>
@@ -1207,12 +1243,12 @@ function Inicio(){
     <div className="grid g3">
       <div className="card"><div className="ch"><h2>Progreso de metas</h2><button className="btn gh sm" onClick=${()=>go('finanzas','metas')}>Ver todas</button></div>
         <div className="col">${s.goals.length?s.goals.map(g=>{const i=goalInfo(g);return html`<div key=${g.id}><div className="row sp"><span className="b">${g.name}</span><span className="num sm">${pc(i.pct,0)}</span></div><${Bar} v=${i.pct}/><div className="muted xs" style=${{marginTop:4}}>${fmt(g.saved)} de ${fmt(g.target)}</div></div>`}):html`<${Empty} title="Sin metas" text="Crea tu primera meta de ahorro." action=${html`<button className="btn pri sm" onClick=${()=>go('finanzas','metas')}>Crear meta</button>`}/>`}</div></div>
-      <div className="card navy"><div className="ch"><h2>Racha de aprendizaje</h2></div>
-        <div className="row" style=${{gap:14,flexWrap:'nowrap'}}><div style=${{color:'var(--yellow)'}}><${Ic} n="fire" s=${44}/></div><div><div className="num" style=${{fontSize:34,fontWeight:700,lineHeight:1}}>${st}</div><div style=${{color:'#B7C4DB'}}>${st===1?'día seguido':'días seguidos'}</div></div></div>
-        <div className="row" style=${{marginTop:16,gap:6,flexWrap:'nowrap'}}>${last7.map((x,i)=>html`<div key=${i} title=${fdate(iso(x.d))} style=${{flex:1,textAlign:'center',fontSize:11,color:'#B7C4DB'}}><div style=${{height:26,borderRadius:8,background:x.on?'var(--green)':'rgba(255,255,255,.1)',marginBottom:4}}></div>${['D','L','M','M','J','V','S'][x.d.getDay()]}</div>`)}</div>
+      <div className="card"><div className="ch"><h2>Racha de aprendizaje</h2></div>
+        <div className="row" style=${{gap:14,flexWrap:'nowrap'}}><div style=${{color:'var(--muted)'}}><${Ic} n="fire" s=${24}/></div><div><div className="num" style=${{fontSize:34,fontWeight:480,lineHeight:1}}>${st}</div><div style=${{color:'var(--muted)'}}>${st===1?'día seguido':'días seguidos'}</div></div></div>
+        <div className="row" style=${{marginTop:16,gap:6,flexWrap:'nowrap'}}>${last7.map((x,i)=>html`<div key=${i} title=${fdate(iso(x.d))} style=${{flex:1,textAlign:'center',fontSize:11,color:'var(--muted)'}}><div style=${{height:26,borderRadius:8,background:x.on?'var(--action)':'var(--card2)',marginBottom:4}}></div>${['D','L','M','M','J','V','S'][x.d.getDay()]}</div>`)}</div>
         <button className="btn sm" style=${{marginTop:14}} onClick=${()=>go('academia')}>Practicar hoy</button></div>
       <div className="card"><div className="ch"><h2>Accesos rápidos</h2></div>
-        <div className="grid" style=${{gridTemplateColumns:'1fr 1fr',gap:10}}>${quick.map(([ic,l,fn])=>html`<button key=${l} className="btn" style=${{flexDirection:'column',height:'auto',padding:'14px 8px',whiteSpace:'normal',textAlign:'center',gap:6}} onClick=${fn}><${Ic} n=${ic}/><span className="sm">${l}</span></button>`)}</div></div>
+        <div className="quick-actions">${quick.map(([ic,l,fn])=>html`<button key=${l} className="btn" onClick=${fn}><${Ic} n=${ic}/><span className="sm">${l}</span></button>`)}</div></div>
     </div></div>`;
 }
 
@@ -1220,10 +1256,10 @@ function Inicio(){
 function PlanCard({plan}){
   const {go}=useApp();
   const fv=(r,v)=>r.f==='mxn'?fmt(v):r.f==='meses'?`${nf(v,1)} meses`:v;
-  return html`<div className="card col" style=${{gap:14}}>
-    <div className="ch" style=${{marginBottom:0}}><div><h2>Tu plan en 24 meses</h2><div className="muted sm">De no sobrar nada a fin de mes, a cero deudas y un fondo para emergencias.</div></div><span className="pill g">Plan de la consultora</span></div>
+  return html`<div className="card col plan-overview" style=${{gap:14}}>
+    <div className="ch" style=${{marginBottom:0}}><div><h2>Tu plan en 24 meses</h2><div className="muted sm">De no sobrar nada a fin de mes, a cero deudas y un fondo para emergencias.</div></div><span className="pill b">Plan de la consultora</span></div>
     <div className="tw"><table className="plan-t"><thead><tr><th>Indicador</th><th>Hoy</th><th>Mes 12</th><th>Mes 24</th></tr></thead><tbody>
-      ${plan.resumen.map(r=>html`<tr key=${r.k}><td>${r.k}</td>${r.v.map((v,i)=>html`<td key=${i} className=${'num '+(i===2?'best':'')}>${fv(r,v)}</td>`)}</tr>`)}
+      ${plan.resumen.map(r=>html`<tr key=${r.k}><td>${r.k}</td>${r.v.map((v,i)=>html`<td key=${i} data-plazo=${['Hoy','Mes 12','Mes 24'][i]} className=${'num '+(i===2?'best':'')}>${fv(r,v)}</td>`)}</tr>`)}
     </tbody></table></div>
     <div className="hitos">${plan.hitos.map(h=>html`<div key=${h.mes} className="hito"><b className="m">Mes ${h.mes}</b><span>${h.t}</span></div>`)}</div>
     <div className="row sp"><span className="muted xs">Fuente: ${plan.fuente}. Proyección del plan, no es garantía.</span><div className="row" style=${{gap:4}}><button className="btn gh sm" onClick=${()=>go('asesor')}>Ver recomendaciones →</button><button className="btn gh sm" onClick=${()=>go('finanzas','hogar')}>Ver plan del hogar →</button></div></div>
@@ -1239,7 +1275,7 @@ function IndModal({ind,onClose}){
   const fmtv=v=>ind.unit==='%'?nf(v,ind.id==='inf_m'||ind.id==='udi'?3:2)+'%':ind.id==='ipc'?nf(v,0):ind.id==='udi'?nf(v,4):nf(v,2);
   return html`<${Modal} title=${ind.name} onClose=${onClose} wide>
     ${ind.oficial?html`<${Banner} k="g" ic="check"><b>Dato oficial:</b> ${ind.src} (${ind.fecha}). La gráfica histórica es ilustrativa.<//>`:html`<${Banner} k="y" ic="warn">Datos de demostración, no son cifras actuales.<//>`}
-    <div className="row sp"><div><span className="num" style=${{fontSize:32,fontWeight:700}}>${fv(ind,ind.val)}</span> <span className=${'pill '+(chg.up?'g':'r')}>${chg.txt} vs. hace 1 mes</span></div><${Seg} opts=${Object.keys(RANGES).map(k=>[k,RANGE_NAMES[k]])} val=${rk} on=${setRk} label="Periodo"/></div>
+    <div className="row sp"><div><span className="num" style=${{fontSize:32,fontWeight:500}}>${fv(ind,ind.val)}</span> <span className=${'pill '+(chg.up?'g':'r')}>${chg.txt} vs. hace 1 mes</span></div><${Seg} opts=${Object.keys(RANGES).map(k=>[k,RANGE_NAMES[k]])} val=${rk} on=${setRk} label="Periodo"/></div>
     <${Chart} h=${250}><${RC.AreaChart} data=${data}><defs><linearGradient id="ig" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor=${c.green} stopOpacity=${.35}/><stop offset="100%" stopColor=${c.green} stopOpacity=${0}/></linearGradient></defs>
       <${RC.CartesianGrid} stroke=${c.line} vertical=${false}/><${RC.XAxis} dataKey="d" minTickGap=${28} ...${axis(c)}/><${RC.YAxis} width=${54} domain=${['auto','auto']} tickFormatter=${v=>ind.id==='ipc'?nf(v,0):nf(v,ind.id==='udi'?2:1)} ...${axis(c)}/>
       <${RC.Tooltip} formatter=${v=>[fmtv(v),ind.name]} ...${tipStyle(c)}/><${RC.Area} type="monotone" dataKey="v" stroke=${c.green} strokeWidth=${2.5} fill="url(#ig)"/><//><//>
@@ -1260,7 +1296,7 @@ function Mexico(){
     ${groups.map(([g,ids])=>html`<div key=${g} className="col"><h2>${g}</h2><div className="grid g3" style=${{gridTemplateColumns:'repeat(auto-fill,minmax(min(100%,250px),1fr))'}}>
       ${ids.map(id=>{const ind=IND.find(x=>x.id===id),ch=change(ind),sp=chartData(ind,'1M');return html`<div key=${id} className="card col" style=${{gap:8}}>
         <div className="row sp"><b>${ind.name}</b>${ind.oficial?html`<span className="pill g">Dato oficial</span>`:html`<${Demo}/>`}</div>
-        <div className="row sp" style=${{alignItems:'flex-end'}}><div className="num" style=${{fontSize:28,fontWeight:700,lineHeight:1.1}}>${fv(ind,ind.val)}</div><span className=${'pill '+(ch.up?'g':'r')}>${ch.up?'▲':'▼'} ${ch.txt}</span></div>
+        <div className="row sp" style=${{alignItems:'flex-end'}}><div className="num" style=${{fontSize:28,fontWeight:500,lineHeight:1.1}}>${fv(ind,ind.val)}</div><span className=${'pill '+(ch.up?'g':'r')}>${ch.up?'▲':'▼'} ${ch.txt}</span></div>
         <div style=${{height:44}}><${RC.ResponsiveContainer} width="100%" height="100%"><${RC.LineChart} data=${sp}><${RC.YAxis} hide domain=${['auto','auto']}/><${RC.Line} type="monotone" dataKey="v" stroke=${ch.up?c.green:c.red} strokeWidth=${2} dot=${false} isAnimationActive=${false}/><//><//></div>
         ${ind.oficial?html`<div className="muted xs">Fecha: ${ind.fecha} · Fuente: ${ind.src}</div>`:html`<div className="muted xs">Fecha: ${fdate(now)} (ejemplo) · Fuente: ${ind.src}</div>
         <div className="xs" style=${{color:'var(--yellow-ink)'}}>Datos de demostración, no son cifras actuales</div>`}
@@ -1376,7 +1412,7 @@ function Presupuestos(){
       <div className="row sp"><span className=${'sm '+(Math.round(total*100)===10000?'up':'down')}>Suma: ${nf(Number.isFinite(total)?total:0,0)}%</span><button className="btn pri sm" onClick=${saveRule}>Guardar regla</button></div>
       ${er?html`<div className="err" role="alert">${er}</div>`:null}
       <div className="grid g3">${groups.map(([n,pct,act,k])=>{const target=base*(pct||0)/100,ratio=target>0?act/target*100:0,t=k==='save'?(ratio>=100?'':'y'):tone(ratio);return html`<div key=${n} className="card flat col" style=${{gap:6}}>
-        <div className="row sp"><b>${n}</b><span className="pill">${nf(pct||0,0)}%</span></div><div className="num" style=${{fontSize:22,fontWeight:700}}>${fmt(act)}</div><${Bar} v=${ratio} t=${t}/>
+        <div className="row sp"><b>${n}</b><span className="pill">${nf(pct||0,0)}%</span></div><div className="num" style=${{fontSize:22,fontWeight:500}}>${fmt(act)}</div><${Bar} v=${ratio} t=${t}/>
         <div className="muted xs">${k==='save'?'Meta':'Límite'}: ${fmt(target)} · ${pc(base>0?act/base*100:0,0)} de tu ingreso</div></div>`})}</div></div>
     <div className="card"><div className="ch"><h2>Presupuesto por categoría</h2><span className="muted sm">Aviso al 80% · alerta al superar 100%</span></div>
       <div className="col" style=${{gap:14}}>${rows.map(r=>html`<div key=${r.cat}>
@@ -1430,7 +1466,7 @@ function Metas(){
     <div className="row sp"><div className="muted sm">Total apartado en metas: <b className="num">${fmt(savedTotal(s))}</b></div><button className="btn pri" onClick=${()=>setM({k:'form'})}><${Ic} n="plus" s=${18}/>Nueva meta</button></div>
     ${s.goals.length?grupos.map(({p,gs})=>html`<div key=${p.k} className="col" style=${{gap:10}}><div className="row" style=${{gap:8,alignItems:'baseline'}}><h2>${p.n}</h2><span className="muted sm">${p.sub}</span></div><div className="grid g3">${gs.map(g=>{const i=goalInfo(g),done=g.saved>=g.target;return html`<div key=${g.id} className="card col">
       <div className="row sp"><b style=${{fontSize:16}}>${g.name}</b>${g.demo?html`<${Demo}/>`:null}</div>
-      <div className="row sp" style=${{alignItems:'flex-end'}}><span className="num" style=${{fontSize:26,fontWeight:700}}>${fmt(g.saved)}</span><span className="muted sm">de ${fmt(g.target)}</span></div>
+      <div className="row sp" style=${{alignItems:'flex-end'}}><span className="num" style=${{fontSize:26,fontWeight:500}}>${fmt(g.saved)}</span><span className="muted sm">de ${fmt(g.target)}</span></div>
       <${Bar} v=${i.pct} t=${done?'':i.late?'r':''}/><div className="row sp sm"><span className="b">${pc(i.pct,0)} de avance</span><span className="muted">Límite: ${fdate(g.deadline)}</span></div>
       ${done?html`<${Banner} k="g" ic="check">¡Meta lograda!<//>`:i.late?html`<${Banner} k="r" ic="warn">La fecha límite ya pasó. Faltan ${fmt(i.remain)}.<//>`:html`<div className="card flat sm">Aportación recomendada: <b className="num">${fmt(i.rec)}</b> al mes durante ${i.monthsLeft} ${i.monthsLeft===1?'mes':'meses'}.</div>`}
       ${(()=>{const d=instDe(g,p);return html`<div className="sm donde"><b>Dónde ahorrarlo:</b> ${d.inst}. <span className="muted">${d.por}</span>${done?null:html`<div className="up" style=${{marginTop:4}}>En ${d.cetes} ganarías <b className="num">+${fmt(cetesGanancia(g,d.tasa))}</b> de intereses hasta tu fecha.</div>`}</div>`})()}
@@ -1479,7 +1515,7 @@ function Deudas(){
     <div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Avalancha vs bola de nieve</h2><${Demo} t="Simulación"/></div>
       <${Field} label="Pago extra mensual sobre los mínimos (MXN)" id="dx" err=${exOk?'':'Escribe un monto de 0 o más.'} cls=""><input id="dx" type="number" min="0" style=${{maxWidth:220}} className=${exOk?'':'bad'} value=${ex} onChange=${ev=>setEx(ev.target.value)}/><//>
       ${A&&B?html`<div className="grid g2">${[['Avalancha','Paga primero la tasa más alta',A,c.blue],['Bola de nieve','Paga primero el saldo menor',B,c.yellow]].map(([n,sub,r,cl])=>html`<div key=${n} className="card flat col" style=${{gap:6}}><div className="row sp"><b>${n}</b>${A.ok&&B.ok&&r.interest===Math.min(A.interest,B.interest)?html`<span className="pill g">Menos intereses</span>`:null}</div><div className="muted xs">${sub}</div>
-        ${r.ok?html`<div className="num" style=${{fontSize:24,fontWeight:700}}>${fmtMonths(r.months)}</div><div className="sm">Intereses totales: <b className="num">${fmt(r.interest)}</b></div><div className="muted xs">Orden de liquidación: ${r.order.join(' → ')}</div>`:html`<${Banner} k="r" ic="warn">Con este pago no se liquida en 50 años. Sube el pago extra.<//>`}</div>`)}</div>
+        ${r.ok?html`<div className="num" style=${{fontSize:24,fontWeight:500}}>${fmtMonths(r.months)}</div><div className="sm">Intereses totales: <b className="num">${fmt(r.interest)}</b></div><div className="muted xs">Orden de liquidación: ${r.order.join(' → ')}</div>`:html`<${Banner} k="r" ic="warn">Con este pago no se liquida en 50 años. Sube el pago extra.<//>`}</div>`)}</div>
         ${A.ok&&B.ok?html`<${Banner} k="g" ic="spark">${A.interest<B.interest-1?`La avalancha te ahorra ${fmt(B.interest-A.interest)} en intereses`+(A.months<B.months?` y ${B.months-A.months} ${B.months-A.months===1?'mes':'meses'}`:''):'Con estos datos ambos métodos cuestan casi lo mismo'}. La bola de nieve da victorias rápidas: liquida primero "${B.order[0]}".<//>`:null}
         <${Chart} h=${240}><${RC.LineChart} data=${data}><${RC.CartesianGrid} stroke=${c.line} vertical=${false}/><${RC.XAxis} dataKey="m" tickFormatter=${v=>v+'m'} ...${axis(c)} minTickGap=${24}/><${RC.YAxis} width=${50} tickFormatter=${v=>v>=1000?(v/1000)+'k':v} ...${axis(c)}/><${RC.Tooltip} formatter=${v=>fmt(v)} labelFormatter=${l=>'Mes '+l} ...${tipStyle(c)}/>
           <${RC.Line} type="monotone" dataKey="Avalancha" stroke=${c.blue} strokeWidth=${2.5} dot=${false}/><${RC.Line} type="monotone" dataKey="Bola de nieve" stroke=${c.yellow} strokeWidth=${2.5} dot=${false}/><//><//>
@@ -1536,11 +1572,9 @@ function PlanModelo({M,fuente}){
   const nota={hoy:'Así gastan hoy: entra todo y no sobra nada.','1':'Meses 1 a 4: el recorte y lo que sobra van a liquidar la Tarjeta Azul BBVA.','6':'La tarjeta ya está pagada: ese dinero ahora se ahorra en CETES.','13':'Año 2: el ingreso y el gasto suben 3.75 %, y el seguro sube 12 %.','22':'Ya sin deudas: arrancan los PPR de papá y mamá para el retiro.'}[vista];
   return html`<div className="col" style=${{gap:16}}>
     <div className="card col" style=${{gap:14}}>
-      <div className="ch" style=${{marginBottom:0}}><div><h2>Simulador del plan</h2><div className="muted sm">Mueve el recorte mensual a los gastos no planeados y mira qué pasa con las deudas y el fondo.</div></div><span className="pill g">Plan de la consultora</span></div>
+      <div className="ch" style=${{marginBottom:0}}><div><h2>Simulador del plan</h2><div className="muted sm">Mueve el recorte mensual a los gastos no planeados y mira qué pasa con las deudas y el fondo.</div></div><span className="pill b">Plan de la consultora</span></div>
       <${Field} label=${html`Recorte mensual a gastos no planeados: <b className="num" style=${{color:'var(--fg)',fontSize:16}}>${fmt(rc)}</b> <span className="muted">(de ${fmt(M.noPlaneados)} a ${fmt(M.noPlaneados-rc)} al mes)</span>`} id="ph-r">
         <input id="ph-r" type="range" min="0" max=${M.noPlaneados} step="100" value=${rc} onChange=${setRange(setRc,M.noPlaneados)}/><//>
-      <div className="row sp"><span className="muted xs">$0 = no cambian nada · ${fmt(M.noPlaneados)} = eliminan todos los gastos no planeados</span>
-        <button className="btn sm" disabled=${rc===M.recortePlan} onClick=${()=>setRc(M.recortePlan)}><${Ic} n="refresh" s=${15}/>Volver al plan (${fmt(M.recortePlan)})</button></div>
       ${P.deficit?html`<${Banner} k="r" ic="warn"><b>Con este recorte el plan no alcanza.</b> En el mes ${P.deficit.mes} faltan ${fmt(P.deficit.monto)}. El recorte mínimo para que funcione es ${fmt(minR)} al mes.<//>`:null}
       <div className="grid g4">
         <${Kpi} ic="trend" l="Tarjeta liquidada" v=${P.mesTarjeta?`Mes ${P.mesTarjeta}`:'No se liquida'} s=${`Intereses pagados: ${fmt(P.interesesTarjeta)}`} cls=${P.mesTarjeta?'up':'down'}/>
@@ -1548,6 +1582,8 @@ function PlanModelo({M,fuente}){
         <${Kpi} ic="wallet" l="Fondo al mes 24" v=${fmt(m24.fondo)} s="Ahorrado en CETES"/>
         <${Kpi} ic="star" l="Meses que cubre (mes 24)" v=${`${nf(m24.mesesCubre,1)} meses`} s="De gasto corriente del hogar" cls=${m24.mesesCubre>=3?'up':'down'}/>
       </div>
+      <div className="row sp"><span className="muted xs">$0 = no cambian nada · ${fmt(M.noPlaneados)} = eliminan todos los gastos no planeados</span>
+        <button className="btn sm" disabled=${rc===M.recortePlan} onClick=${()=>setRc(M.recortePlan)}><${Ic} n="refresh" s=${15}/>Volver al plan (${fmt(M.recortePlan)})</button></div>
     </div>
     <div className="card col" style=${{gap:14}}>
       <div className="ch" style=${{marginBottom:0}}><div><h2>¿A dónde va cada peso?</h2><div className="muted sm">${nota}</div></div><${Seg} opts=${PH_VISTAS} val=${vista} on=${setVista} label="Mes"/></div>
@@ -1560,7 +1596,7 @@ function PlanModelo({M,fuente}){
           <${RC.Area} type="monotone" dataKey="Sin rendimiento" stroke=${c.muted} fill="transparent" strokeDasharray="4 3" strokeWidth=${1.5} isAnimationActive=${false}/><${RC.Area} type="monotone" dataKey="Con CETES" stroke=${c.green} fill=${c.green} fillOpacity=${.15} strokeWidth=${2.5} isAnimationActive=${false}/><//><//>
         <div className="muted xs">Los CETES suman ${fmt(m24.fondo-m24.sinRend)} al mes 24 frente a guardar el dinero sin rendimiento (CETES 28 días ${pc(M.cetes.tasa*100,1)} menos ISR).</div></div>
       <div className="card col" style=${{gap:12}}><div className="ch" style=${{marginBottom:0}}><h2>Meses que cubre</h2><span className="pill">${PH_VISTAS.find(v=>v[0]===vista)[1]}</span></div>
-        <div className="num" style=${{fontSize:36,fontWeight:700,lineHeight:1}}>${nf(mesesSel,1)} <span className="muted" style=${{fontSize:16,fontWeight:500}}>meses</span></div>
+        <div className="num" style=${{fontSize:36,fontWeight:500,lineHeight:1}}>${nf(mesesSel,1)} <span className="muted" style=${{fontSize:16,fontWeight:500}}>meses</span></div>
         <${MesesGauge} v=${mesesSel}/>
         <div className="sm">Si mañana se quedaran sin ingreso, el fondo pagaría ${nf(mesesSel,1)} meses del gasto corriente del hogar (${fmt(vista==='hoy'?M.gastoCorriente:P.meses[+vista-1].gastoCorriente)} al mes).</div>
         <div className="muted xs">Cambia el mes arriba, en «¿A dónde va cada peso?».</div></div>
@@ -1583,13 +1619,13 @@ function PlanBasico(){
       ${T.inc===0&&T.exp===0?html`<${Empty} title="Aún no hay movimientos este mes" text="Registra tus ingresos y gastos para ver tu presupuesto."/>`:html`<div className="cuadre ok"><${Ic} n="check" s=${16}/><span>Ingreso <b className="num">${fmt(T.inc)}</b> = gastos <b className="num">${fmt(T.exp)}</b> + ahorro <b className=${'num '+(T.inc-T.exp<0?'down':'up')}>${fmt(T.inc-T.exp)}</b></span></div>`}</div>
     <div className="split">
       <div className="card col" style=${{gap:12}}><div className="ch" style=${{marginBottom:0}}><h2>Fondo de emergencia</h2><span className="pill">Meta: 3 meses</span></div>
-        <div className="num" style=${{fontSize:36,fontWeight:700,lineHeight:1}}>${nf(F.mesesCubre,1)} <span className="muted" style=${{fontSize:16,fontWeight:500}}>meses cubiertos</span></div>
+        <div className="num" style=${{fontSize:36,fontWeight:500,lineHeight:1}}>${nf(F.mesesCubre,1)} <span className="muted" style=${{fontSize:16,fontWeight:500}}>meses cubiertos</span></div>
         <${MesesGauge} v=${F.mesesCubre}/>
         <div className="sm">Tienes ${fmt(F.actual)} de una meta de <b>${fmt(F.meta)}</b> (3 meses de tus gastos básicos: ${fmt(F.needs)} al mes).</div>
         ${F.goal?html`<button className="btn sm" style=${{alignSelf:'flex-start'}} onClick=${()=>go('finanzas','metas')}>Abonar a mi fondo →</button>`:html`<button className="btn pri sm" style=${{alignSelf:'flex-start'}} onClick=${crear}><${Ic} n="flag" s=${15}/>Crear meta «Fondo de emergencia»</button>`}</div>
       <div className="card col" style=${{gap:12}}><h2>¿Cuánto tardas en llegar?</h2>
         <${Field} label=${html`Si ahorras <b className="num" style=${{color:'var(--fg)',fontSize:16}}>${fmt(am)}</b> al mes en CETES`} id="pb-a"><input id="pb-a" type="range" min="0" max=${max} step="100" value=${am} onChange=${setRange(setAm,max)}/><//>
-        <div className="num" style=${{fontSize:28,fontWeight:700}}>${F.mesMeta===0?'¡Ya llegaste!':F.mesMeta?`${F.mesMeta} ${F.mesMeta===1?'mes':'meses'}`:'Más de 10 años'}</div>
+        <div className="num" style=${{fontSize:28,fontWeight:500}}>${F.mesMeta===0?'¡Ya llegaste!':F.mesMeta?`${F.mesMeta} ${F.mesMeta===1?'mes':'meses'}`:'Más de 10 años'}</div>
         <div className="muted xs">Simulación con CETES 28 días ${pc(RIVERA.modelo.cetes.tasa*100,1)} menos ISR (supuesto de noviembre 2026). No es garantía.</div></div>
     </div></div>`;
 }
@@ -1613,10 +1649,10 @@ function PlazosModelo({M}){
       hitos:[h(24,'PPR acumulado',fmt(ppr24)),h(null,'Ingreso al retiro, a los 65 años',`${fmt(ret.total)} al mes (${nf(ret.pct,0)} % del ingreso actual)`)],
       cetes:null}};
   return html`<div className="card col" style=${{gap:14}}>
-    <div className="ch" style=${{marginBottom:0}}><div><h2>Ahorro por plazos</h2><div className="muted sm">El plan de la consultora en tres horizontes. Mes 1 = ${mesTxt(M,1)}.</div></div><span className="pill g">Plan de la consultora</span></div>
+    <div className="ch" style=${{marginBottom:0}}><div><h2>Ahorro por plazos</h2><div className="muted sm">El plan de la consultora en tres horizontes. Mes 1 = ${mesTxt(M,1)}.</div></div><span className="pill b">Plan de la consultora</span></div>
     <div className="grid g3">${RIVERA.plazos.map(p=>{const d=datos[p.k];return html`<div key=${p.k} className=${'card flat col plazo '+p.k} style=${{gap:10}}>
-      <div className="row sp"><span className=${'pill '+(p.k==='corto'?'b':p.k==='mediano'?'y':'g')}>${p.nombre}</span><span className="muted xs">${mesCorto(M,p.desde)} – ${p.hasta?mesCorto(M,p.hasta):'65 años'}</span></div>
-      <div><div className="b">${p.titulo}</div><div className="num" style=${{fontSize:26,fontWeight:700,lineHeight:1.2,marginTop:4}}>${d.meta}</div><div className="muted sm">${d.metaSub}</div></div>
+      <div className="row sp"><span className="b">${p.nombre}</span><span className="muted xs">${mesCorto(M,p.desde)} – ${p.hasta?mesCorto(M,p.hasta):'65 años'}</span></div>
+      <div><div className="b">${p.titulo}</div><div className="num" style=${{fontSize:26,fontWeight:500,lineHeight:1.2,marginTop:4}}>${d.meta}</div><div className="muted sm">${d.metaSub}</div></div>
       <div className="col" style=${{gap:6}}>${d.hitos.map((x,i)=>html`<div key=${i} className="row sm" style=${{gap:8,flexWrap:'nowrap',alignItems:'flex-start'}}><b className="m-chip">${x.m?`Mes ${x.m}`:'65 años'}</b><span style=${{flex:1}}>${x.t}<br/><span className="muted xs">${x.m?mesTxt(M,x.m)+' · ':''}${x.dato}</span></span></div>`)}</div>
       <div className="sm donde"><b>Instrumento: ${p.instrumento}.</b> <span className="muted">${p.porque}</span></div>
       ${d.cetes!=null?html`<div className="sm up">Los CETES le suman <b className="num">+${fmt(d.cetes)}</b> al fondo en este plazo.</div>`:html`<button className="btn gh sm" style=${{alignSelf:'flex-start',padding:0,height:24}} onClick=${()=>go('finanzas','hogar')}>Ver el plan mes a mes →</button>`}
@@ -1656,8 +1692,8 @@ function AsesorSeguro({M}){
           ${[['Extensión colectiva',G.anual,'var(--green)'],['Dos seguros individuales',indiv,'var(--red)']].map(([l,v,c])=>html`<div key=${l}><div className="row sp sm"><span>${l}</span><b className="num">${fmt(v)}</b></div><div className="hbar"><i style=${{width:v/max*100+'%',background:c}}></i></div></div>`)}</div>
         <div className="col" style=${{gap:8}}><div className="row sp"><b className="sm">Si pasa un evento médico</b><${Seg} opts=${[['promedio','Evento promedio'],['cancer','Cáncer']]} val=${ev} on=${setEv} label="Evento"/></div>
           <div className="grid" style=${{gridTemplateColumns:'1fr 1fr',gap:10}}>
-            <div className="card flat"><div className="muted xs">Sin seguro pagan</div><div className="num down" style=${{fontSize:24,fontWeight:700}} id="ev-sin">${fmt(costo)}</div></div>
-            <div className="card flat"><div className="muted xs">Con seguro pagan</div><div className="num up" style=${{fontSize:24,fontWeight:700}} id="ev-con">${fmt(con)}</div></div></div>
+            <div className="card flat"><div className="muted xs">Sin seguro pagan</div><div className="num down" style=${{fontSize:24,fontWeight:500}} id="ev-sin">${fmt(costo)}</div></div>
+            <div className="card flat"><div className="muted xs">Con seguro pagan</div><div className="num up" style=${{fontSize:24,fontWeight:500}} id="ev-con">${fmt(con)}</div></div></div>
           <div className="sm">El seguro les ahorra <b className="num">${fmt(costo-con)}</b>: deducible de ${fmt(G.deducible)} + coaseguro de ${pc(G.coaseguro*100,0)}. Sin seguro, ese gasto terminaría en la tarjeta al 59.52 %.</div></div>
       </div>
       <div className="sm donde"><b>Por qué:</b> <span className="muted">${G.porque} Un evento promedio cuesta lo mismo que ${nf(costo===SGMM_REF.eventoPromedio?SGMM_REF.eventoPromedio/(G.netoMensual*12):SGMM_REF.cancer/(G.netoMensual*12),1)} años de prima neta.</span></div>
@@ -1704,15 +1740,16 @@ function AsesorTarjeta({M}){
   const filas=[t,...R.otras,...(a&&a!==t&&!R.otras.includes(a)?[a]:[])];
   return html`<div className="card col asesor" id="as-tarjeta" style=${{gap:14}}>
     <${Paso} n="3" t="Mejor tarjeta de crédito"/>
+    <div className="reco"><div className="muted xs">${M?(paga==='si'?'Recomendación desde el mes 5 ('+mesTxt(M,5)+')':'Recomendación hoy (meses 1 a 4)'):'Recomendación'}</div>
+      <div className="reco-t" id="tc-top">${M&&paga==='no'?'No abras otra tarjeta: termina de pagar la Azul BBVA':t.n}</div>
+      <div className="muted sm">${M&&paga==='no'?`Si de todos modos necesitaran una, la de menor CAT para su límite es ${t.n} (${pc(t.cat,1)}).`:`Anualidad ${fmt(t.anual)} · CAT de publicidad ${pc(t.cat,1)} · ${t.web}`}</div></div>
     <div className="form" style=${{gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,220px),1fr))'}}>
       <${Field} label="¿Pagas el total cada mes?" id="tc-paga"><${Seg} opts=${[['si',M?'Sí (desde el mes 5)':'Sí, pago el total'],['no',M?'No (hoy)':'No, cargo saldo']]} val=${paga} on=${setPaga} label="Pago"/><//>
       <${Field} label="Límite de crédito" id="tc-rango"><select id="tc-rango" value=${rango} onChange=${e=>setRango(e.target.value)}>${Object.entries(TARJETAS).map(([k,v])=>html`<option key=${k} value=${k}>${v.n}</option>`)}</select><//>
       <${Field} label="¿En qué la usas más?" id="tc-uso"><select id="tc-uso" value=${uso} onChange=${e=>setUso(e.target.value)}>${USOS.map(([k,l])=>html`<option key=${k} value=${k}>${l}</option>`)}</select><//>
     </div>
     ${paga==='no'?html`<${Banner} k="y" ic="warn"><b>Mientras cargues saldo, una tarjeta nueva no baja tu deuda.</b> Primero liquida la más cara (método avalancha). ${M?'Así lo hace el plan: todo el dinero libre va a la Azul hasta el mes 5.':''} Si necesitas una tarjeta, la de menor costo para tu límite es la de abajo.<//>`:null}
-    <div className="reco"><div className="muted xs">${M?(paga==='si'?'Recomendación desde el mes 5 ('+mesTxt(M,5)+')':'Recomendación hoy (meses 1 a 4)'):'Recomendación'}</div>
-      <div className="reco-t" id="tc-top">${M&&paga==='no'?'No abras otra tarjeta: termina de pagar la Azul BBVA':t.n}</div>
-      <div className="muted sm">${M&&paga==='no'?`Si de todos modos necesitaran una, la de menor CAT para su límite es ${t.n} (${pc(t.cat,1)}).`:`Anualidad ${fmt(t.anual)} · CAT de publicidad ${pc(t.cat,1)} · ${t.web}`}</div></div>
+
     <ul className="porque">
       ${a&&a.anual>t.anual?html`<li>Te ahorras <b className="num">${fmt(a.anual-t.anual)}</b> al año de anualidad frente a tu ${a.n}.</li>`:null}
       ${a?html`<li>Si algún mes no pagas el total, su CAT es de <b>${pc(t.cat,1)}</b> contra <b>${pc(a.cat,1)}</b> de tu ${a.n}: ${t.cat<a.cat?`cuesta ${nf(a.cat/t.cat,1)} veces menos`:'similar'}.</li>`:html`<li>Es de las de menor CAT de publicidad para tu límite (${R.T.n}).</li>`}
@@ -1741,7 +1778,7 @@ function Impuestos(){
   return html`<div className="page">
     <${Head} title=${html`Mis impuestos <${Demo}/>`} sub="Tus deducciones se vuelven devolución, y tu devolución se vuelve parte de tu plan."/>
     <${Banner} k="y" ic="warn"><b>Demo: FINOVA no se conecta al SAT real ni paga impuestos en este prototipo.</b> Información educativa; no es asesoría fiscal.<//>
-    <div className="split"><${ConexionSAT}/><${DevolucionCard} M=${M}/></div>
+    <div className="split"><${DevolucionCard} M=${M}/><${ConexionSAT}/></div>
     <${RadarCard} M=${M}/>
     ${M?html`<div className="card sm muted">${RIVERA.fiscal.mama}</div>`:html`<${ApartadoCard}/>`}
     <${HistorialFiscal}/>
@@ -1776,11 +1813,11 @@ function DevolucionCard({M}){
   const abonar=()=>{upd(d=>{const g=d.goals.find(x=>x.id===fondo.id);g.saved=Math.min(g.target,g.saved+monto);d.fiscal.historial.push({tipo:'Abono al fondo',fecha:todayS(),monto,folio:'—',nota:`A «${fondo.name}»`})});toast('Devolución abonada a tu fondo de emergencia','ok');setComp(null)};
   return html`<div className="card col" id="dev-card" style=${{gap:12}}>
     <div className="ch" style=${{marginBottom:0}}><h2>Tu devolución estimada</h2><span className="pill b">Tasa marginal ${pc(D.tasa*100,2)}</span></div>
-    ${D.modelo?html`<div className="num up" style=${{fontSize:34,fontWeight:700,lineHeight:1}} id="dev-monto">${fmt(D.anio1)}</div>
+    ${D.modelo?html`<div className="num" id="dev-monto">${fmt(D.anio1)}</div>
       <div className="sm">Por deducir la prima del seguro de gastos médicos. Llega en el <b>mes ${D.mes} (${mesTxt(M,D.mes)})</b> y lleva al fondo de emergencia a su meta de 3 meses.</div>
       <div className="card flat sm">Desde que inicia el PPR (mes ${RIVERA.fiscal.deducciones[1].desde}), la devolución sube a <b className="num" id="dev-ppr">${fmt(D.anioPPR)}</b> al año: seguro ${fmt(D.anioPPR-D.devolucionPPR)} + PPR ${fmt(D.devolucionPPR)}.</div>
       <button className="btn gh sm" style=${{alignSelf:'flex-start',padding:0,height:24}} onClick=${()=>go('finanzas','hogar')}>Ver el mes ${D.mes} en el plan del hogar →</button>`
-    :html`<div className="num up" style=${{fontSize:34,fontWeight:700,lineHeight:1}} id="dev-monto">${fmt(D.monto)}</div>
+    :html`<div className="num" id="dev-monto">${fmt(D.monto)}</div>
       <div className="sm">Con tus gastos deducibles con factura de los últimos 12 meses (${fmt(D.base)}). Si pides factura de lo pendiente, podría llegar a <b className="num">${fmt(D.posible)}</b>.</div>
       ${D.perdido>0?html`<div className="supuesto xs">Pagar en efectivo te costó ≈ <b>${fmt(D.perdido)}</b> de devolución.</div>`:null}
       <div className="muted xs">Tope global: ${fmt(D.tope)} (lo menor entre 5 UMA anuales y 15 % de tu ingreso). Tasa según la ${FISCAL.fuenteTarifa}, con tu ingreso de Perfil.</div>`}
@@ -2092,7 +2129,7 @@ function MetaCalc(){
       <${Field} label="Rendimiento anual supuesto (%)" id="m-r" err=${er.rate}><input id="m-r" type="number" step="0.1" value=${f.rate} onChange=${e=>setF({...f,rate:e.target.value})}/><//>
       <${Field} label="Monto que ya tienes" id="m-i" err=${er.init}><input id="m-i" type="number" min="0" value=${f.init} onChange=${e=>setF({...f,init:e.target.value})}/><//></div>
     <div className="card col"><h2>Resultado</h2>
-      ${ok?html`<div className="card flat"><div className="muted xs">Debes invertir al mes</div><div className="num" style=${{fontSize:34,fontWeight:700}}>${fmt(pm)}</div></div>
+      ${ok?html`<div className="card flat"><div className="muted xs">Debes invertir al mes</div><div className="num" style=${{fontSize:34,fontWeight:500}}>${fmt(pm)}</div></div>
         <div className="grid" style=${{gridTemplateColumns:'1fr 1fr'}}><div className="card flat"><div className="muted xs">Aportarás en total</div><div className="num b">${fmt(i0+pm*Math.round(y*12))}</div></div><div className="card flat"><div className="muted xs">Rendimiento estimado</div><div className="num b up">${fmt(t-i0-pm*Math.round(y*12))}</div></div></div>
         <div className="sm muted">Sin rendimiento (0%) necesitarías ${fmt(pm0)} al mes. El rendimiento hipotético te ahorra ${fmt(pm0-pm)} mensuales.</div>
         <${Chart} h=${200}><${RC.AreaChart} data=${sim.series.map(p=>({label:p.label,Saldo:Math.round(p.v),Aportado:Math.round(p.c)}))}><${RC.CartesianGrid} stroke=${c.line} vertical=${false}/><${RC.XAxis} dataKey="label" minTickGap=${22} tickFormatter=${v=>v+'a'} ...${axis(c)}/><${RC.YAxis} width=${50} tickFormatter=${v=>Math.round(v/1000)+'k'} ...${axis(c)}/><${RC.Tooltip} formatter=${v=>fmt(v)} labelFormatter=${l=>'Año '+l} ...${tipStyle(c)}/><${RC.Area} type="monotone" dataKey="Saldo" stroke=${c.green} fill=${c.green} fillOpacity=${.18} strokeWidth=${2.5}/><${RC.Area} type="monotone" dataKey="Aportado" stroke=${c.muted} fill="none" strokeDasharray="5 4"/><//><//>`
@@ -2142,7 +2179,7 @@ function Player({lesson,daily,onClose}){
   const correctText=!ex?'':ex.t==='mc'?ex.o[ex.a]:ex.t==='tf'?(ex.a?'Verdadero':'Falso'):ex.t==='fill'?ex.a[0]:String(ex.a);
   if(i===-1)return html`<${Modal} title=${lesson.title} onClose=${onClose}><p>${lesson.intro}</p><div className="muted sm">${n} ejercicios · +10 XP por cada acierto nuevo</div><div className="mf"><button className="btn" onClick=${onClose}>Cerrar</button><button className="btn pri" onClick=${()=>setI(0)}>Empezar</button></div><//>`;
   if(finished){const score=Math.round(right/n*100);return html`<${Modal} title=${daily?'Reto diario completado':'Lección completada'} onClose=${onClose}>
-    <div style=${{textAlign:'center'}} className="col"><div style=${{color:'var(--yellow)'}}><${Ic} n="trophy" s=${54}/></div><div className="num" style=${{fontSize:34,fontWeight:700}}>${score}%</div><div className="muted">${right} de ${n} respuestas correctas</div>
+    <div style=${{textAlign:'center'}} className="col"><div style=${{color:'var(--yellow)'}}><${Ic} n="trophy" s=${54}/></div><div className="num" style=${{fontSize:34,fontWeight:500}}>${score}%</div><div className="muted">${right} de ${n} respuestas correctas</div>
       <div className="row" style=${{justifyContent:'center'}}><span className="pill y">+${gain} XP</span><span className="pill g">Racha: ${streakOf([...s.academy.days,todayS()])} días</span></div></div>
     ${!daily&&lesson.rel?html`<${Banner} k="b" ic="spark">Siguiente paso: pon en práctica lo aprendido.<//><button className="btn pri" onClick=${()=>{onClose();go(lesson.rel.route,lesson.rel.tab)}}>${lesson.rel.label}</button>`:null}
     <div className="mf"><button className="btn" onClick=${onClose}>Cerrar</button></div><//>`}
@@ -2210,7 +2247,7 @@ function Perfil(){
         <${Field} label="Moneda" id="p-c"><input id="p-c" value="MXN · Peso mexicano" disabled/><//>
         <div><button className="btn pri">Guardar cambios</button></div></form>
       <div className="card col"><div className="ch" style=${{marginBottom:0}}><h2>Nivel financiero</h2></div>
-        <div className="row" style=${{gap:14,flexWrap:'nowrap'}}><div className="avatar" style=${{width:56,height:56,fontSize:20}}>${s.user.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()}</div><div><div style=${{fontSize:22,fontWeight:700}}>${fl.name}</div><div className="muted sm">${s.academy.xp} XP · racha de ${streakOf(s.academy.days)} días</div></div></div>
+        <div className="row" style=${{gap:14,flexWrap:'nowrap'}}><div className="avatar" style=${{width:56,height:56,fontSize:20}}>${s.user.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()}</div><div><div style=${{fontSize:22,fontWeight:500}}>${fl.name}</div><div className="muted sm">${s.academy.xp} XP · racha de ${streakOf(s.academy.days)} días</div></div></div>
         <${Bar} v=${(s.academy.xp-fl.lo)/(fl.hi-fl.lo)*100} t="b"/><div className="muted xs">Sube de nivel completando lecciones en Academia.</div>
         <div className="sm">Insignias: <b>${earnedBadges(s).length}</b> de ${BADGES.length} · Lecciones: <b>${new Set(s.academy.log.map(l=>l.lesson)).size}</b> de ${ALL_LESSONS.length}</div></div>
       <div className="card col"><h2>Apariencia</h2><${Seg} opts=${[['auto','Automático'],['light','Claro'],['dark','Oscuro']]} val=${s.user.theme} on=${setTheme} label="Tema"/>
@@ -2341,7 +2378,7 @@ function App({account,logout,onAccountChange}){
   const dark=document.documentElement.getAttribute('data-theme')==='dark'||(!document.documentElement.getAttribute('data-theme')&&window.matchMedia('(prefers-color-scheme: dark)').matches);
   return html`<${Ctx.Provider} value=${ctx}>
     <div className="app">
-      <aside className="side"><div className="brand"><div className="logo">F</div>FINOVA</div><div className="slogan">Tu dinero. Tus decisiones. Tu futuro.</div>
+      <aside className="side"><div className="brand"><img src="assets/logo/finova-logo-horizontal-oscuro.svg" alt="FINOVA"/></div>
         ${NAV.map(([r,l,,ic])=>html`<button key=${r} className=${'nav '+(route===r?'on':'')} aria-current=${route===r?'page':undefined} onClick=${()=>go(r)}><${Ic} n=${ic}/>${l}</button>`)}
         <hr/><button className=${'nav '+(route==='calculadoras'?'on':'')} onClick=${()=>go('calculadoras')}><${Ic} n="calc"/>Calculadoras</button><button className=${'nav '+(route==='ayuda'?'on':'')} onClick=${()=>go('ayuda')}><${Ic} n="help"/>Centro de ayuda</button>
         <div className="demo-note"><b style=${{color:'#fff'}}>Sesión: ${s.user.name}</b><br/>Tus datos se guardan solo en este dispositivo. Prototipo de demostración.<button className="btn sm" style=${{marginTop:10,width:'100%'}} onClick=${logout}><${Ic} n="lock" s=${15}/>Cerrar sesión</button></div></aside>

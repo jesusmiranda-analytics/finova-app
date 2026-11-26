@@ -53,7 +53,7 @@ function App({account,logout,onAccountChange}){
   const dark=document.documentElement.getAttribute('data-theme')==='dark'||(!document.documentElement.getAttribute('data-theme')&&window.matchMedia('(prefers-color-scheme: dark)').matches);
   return html`<${Ctx.Provider} value=${ctx}>
     <div className="app">
-      <aside className="side"><div className="brand"><div className="logo">F</div>FINOVA</div><div className="slogan">Tu dinero. Tus decisiones. Tu futuro.</div>
+      <aside className="side"><div className="brand"><img src="assets/logo/finova-logo-horizontal-oscuro.svg" alt="FINOVA"/></div>
         ${NAV.map(([r,l,,ic])=>html`<button key=${r} className=${'nav '+(route===r?'on':'')} aria-current=${route===r?'page':undefined} onClick=${()=>go(r)}><${Ic} n=${ic}/>${l}</button>`)}
         <hr/><button className=${'nav '+(route==='calculadoras'?'on':'')} onClick=${()=>go('calculadoras')}><${Ic} n="calc"/>Calculadoras</button><button className=${'nav '+(route==='ayuda'?'on':'')} onClick=${()=>go('ayuda')}><${Ic} n="help"/>Centro de ayuda</button>
         <div className="demo-note"><b style=${{color:'#fff'}}>Sesión: ${s.user.name}</b><br/>Tus datos se guardan solo en este dispositivo. Prototipo de demostración.<button className="btn sm" style=${{marginTop:10,width:'100%'}} onClick=${logout}><${Ic} n="lock" s=${15}/>Cerrar sesión</button></div></aside>

@@ -30,8 +30,8 @@ function AsesorSeguro({M}){
           ${[['Extensión colectiva',G.anual,'var(--green)'],['Dos seguros individuales',indiv,'var(--red)']].map(([l,v,c])=>html`<div key=${l}><div className="row sp sm"><span>${l}</span><b className="num">${fmt(v)}</b></div><div className="hbar"><i style=${{width:v/max*100+'%',background:c}}></i></div></div>`)}</div>
         <div className="col" style=${{gap:8}}><div className="row sp"><b className="sm">Si pasa un evento médico</b><${Seg} opts=${[['promedio','Evento promedio'],['cancer','Cáncer']]} val=${ev} on=${setEv} label="Evento"/></div>
           <div className="grid" style=${{gridTemplateColumns:'1fr 1fr',gap:10}}>
-            <div className="card flat"><div className="muted xs">Sin seguro pagan</div><div className="num down" style=${{fontSize:24,fontWeight:700}} id="ev-sin">${fmt(costo)}</div></div>
-            <div className="card flat"><div className="muted xs">Con seguro pagan</div><div className="num up" style=${{fontSize:24,fontWeight:700}} id="ev-con">${fmt(con)}</div></div></div>
+            <div className="card flat"><div className="muted xs">Sin seguro pagan</div><div className="num down" style=${{fontSize:24,fontWeight:500}} id="ev-sin">${fmt(costo)}</div></div>
+            <div className="card flat"><div className="muted xs">Con seguro pagan</div><div className="num up" style=${{fontSize:24,fontWeight:500}} id="ev-con">${fmt(con)}</div></div></div>
           <div className="sm">El seguro les ahorra <b className="num">${fmt(costo-con)}</b>: deducible de ${fmt(G.deducible)} + coaseguro de ${pc(G.coaseguro*100,0)}. Sin seguro, ese gasto terminaría en la tarjeta al 59.52 %.</div></div>
       </div>
       <div className="sm donde"><b>Por qué:</b> <span className="muted">${G.porque} Un evento promedio cuesta lo mismo que ${nf(costo===SGMM_REF.eventoPromedio?SGMM_REF.eventoPromedio/(G.netoMensual*12):SGMM_REF.cancer/(G.netoMensual*12),1)} años de prima neta.</span></div>
@@ -78,15 +78,16 @@ function AsesorTarjeta({M}){
   const filas=[t,...R.otras,...(a&&a!==t&&!R.otras.includes(a)?[a]:[])];
   return html`<div className="card col asesor" id="as-tarjeta" style=${{gap:14}}>
     <${Paso} n="3" t="Mejor tarjeta de crédito"/>
+    <div className="reco"><div className="muted xs">${M?(paga==='si'?'Recomendación desde el mes 5 ('+mesTxt(M,5)+')':'Recomendación hoy (meses 1 a 4)'):'Recomendación'}</div>
+      <div className="reco-t" id="tc-top">${M&&paga==='no'?'No abras otra tarjeta: termina de pagar la Azul BBVA':t.n}</div>
+      <div className="muted sm">${M&&paga==='no'?`Si de todos modos necesitaran una, la de menor CAT para su límite es ${t.n} (${pc(t.cat,1)}).`:`Anualidad ${fmt(t.anual)} · CAT de publicidad ${pc(t.cat,1)} · ${t.web}`}</div></div>
     <div className="form" style=${{gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,220px),1fr))'}}>
       <${Field} label="¿Pagas el total cada mes?" id="tc-paga"><${Seg} opts=${[['si',M?'Sí (desde el mes 5)':'Sí, pago el total'],['no',M?'No (hoy)':'No, cargo saldo']]} val=${paga} on=${setPaga} label="Pago"/><//>
       <${Field} label="Límite de crédito" id="tc-rango"><select id="tc-rango" value=${rango} onChange=${e=>setRango(e.target.value)}>${Object.entries(TARJETAS).map(([k,v])=>html`<option key=${k} value=${k}>${v.n}</option>`)}</select><//>
       <${Field} label="¿En qué la usas más?" id="tc-uso"><select id="tc-uso" value=${uso} onChange=${e=>setUso(e.target.value)}>${USOS.map(([k,l])=>html`<option key=${k} value=${k}>${l}</option>`)}</select><//>
     </div>
     ${paga==='no'?html`<${Banner} k="y" ic="warn"><b>Mientras cargues saldo, una tarjeta nueva no baja tu deuda.</b> Primero liquida la más cara (método avalancha). ${M?'Así lo hace el plan: todo el dinero libre va a la Azul hasta el mes 5.':''} Si necesitas una tarjeta, la de menor costo para tu límite es la de abajo.<//>`:null}
-    <div className="reco"><div className="muted xs">${M?(paga==='si'?'Recomendación desde el mes 5 ('+mesTxt(M,5)+')':'Recomendación hoy (meses 1 a 4)'):'Recomendación'}</div>
-      <div className="reco-t" id="tc-top">${M&&paga==='no'?'No abras otra tarjeta: termina de pagar la Azul BBVA':t.n}</div>
-      <div className="muted sm">${M&&paga==='no'?`Si de todos modos necesitaran una, la de menor CAT para su límite es ${t.n} (${pc(t.cat,1)}).`:`Anualidad ${fmt(t.anual)} · CAT de publicidad ${pc(t.cat,1)} · ${t.web}`}</div></div>
+
     <ul className="porque">
       ${a&&a.anual>t.anual?html`<li>Te ahorras <b className="num">${fmt(a.anual-t.anual)}</b> al año de anualidad frente a tu ${a.n}.</li>`:null}
       ${a?html`<li>Si algún mes no pagas el total, su CAT es de <b>${pc(t.cat,1)}</b> contra <b>${pc(a.cat,1)}</b> de tu ${a.n}: ${t.cat<a.cat?`cuesta ${nf(a.cat/t.cat,1)} veces menos`:'similar'}.</li>`:html`<li>Es de las de menor CAT de publicidad para tu límite (${R.T.n}).</li>`}

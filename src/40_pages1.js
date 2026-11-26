@@ -8,20 +8,20 @@ function Inicio(){
   const last7=[6,5,4,3,2,1,0].map(n=>{const d=addD(new Date(),-n);return {d,on:s.academy.days.includes(iso(d))}});
   const quick=[['plus','Registrar movimiento',()=>openTx()],['flag','Abonar a una meta',()=>go('finanzas','metas')],['book','Hacer una lección',()=>go('academia')],['chart','Simular portafolio',()=>go('inversiones','simulador')],['calc','Calculadoras',()=>go('calculadoras')],['globe','México hoy',()=>go('mexico')]];
   return html`<div className="page">
-    <${Head} title=${html`${greet}, ${shortName(s.user)} <${Demo}/>`} sub="Tu dinero. Tus decisiones. Tu futuro." right=${html`<button className="btn pri" onClick=${()=>openTx()}><${Ic} n="plus" s=${18}/>Nuevo movimiento</button>`}/>
-    <div className="grid g4">
+    <${Head} title=${html`${greet}, ${shortName(s.user)} <${Demo}/>`} right=${html`<button className="btn pri" onClick=${()=>openTx()}><${Ic} n="plus" s=${18}/>Nuevo movimiento</button>`}/>
+    ${s.plan?html`<${PlanCard} plan=${s.plan}/>`:null}
+    <div className="grid g4 month-summary">
       <${Kpi} ic="wallet" l="Saldo disponible" v=${fmt(bal)} s=${`Después de apartar ${fmt(savedTotal(s))} en metas`}/>
       <${Kpi} ic="up" l="Ingresos del mes" v=${fmt(T.inc)} s=${`${ml.filter(t=>t.type==='ingreso').length} ${ml.filter(t=>t.type==='ingreso').length===1?'movimiento':'movimientos'}`} cls="up"/>
       <${Kpi} ic="down" l="Gastos del mes" v=${fmt(T.exp)} s=${`${ml.filter(t=>t.type==='gasto').length} movimientos`} cls="down"/>
       <${Kpi} ic="star" l="Ahorro del mes" v=${fmt(T.net)} s=${`${pc(rate,0)} de tus ingresos · meta 20%`} cls=${T.net>=0?'up':'down'}/>
     </div>
-    ${s.plan?html`<${PlanCard} plan=${s.plan}/>`:null}
     <div className="split">
       <div className="card"><div className="ch"><h2>Ingresos vs gastos</h2><span className="muted sm">Últimos 6 meses</span></div>
         <${Chart} h=${250}><${RC.BarChart} data=${six} barGap=${4}><${RC.CartesianGrid} stroke=${c.line} vertical=${false}/><${RC.XAxis} dataKey="label" ...${axis(c)}/><${RC.YAxis} width=${48} tickFormatter=${v=>v>=1000?(v/1000)+'k':v} ...${axis(c)}/><${RC.Tooltip} formatter=${v=>fmt(v)} ...${tipStyle(c)} cursor=${{fill:c.line,opacity:.3}}/>
           <${RC.Bar} dataKey="Ingresos" fill=${c.green} radius=${[6,6,0,0]}/><${RC.Bar} dataKey="Gastos" fill=${c.red} radius=${[6,6,0,0]}/><//><//>
         <div className="legend"><span><i style=${{background:c.green}}></i>Ingresos</span><span><i style=${{background:c.red}}></i>Gastos</span></div></div>
-      <div className="card"><div className="ch"><h2>Tu siguiente paso</h2><span className="pill b">Según tus acciones</span></div>
+      <div className="card"><div className="ch"><h2>Tu siguiente paso</h2></div>
         <div className="col">${steps.length?steps.map((x,i)=>html`<div key=${i} className="row" style=${{alignItems:'flex-start',flexWrap:'nowrap'}}>
           <div className="avatar" style=${{background:'var(--green-soft)',color:'var(--green-ink)'}}><${Ic} n=${x.ic} s=${16}/></div>
           <div style=${{flex:1,minWidth:0}}><div className="b">${x.t}</div><div className="muted sm">${x.x}</div>
@@ -30,12 +30,12 @@ function Inicio(){
     <div className="grid g3">
       <div className="card"><div className="ch"><h2>Progreso de metas</h2><button className="btn gh sm" onClick=${()=>go('finanzas','metas')}>Ver todas</button></div>
         <div className="col">${s.goals.length?s.goals.map(g=>{const i=goalInfo(g);return html`<div key=${g.id}><div className="row sp"><span className="b">${g.name}</span><span className="num sm">${pc(i.pct,0)}</span></div><${Bar} v=${i.pct}/><div className="muted xs" style=${{marginTop:4}}>${fmt(g.saved)} de ${fmt(g.target)}</div></div>`}):html`<${Empty} title="Sin metas" text="Crea tu primera meta de ahorro." action=${html`<button className="btn pri sm" onClick=${()=>go('finanzas','metas')}>Crear meta</button>`}/>`}</div></div>
-      <div className="card navy"><div className="ch"><h2>Racha de aprendizaje</h2></div>
-        <div className="row" style=${{gap:14,flexWrap:'nowrap'}}><div style=${{color:'var(--yellow)'}}><${Ic} n="fire" s=${44}/></div><div><div className="num" style=${{fontSize:34,fontWeight:700,lineHeight:1}}>${st}</div><div style=${{color:'#B7C4DB'}}>${st===1?'día seguido':'días seguidos'}</div></div></div>
-        <div className="row" style=${{marginTop:16,gap:6,flexWrap:'nowrap'}}>${last7.map((x,i)=>html`<div key=${i} title=${fdate(iso(x.d))} style=${{flex:1,textAlign:'center',fontSize:11,color:'#B7C4DB'}}><div style=${{height:26,borderRadius:8,background:x.on?'var(--green)':'rgba(255,255,255,.1)',marginBottom:4}}></div>${['D','L','M','M','J','V','S'][x.d.getDay()]}</div>`)}</div>
+      <div className="card"><div className="ch"><h2>Racha de aprendizaje</h2></div>
+        <div className="row" style=${{gap:14,flexWrap:'nowrap'}}><div style=${{color:'var(--muted)'}}><${Ic} n="fire" s=${24}/></div><div><div className="num" style=${{fontSize:34,fontWeight:480,lineHeight:1}}>${st}</div><div style=${{color:'var(--muted)'}}>${st===1?'día seguido':'días seguidos'}</div></div></div>
+        <div className="row" style=${{marginTop:16,gap:6,flexWrap:'nowrap'}}>${last7.map((x,i)=>html`<div key=${i} title=${fdate(iso(x.d))} style=${{flex:1,textAlign:'center',fontSize:11,color:'var(--muted)'}}><div style=${{height:26,borderRadius:8,background:x.on?'var(--action)':'var(--card2)',marginBottom:4}}></div>${['D','L','M','M','J','V','S'][x.d.getDay()]}</div>`)}</div>
         <button className="btn sm" style=${{marginTop:14}} onClick=${()=>go('academia')}>Practicar hoy</button></div>
       <div className="card"><div className="ch"><h2>Accesos rápidos</h2></div>
-        <div className="grid" style=${{gridTemplateColumns:'1fr 1fr',gap:10}}>${quick.map(([ic,l,fn])=>html`<button key=${l} className="btn" style=${{flexDirection:'column',height:'auto',padding:'14px 8px',whiteSpace:'normal',textAlign:'center',gap:6}} onClick=${fn}><${Ic} n=${ic}/><span className="sm">${l}</span></button>`)}</div></div>
+        <div className="quick-actions">${quick.map(([ic,l,fn])=>html`<button key=${l} className="btn" onClick=${fn}><${Ic} n=${ic}/><span className="sm">${l}</span></button>`)}</div></div>
     </div></div>`;
 }
 
@@ -43,10 +43,10 @@ function Inicio(){
 function PlanCard({plan}){
   const {go}=useApp();
   const fv=(r,v)=>r.f==='mxn'?fmt(v):r.f==='meses'?`${nf(v,1)} meses`:v;
-  return html`<div className="card col" style=${{gap:14}}>
-    <div className="ch" style=${{marginBottom:0}}><div><h2>Tu plan en 24 meses</h2><div className="muted sm">De no sobrar nada a fin de mes, a cero deudas y un fondo para emergencias.</div></div><span className="pill g">Plan de la consultora</span></div>
+  return html`<div className="card col plan-overview" style=${{gap:14}}>
+    <div className="ch" style=${{marginBottom:0}}><div><h2>Tu plan en 24 meses</h2><div className="muted sm">De no sobrar nada a fin de mes, a cero deudas y un fondo para emergencias.</div></div><span className="pill b">Plan de la consultora</span></div>
     <div className="tw"><table className="plan-t"><thead><tr><th>Indicador</th><th>Hoy</th><th>Mes 12</th><th>Mes 24</th></tr></thead><tbody>
-      ${plan.resumen.map(r=>html`<tr key=${r.k}><td>${r.k}</td>${r.v.map((v,i)=>html`<td key=${i} className=${'num '+(i===2?'best':'')}>${fv(r,v)}</td>`)}</tr>`)}
+      ${plan.resumen.map(r=>html`<tr key=${r.k}><td>${r.k}</td>${r.v.map((v,i)=>html`<td key=${i} data-plazo=${['Hoy','Mes 12','Mes 24'][i]} className=${'num '+(i===2?'best':'')}>${fv(r,v)}</td>`)}</tr>`)}
     </tbody></table></div>
     <div className="hitos">${plan.hitos.map(h=>html`<div key=${h.mes} className="hito"><b className="m">Mes ${h.mes}</b><span>${h.t}</span></div>`)}</div>
     <div className="row sp"><span className="muted xs">Fuente: ${plan.fuente}. Proyección del plan, no es garantía.</span><div className="row" style=${{gap:4}}><button className="btn gh sm" onClick=${()=>go('asesor')}>Ver recomendaciones →</button><button className="btn gh sm" onClick=${()=>go('finanzas','hogar')}>Ver plan del hogar →</button></div></div>
@@ -62,7 +62,7 @@ function IndModal({ind,onClose}){
   const fmtv=v=>ind.unit==='%'?nf(v,ind.id==='inf_m'||ind.id==='udi'?3:2)+'%':ind.id==='ipc'?nf(v,0):ind.id==='udi'?nf(v,4):nf(v,2);
   return html`<${Modal} title=${ind.name} onClose=${onClose} wide>
     ${ind.oficial?html`<${Banner} k="g" ic="check"><b>Dato oficial:</b> ${ind.src} (${ind.fecha}). La gráfica histórica es ilustrativa.<//>`:html`<${Banner} k="y" ic="warn">Datos de demostración, no son cifras actuales.<//>`}
-    <div className="row sp"><div><span className="num" style=${{fontSize:32,fontWeight:700}}>${fv(ind,ind.val)}</span> <span className=${'pill '+(chg.up?'g':'r')}>${chg.txt} vs. hace 1 mes</span></div><${Seg} opts=${Object.keys(RANGES).map(k=>[k,RANGE_NAMES[k]])} val=${rk} on=${setRk} label="Periodo"/></div>
+    <div className="row sp"><div><span className="num" style=${{fontSize:32,fontWeight:500}}>${fv(ind,ind.val)}</span> <span className=${'pill '+(chg.up?'g':'r')}>${chg.txt} vs. hace 1 mes</span></div><${Seg} opts=${Object.keys(RANGES).map(k=>[k,RANGE_NAMES[k]])} val=${rk} on=${setRk} label="Periodo"/></div>
     <${Chart} h=${250}><${RC.AreaChart} data=${data}><defs><linearGradient id="ig" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor=${c.green} stopOpacity=${.35}/><stop offset="100%" stopColor=${c.green} stopOpacity=${0}/></linearGradient></defs>
       <${RC.CartesianGrid} stroke=${c.line} vertical=${false}/><${RC.XAxis} dataKey="d" minTickGap=${28} ...${axis(c)}/><${RC.YAxis} width=${54} domain=${['auto','auto']} tickFormatter=${v=>ind.id==='ipc'?nf(v,0):nf(v,ind.id==='udi'?2:1)} ...${axis(c)}/>
       <${RC.Tooltip} formatter=${v=>[fmtv(v),ind.name]} ...${tipStyle(c)}/><${RC.Area} type="monotone" dataKey="v" stroke=${c.green} strokeWidth=${2.5} fill="url(#ig)"/><//><//>
@@ -83,7 +83,7 @@ function Mexico(){
     ${groups.map(([g,ids])=>html`<div key=${g} className="col"><h2>${g}</h2><div className="grid g3" style=${{gridTemplateColumns:'repeat(auto-fill,minmax(min(100%,250px),1fr))'}}>
       ${ids.map(id=>{const ind=IND.find(x=>x.id===id),ch=change(ind),sp=chartData(ind,'1M');return html`<div key=${id} className="card col" style=${{gap:8}}>
         <div className="row sp"><b>${ind.name}</b>${ind.oficial?html`<span className="pill g">Dato oficial</span>`:html`<${Demo}/>`}</div>
-        <div className="row sp" style=${{alignItems:'flex-end'}}><div className="num" style=${{fontSize:28,fontWeight:700,lineHeight:1.1}}>${fv(ind,ind.val)}</div><span className=${'pill '+(ch.up?'g':'r')}>${ch.up?'▲':'▼'} ${ch.txt}</span></div>
+        <div className="row sp" style=${{alignItems:'flex-end'}}><div className="num" style=${{fontSize:28,fontWeight:500,lineHeight:1.1}}>${fv(ind,ind.val)}</div><span className=${'pill '+(ch.up?'g':'r')}>${ch.up?'▲':'▼'} ${ch.txt}</span></div>
         <div style=${{height:44}}><${RC.ResponsiveContainer} width="100%" height="100%"><${RC.LineChart} data=${sp}><${RC.YAxis} hide domain=${['auto','auto']}/><${RC.Line} type="monotone" dataKey="v" stroke=${ch.up?c.green:c.red} strokeWidth=${2} dot=${false} isAnimationActive=${false}/><//><//></div>
         ${ind.oficial?html`<div className="muted xs">Fecha: ${ind.fecha} · Fuente: ${ind.src}</div>`:html`<div className="muted xs">Fecha: ${fdate(now)} (ejemplo) · Fuente: ${ind.src}</div>
         <div className="xs" style=${{color:'var(--yellow-ink)'}}>Datos de demostración, no son cifras actuales</div>`}
